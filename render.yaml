@@ -3,6 +3,7 @@ services:
     name: infinity-trader-api
     plan: free
     env: python
+    healthCheckPath: /health
     buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
@@ -31,6 +32,7 @@ services:
     name: infinity-trader-compiler
     plan: free
     env: python
+    healthCheckPath: /health
     buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "cd backend && python compiler/worker.py"
     envVars:

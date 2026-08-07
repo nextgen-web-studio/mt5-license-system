@@ -23,3 +23,11 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Infinity Trader API"}
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "service": "Infinity Trader API",
+        "version": "1.0.0"
+    }
