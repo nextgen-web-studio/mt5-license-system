@@ -75,6 +75,11 @@ async def run_migrations_online():
     and associate a connection with the context.
     """
     database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif database_url.startswith("postgresql://"):
+            database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
     connectable = create_async_engine(
         database_url,
