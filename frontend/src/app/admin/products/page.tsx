@@ -1,10 +1,21 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Package, Plus, Loader2, Edit, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Package, Plus, Loader2, Edit, Trash2, X, Check } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function ProductsPage() {
+  const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Form State
+  const [name, setName] = useState('');
+  const [type, setType] = useState('EA');
+  const [price, setPrice] = useState('');
+  const [duration, setDuration] = useState('1');
+  const [description, setDescription] = useState('');
+
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['admin-products'],
     queryFn: async () => {
@@ -12,6 +23,42 @@ export default function ProductsPage() {
       return data;
     }
   });
+
+  const createProductMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const { data } = await api.post('/api/v1/products/', payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      closeModal();
+    }
+  });
+
+  const openModal = () => {
+    setName('');
+    setType('EA');
+    setPrice('');
+    setDuration('1');
+    setDescription('');
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createProductMutation.mutate({
+      name,
+      type,
+      price: parseFloat(price),
+      duration: parseInt(duration, 10),
+      description,
+      active: true
+    });
+  };
 
   if (isLoading) {
     return (
@@ -30,13 +77,16 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Products</h1>
           <p className="text-neutral-400 mt-1">Manage trading bots and VPS packages.</p>
         </div>
-        <button className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors">
+        <button 
+          onClick={openModal}
+          className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors"
+        >
           <Plus size={18} className="mr-2" />
           Add Product
         </button>
@@ -50,6 +100,7 @@ export default function ProductsPage() {
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4">Price (₹)</th>
+                <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -57,8 +108,8 @@ export default function ProductsPage() {
             <tbody className="divide-y divide-neutral-800">
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">
-                    No products found.
+                  <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
+                    No products found. Click "Add Product" to create one.
                   </td>
                 </tr>
               ) : (
@@ -72,12 +123,19 @@ export default function ProductsPage() {
                         <span className="font-medium text-white">{product.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 capitalize">{product.type || 'Standard'}</td>
+                    <td className="px-6 py-4 text-neutral-400 capitalize">{product.type}</td>
                     <td className="px-6 py-4 text-neutral-300">₹{product.price?.toLocaleString() || 0}</td>
+                    <td className="px-6 py-4 text-neutral-400">{product.duration} Months</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">
-                        Active
-                      </span>
+                      {product.active ? (
+                        <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">
+                          Inactive
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <button className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit">
@@ -94,6 +152,119 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
+
+      {/* Add Product Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-white flex items-center">
+                <Plus size={18} className="mr-2 text-blue-400" />
+                Add New Product
+              </h3>
+              <button 
+                onClick={closeModal}
+                className="text-neutral-500 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Product Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. EA Basic Plan"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Product Type</label>
+                  <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="EA">EA License</option>
+                    <option value="VPS">VPS Hosting</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Price (₹)</label>
+                  <input 
+                    type="number" 
+                    required
+                    min="0"
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="500"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Duration (Months)</label>
+                <input 
+                  type="number" 
+                  required
+                  min="1"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  placeholder="1"
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Description (Optional)</label>
+                <textarea 
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of the plan..."
+                  rows={2}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div className="pt-4 flex justify-end space-x-3">
+                <button 
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-neutral-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={createProductMutation.isPending}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium flex items-center transition-colors"
+                >
+                  {createProductMutation.isPending ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin mr-2" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={16} className="mr-2" />
+                      Create Product
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
