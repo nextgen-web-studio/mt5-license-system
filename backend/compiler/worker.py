@@ -53,10 +53,10 @@ async def process_job(db: AsyncSession, job: CompileJob):
         
         # Initialize correct compiler based on OS
         if os.name == 'nt':
-            from .metaeditor_compiler import MetaEditorCompiler
+            from metaeditor_compiler import MetaEditorCompiler
             compiler = MetaEditorCompiler()
         else:
-            from .dummy_compiler import DummyCompiler
+            from dummy_compiler import DummyCompiler
             compiler = DummyCompiler()
             
         success = await compiler.compile(job, license_obj, order, user, storage_dir, TELEGRAM_TOKEN)
