@@ -14,7 +14,7 @@ services:
       - key: RAZORPAY_API_SECRET
         sync: false
 
-  - type: worker
+  - type: web
     name: infinity-trader-bot
     env: python
     buildCommand: "pip install -r telegram_bot/requirements.txt"
@@ -25,7 +25,7 @@ services:
       - key: API_BASE_URL
         value: "https://infinity-trader-api.onrender.com/api/v1"
 
-  - type: worker
+  - type: web
     name: infinity-trader-compiler
     env: python
     buildCommand: "pip install -r backend/requirements.txt"

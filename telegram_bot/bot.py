@@ -1,5 +1,7 @@
 import os
 import logging
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from dotenv import load_dotenv
 
 import httpx
@@ -46,7 +48,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         p_type = "EA" if data == "buy_ea" else "VPS"
         products = await get_products(product_type=p_type)
         if not products:
-            await query.edit_message_text(f"No {p_type} products available.", reply_markup=get_main_menu_keyboard())
+            try:
+                await query.edit_message_text(f"No {p_type} products available.", reply_markup=get_main_menu_keyboard())
+            except Exception:
+                pass
             return
             
         keyboard = []
@@ -54,7 +59,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard.append([InlineKeyboardButton(f"{p['name']} - ₹{p['price']}", callback_data=f"buy_product_{p['id']}_{p_type}")])
         keyboard.append([InlineKeyboardButton("« Back to Menu", callback_data="main_menu")])
         
-        await query.edit_message_text(f"Please select a {p_type} Plan:", reply_markup=InlineKeyboardMarkup(keyboard))
+        try:
+            await query.edit_message_text(f"Please select a {p_type} Plan:", reply_markup=InlineKeyboardMarkup(keyboard))
+        except Exception:
+            pass
         
     elif data.startswith("buy_product_"):
         parts = data.split("_")
@@ -96,8 +104,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return WAITING_FOR_MT5_ID
         return ConversationHandler.END
             
-    elif data == "main_menu":
-        await query.edit_message_text("Please select an option below:", reply_markup=get_main_menu_keyboard())
+    elif data == "main_menu" or data == "home":
+        try:
+            await query.edit_message_text("Please select an option below:", reply_markup=get_main_menu_keyboard())
+        except Exception:
+            pass
     return ConversationHandler.END
 
 async def handle_mt5_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -120,7 +131,21 @@ async def handle_mt5_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     return ConversationHandler.END
 
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def start_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), DummyHandler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    logging.info(f"Dummy web server started on port {port}")
+
 def main():
+    start_dummy_server()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     application = ApplicationBuilder().token(token).build()
 

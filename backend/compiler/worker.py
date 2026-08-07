@@ -10,7 +10,22 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def start_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), DummyHandler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    print(f"Dummy web server started on port {port}")
 
 from app.db.database import engine
 from app.models import CompileJob, License, Order, User
@@ -101,6 +116,7 @@ async def process_job(db: AsyncSession, job: CompileJob):
         await db.commit()
 
 async def main():
+    start_dummy_server()
     print("Starting Compiler Worker...")
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     
