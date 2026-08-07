@@ -14,7 +14,7 @@ class MetaEditorCompiler(CompilerInterface):
         try:
             # 1. Notify Telegram: Compiling EA
             async with httpx.AsyncClient(verify=False) as client:
-                await client.post(
+                res1 = await client.post(
                     f"https://api.telegram.org/bot{telegram_token}/sendMessage",
                     json={
                         "chat_id": user.telegram_id,
@@ -22,6 +22,7 @@ class MetaEditorCompiler(CompilerInterface):
                         "parse_mode": "Markdown"
                     }
                 )
+                res1.raise_for_status()
 
             # 2. Setup paths
             base_dir = os.path.dirname(__file__)
@@ -81,14 +82,16 @@ class MetaEditorCompiler(CompilerInterface):
             # 6. Notify Telegram: Ready
             async with httpx.AsyncClient(verify=False) as client:
                 with open(output_ex5, "rb") as document:
-                    await client.post(
+                    res2 = await client.post(
                         f"https://api.telegram.org/bot{telegram_token}/sendDocument",
                         data={
                             "chat_id": user.telegram_id,
-                            "caption": "✅ *Download Ready!* Here is your personalized EA package.\n\n⚠️ Important: This EA is permanently locked to your MT5 Account ID."
+                            "caption": "✅ *Download Ready!* Here is your personalized EA package.\n\n⚠️ Important: This EA is permanently locked to your MT5 Account ID.",
+                            "parse_mode": "Markdown"
                         },
                         files={"document": (f"InfinityTrader_{license_obj.license_uuid}.ex5", document)}
                     )
+                    res2.raise_for_status()
                     
             return True
         except Exception as e:

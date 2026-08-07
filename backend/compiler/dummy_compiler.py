@@ -15,7 +15,7 @@ class DummyCompiler(CompilerInterface):
         try:
             # Notify Telegram: Compiling EA
             async with httpx.AsyncClient(verify=False) as client:
-                await client.post(
+                res1 = await client.post(
                     f"https://api.telegram.org/bot{telegram_token}/sendMessage",
                     json={
                         "chat_id": user.telegram_id,
@@ -23,6 +23,7 @@ class DummyCompiler(CompilerInterface):
                         "parse_mode": "Markdown"
                     }
                 )
+                res1.raise_for_status()
 
             await asyncio.sleep(2) # Simulate compile time
             
@@ -64,7 +65,7 @@ class DummyCompiler(CompilerInterface):
             # Notify Telegram: Ready
             async with httpx.AsyncClient(verify=False) as client:
                 with open(zip_path, "rb") as document:
-                    await client.post(
+                    res2 = await client.post(
                         f"https://api.telegram.org/bot{telegram_token}/sendDocument",
                         data={
                             "chat_id": user.telegram_id,
@@ -72,6 +73,8 @@ class DummyCompiler(CompilerInterface):
                         },
                         files={"document": ("InfinityTrader.zip", document)}
                     )
+                    if res2.status_code != 200:
+                        raise Exception(f"Telegram API Error: {res2.text}")
                     
             return True
         except Exception as e:
