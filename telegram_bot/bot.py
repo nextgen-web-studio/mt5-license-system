@@ -22,8 +22,6 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-WAITING_FOR_MT5_ID = 1
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     db_user = await register_user(
@@ -101,38 +99,40 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         
         context.user_data['current_order_id'] = order['id']
-        
-        if p_type == "EA":
-            return WAITING_FOR_MT5_ID
-        return ConversationHandler.END
             
     elif data == "main_menu" or data == "home":
         try:
             await query.edit_message_text("Please select an option below:", reply_markup=get_main_menu_keyboard())
         except Exception:
             pass
-    return ConversationHandler.END
 
-async def handle_mt5_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    mt5_id = update.message.text
-    order_id = context.user_data.get('current_order_id')
-    
-    await update.message.reply_text(f"⏳ *Creating License* for MT5 ID: `{mt5_id}`...", parse_mode="Markdown")
-    
-    # Trigger fulfillment
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = context.user_data.get('db_user_id')
+    if not user_id:
+        return
+        
+    text = update.message.text
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    
     async with httpx.AsyncClient(verify=False) as client:
-        # Hack to mark paid (since Razorpay webhook isn't here yet)
-        await client.get(f"{base_url}/orders/{order_id}/mock-pay")
-        
-        resp = await client.post(f"{base_url}/orders/{order_id}/start-fulfillment", json={"mt5_id": mt5_id})
-        
-    if resp.status_code == 200:
-        await update.message.reply_text("📦 *Compiling EA...* (This takes a few seconds)", parse_mode="Markdown")
-    else:
-        await update.message.reply_text(f"Error: {resp.text}")
-        
-    return ConversationHandler.END
+        resp = await client.get(f"{base_url}/orders/user/{user_id}")
+        if resp.status_code == 200:
+            orders = resp.json()
+            # Find the most recent 'paid' EA order that hasn't been fulfilled
+            paid_order = next((o for o in sorted(orders, key=lambda x: x['id'], reverse=True) if o['status'] == 'paid' and o['order_type'] == 'EA'), None)
+            
+            if paid_order:
+                order_id = paid_order['id']
+                await update.message.reply_text(f"⏳ *Creating License* for MT5 ID: `{text}`...", parse_mode="Markdown")
+                
+                start_resp = await client.post(f"{base_url}/orders/{order_id}/start-fulfillment", json={"mt5_id": text})
+                if start_resp.status_code == 200:
+                    await update.message.reply_text("📦 *Compiling EA...* (This takes a few seconds)", parse_mode="Markdown")
+                else:
+                    await update.message.reply_text(f"Error starting fulfillment: {start_resp.text}")
+                return
+                
+    await update.message.reply_text("Please use the /start menu to select an option.")
 
 class DummyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -151,17 +151,10 @@ def main():
     start_dummy_server()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     application = ApplicationBuilder().token(token).build()
-
-    conv_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(button_handler)],
-        states={
-            WAITING_FOR_MT5_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_mt5_id)]
-        },
-        fallbacks=[CommandHandler("start", start)]
-    )
     
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(conv_handler)
+    application.add_handler(CallbackQueryHandler(button_handler))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
     logging.info("Starting Infinity Trader Bot...")
     application.run_polling()
