@@ -1,6 +1,7 @@
 services:
   - type: web
     name: infinity-trader-api
+    plan: free
     env: python
     buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
@@ -16,6 +17,7 @@ services:
 
   - type: web
     name: infinity-trader-bot
+    plan: free
     env: python
     buildCommand: "pip install -r telegram_bot/requirements.txt"
     startCommand: "cd telegram_bot && python bot.py"
@@ -27,6 +29,7 @@ services:
 
   - type: web
     name: infinity-trader-compiler
+    plan: free
     env: python
     buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "python compiler/worker.py"
