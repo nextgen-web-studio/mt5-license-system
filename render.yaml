@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: infinity-trader-api
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: infinity-trader-db
+          property: connectionString
+      - key: RAZORPAY_API_KEY
+        sync: false
+      - key: RAZORPAY_API_SECRET
+        sync: false
+
+  - type: worker
+    name: infinity-trader-bot
+    env: python
+    buildCommand: "pip install -r telegram_bot/requirements.txt"
+    startCommand: "cd telegram_bot && python bot.py"
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: API_BASE_URL
+        value: "https://infinity-trader-api.onrender.com/api/v1"
+
+  - type: worker
+    name: infinity-trader-compiler
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "python compiler/worker.py"
+    envVars:
+      - key: API_BASE_URL
+        value: "https://infinity-trader-api.onrender.com/api/v1"
+
+databases:
+  - name: infinity-trader-db
+    databaseName: infinitytrader
+    user: admin
+    plan: free
