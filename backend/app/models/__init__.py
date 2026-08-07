@@ -68,6 +68,7 @@ class CompileJob(Base):
     id = Column(Integer, primary_key=True, index=True)
     license_id = Column(Integer, ForeignKey("licenses.id"))
     status = Column(String, default="pending") # pending, processing, completed, failed
+    logs = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

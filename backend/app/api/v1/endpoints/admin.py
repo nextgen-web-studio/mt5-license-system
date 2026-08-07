@@ -155,3 +155,13 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                 )
                 
     return {"status": "success"}
+
+@router.get("/run-migrations")
+async def run_migrations():
+    import subprocess
+    import sys
+    try:
+        result = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], capture_output=True, text=True)
+        return {"stdout": result.stdout, "stderr": result.stderr}
+    except Exception as e:
+        return {"error": str(e)}
