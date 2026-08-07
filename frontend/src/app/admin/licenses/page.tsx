@@ -8,7 +8,7 @@ export default function LicensesPage() {
   const { data: licenses = [], isLoading, error } = useQuery({
     queryKey: ['admin-licenses'],
     queryFn: async () => {
-      const { data } = await api.get('/api/v1/admin/licenses');
+      const { data } = await api.get('/api/v1/licenses');
       return data;
     }
   });
