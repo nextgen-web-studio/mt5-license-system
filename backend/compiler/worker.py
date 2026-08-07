@@ -36,41 +36,47 @@ load_dotenv(env_path)
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 async def process_job(db: AsyncSession, job: CompileJob):
-    # Fetch license, order, user
-    res = await db.execute(select(License).filter(License.id == job.license_id))
-    license_obj = res.scalar_one()
-    
-    res = await db.execute(select(Order).filter(Order.id == license_obj.order_id))
-    order = res.scalar_one()
-    
-    res = await db.execute(select(User).filter(User.id == order.user_id))
-    user = res.scalar_one()
-
-    # Create workspace
-    storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "storage", "licenses", str(license_obj.id))
-    os.makedirs(storage_dir, exist_ok=True)
-    
-    # Initialize correct compiler based on OS
-    if os.name == 'nt':
-        from .metaeditor_compiler import MetaEditorCompiler
-        compiler = MetaEditorCompiler()
-    else:
-        from .dummy_compiler import DummyCompiler
-        compiler = DummyCompiler()
-        
     try:
+        # Fetch license, order, user
+        res = await db.execute(select(License).filter(License.id == job.license_id))
+        license_obj = res.scalar_one()
+        
+        res = await db.execute(select(Order).filter(Order.id == license_obj.order_id))
+        order = res.scalar_one()
+        
+        res = await db.execute(select(User).filter(User.id == order.user_id))
+        user = res.scalar_one()
+
+        # Create workspace
+        storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "storage", "licenses", str(license_obj.id))
+        os.makedirs(storage_dir, exist_ok=True)
+        
+        # Initialize correct compiler based on OS
+        if os.name == 'nt':
+            from .metaeditor_compiler import MetaEditorCompiler
+            compiler = MetaEditorCompiler()
+        else:
+            from .dummy_compiler import DummyCompiler
+            compiler = DummyCompiler()
+            
         success = await compiler.compile(job, license_obj, order, user, storage_dir, TELEGRAM_TOKEN)
         
         if success:
             job.status = "completed"
+            job.logs = "Compilation completed successfully."
             order.status = "ready"
         else:
             job.status = "failed"
+            job.logs = "Compiler script returned failure."
             
         await db.commit()
     except Exception as e:
-        print(f"Failed to compile job {job.id}: {e}")
+        print(f"CRITICAL ERROR processing job {job.id}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        await db.rollback()
         job.status = "failed"
+        job.logs = f"Crash in process_job: {str(e)}"
         await db.commit()
 
 async def main():
