@@ -95,10 +95,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton(f"💳 Pay ₹{amount}", url=payment_url)]]
         
         await query.edit_message_text(
-            text=f"Order #{order['id']} created!\n\nPlease click the button below to complete your payment securely via Razorpay.\n\n_You will be automatically notified here once the payment is successful._",
+            text=f"Order #{order['id']} created!\n\nPlease click the button below to complete your payment securely via Razorpay.\n\n*(For Testing: Since webhooks aren't configured yet, just type any MT5 ID here in the chat to simulate a successful payment!)*",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
+        
+        context.user_data['current_order_id'] = order['id']
         
         if p_type == "EA":
             return WAITING_FOR_MT5_ID
@@ -118,11 +120,12 @@ async def handle_mt5_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"⏳ *Creating License* for MT5 ID: `{mt5_id}`...", parse_mode="Markdown")
     
     # Trigger fulfillment
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     async with httpx.AsyncClient(verify=False) as client:
         # Hack to mark paid (since Razorpay webhook isn't here yet)
-        await client.get(f"http://localhost:8000/api/v1/orders/{order_id}/mock-pay") # I will add this endpoint!
+        await client.get(f"{base_url}/orders/{order_id}/mock-pay")
         
-        resp = await client.post(f"http://localhost:8000/api/v1/orders/{order_id}/start-fulfillment", json={"mt5_id": mt5_id})
+        resp = await client.post(f"{base_url}/orders/{order_id}/start-fulfillment", json={"mt5_id": mt5_id})
         
     if resp.status_code == 200:
         await update.message.reply_text("📦 *Compiling EA...* (This takes a few seconds)", parse_mode="Markdown")
