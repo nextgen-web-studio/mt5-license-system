@@ -58,8 +58,13 @@ export default function DashboardPage() {
     );
   }
 
-  // Fallback to default if API returns empty or fails structure
-  const displayStats = stats || {
+  // Map snake_case API response to display values
+  const displayStats = stats ? {
+    totalRevenue: stats.total_revenue || 0,
+    totalOrders: stats.total_orders || 0,
+    activeLicenses: stats.compiler_queue || 0, // Using compiler_queue as placeholder for active licenses for now
+    totalUsers: stats.total_users || 0
+  } : {
     totalRevenue: 0,
     totalOrders: 0,
     activeLicenses: 0,
@@ -76,7 +81,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Revenue"
-          value={`₹${displayStats.totalRevenue.toLocaleString()}`}
+          value={`₹${(displayStats.totalRevenue || 0).toLocaleString()}`}
           icon={DollarSign}
           trend={{ value: "+12.5%", isPositive: true }}
         />
