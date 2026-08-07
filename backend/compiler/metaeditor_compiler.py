@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 import httpx
-from .interfaces import CompilerInterface
+from interfaces import CompilerInterface
 
 class MetaEditorCompiler(CompilerInterface):
     """

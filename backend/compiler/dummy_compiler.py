@@ -4,7 +4,7 @@ import zipfile
 import shutil
 import httpx
 import asyncio
-from .interfaces import CompilerInterface
+from interfaces import CompilerInterface
 
 class DummyCompiler(CompilerInterface):
     """
