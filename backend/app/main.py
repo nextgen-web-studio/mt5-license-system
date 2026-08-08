@@ -2,7 +2,22 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import products, payments, users, licenses, orders, admin
 
-app = FastAPI(title="Infinity Trader API")
+from contextlib import asynccontextmanager
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from app.cron.expire_licenses import run_expiration_check
+
+scheduler = AsyncIOScheduler()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.add_job(run_expiration_check, 'interval', hours=12)
+    scheduler.start()
+    # Also run it immediately on startup
+    scheduler.add_job(run_expiration_check)
+    yield
+    scheduler.shutdown()
+
+app = FastAPI(title="Infinity Trader API", lifespan=lifespan)
 
 # Configure CORS
 app.add_middleware(

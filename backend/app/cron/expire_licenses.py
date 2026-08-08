@@ -7,9 +7,10 @@ import sys
 # Add parent directory to path so we can import app
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from app.db.database import get_db, SessionLocal
+from app.db.database import get_db, AsyncSessionLocal
 from sqlalchemy.future import select
-from app.models import License, User
+from sqlalchemy import delete
+from app.models import License, User, Order, Payment, CompileJob
 
 async def run_expiration_check():
     print(f"[{datetime.utcnow()}] Running license expiration check...")
@@ -18,7 +19,7 @@ async def run_expiration_check():
         print("TELEGRAM_BOT_TOKEN not found, skipping notifications.")
         return
 
-    async with SessionLocal() as db:
+    async with AsyncSessionLocal() as db:
         # Find active licenses
         result = await db.execute(select(License).filter(License.status == "active"))
         licenses = result.scalars().all()
@@ -56,9 +57,23 @@ async def run_expiration_check():
                         except Exception as e:
                             print(f"Failed to notify user {user.telegram_id}: {e}")
                             
-                # If expired > 5 days, mark status as expired (optional, as frontend will check date anyway)
-                if days_expired >= 5 and lic.status == "active":
-                    lic.status = "expired"
+                # If expired >= 5 days, completely delete data
+                if days_expired >= 5:
+                    order_id = lic.order_id
+                    
+                    # 1. Delete CompileJobs
+                    await db.execute(delete(CompileJob).filter(CompileJob.license_id == lic.id))
+                    
+                    # 2. Delete License
+                    await db.execute(delete(License).filter(License.id == lic.id))
+                    
+                    # 3. Delete Payment
+                    if order_id:
+                        await db.execute(delete(Payment).filter(Payment.order_id == order_id))
+                        
+                        # 4. Delete Order
+                        await db.execute(delete(Order).filter(Order.id == order_id))
+                        
                     expired_count += 1
                     
         if expired_count > 0:
