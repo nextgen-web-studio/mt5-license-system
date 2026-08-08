@@ -138,7 +138,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
                 
             if "error" in order:
-                await update.message.reply_text(f"❌ *Error:* {order['error']}", parse_mode="Markdown")
+                err_text = str(order['error'])[:2000]
+                await update.message.reply_text(f"❌ *Error:*\n```\n{err_text}\n```", parse_mode="Markdown")
                 return
                 
             products = await get_products()
