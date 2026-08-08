@@ -22,7 +22,8 @@ async def create_link(payment_in: PaymentCreate, db: AsyncSession = Depends(get_
         
     try:
         # Create payment link in Razorpay
-        reference_id = f"order_{order.id}"
+        import time
+        reference_id = f"order_{order.id}_{int(time.time())}"
         rzp_link = create_payment_link(amount=payment_in.amount, reference_id=reference_id)
         
         # Save payment record in DB
