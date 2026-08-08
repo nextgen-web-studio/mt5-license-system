@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import products, payments, users, licenses, orders, admin
+from app.api.v1.endpoints import products, payments, users, licenses, orders, admin, jobs
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -34,6 +34,7 @@ app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(licenses.router, prefix="/api/v1/licenses", tags=["licenses"])
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
 
 @app.get("/")
 def read_root():
@@ -45,9 +46,11 @@ async def run_migrations():
     from sqlalchemy import text
     try:
         async with AsyncSessionLocal() as session:
-            await session.execute(text("ALTER TABLE orders ADD COLUMN mt5_id VARCHAR"))
+            await session.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS mt5_id VARCHAR"))
+            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS worker_id VARCHAR"))
+            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE"))
             await session.commit()
-            return {"status": "success", "message": "Successfully added mt5_id column to orders table."}
+            return {"status": "success", "message": "Successfully ran migrations."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
