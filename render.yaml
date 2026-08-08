@@ -28,11 +28,10 @@ services:
       - key: API_BASE_URL
         value: "https://infinity-trader-api.onrender.com/api/v1"
 
-  - type: web
+  - type: worker
     name: infinity-trader-compiler
     plan: free
     env: python
-    healthCheckPath: /health
     buildCommand: "pip install -r backend/requirements.txt"
     startCommand: "cd backend && python compiler/worker.py"
     envVars:
