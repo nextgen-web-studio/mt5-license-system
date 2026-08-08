@@ -32,11 +32,12 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(db_order)
         return db_order
+    except HTTPException:
+        raise
     except Exception as e:
-        import traceback
-        error_msg = f"DB Error: {str(e)}\n{traceback.format_exc()}"
-        print(error_msg)
-        raise HTTPException(status_code=400, detail=error_msg)
+        import logging
+        logging.error(f"DB Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An internal server error occurred.")
 
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
 async def get_user_orders(user_id: int, db: AsyncSession = Depends(get_db)):
