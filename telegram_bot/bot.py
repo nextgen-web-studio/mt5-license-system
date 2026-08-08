@@ -157,6 +157,51 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Please use the /start menu to select an option.")
 
+async def mock_webhook(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # For testing only: mimics Razorpay webhook to activate license
+    if not context.args:
+        await update.message.reply_text("Usage: /mock_webhook <order_id>")
+        return
+        
+    order_id = context.args[0]
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    
+    await update.message.reply_text(f"Mocking payment for Order #{order_id}...")
+    
+    # 1. Update order status to paid
+    async with httpx.AsyncClient(verify=False) as client:
+        await client.get(f"{base_url}/orders/{order_id}/mock-pay")
+        
+    # 2. Get the order to get the mt5_id
+    async with httpx.AsyncClient(verify=False) as client:
+        # We need a quick way to get the order, but the webhook logic hits start-fulfillment directly.
+        # Let's hit the fulfillment directly with a dummy mt5_id (it will use the order's mt5_id internally in the new flow, actually we need to pass the MT5 ID in the request if the backend requires it).
+        pass
+        
+    # We can just construct a fake Razorpay webhook payload and POST it to /payments/webhook
+    payload = {
+        "event": "payment_link.paid",
+        "payload": {
+            "payment_link": {
+                "entity": {
+                    "reference_id": f"order_{order_id}"
+                }
+            },
+            "payment": {
+                "entity": {
+                    "id": "pay_mock123"
+                }
+            }
+        }
+    }
+    
+    async with httpx.AsyncClient(verify=False) as client:
+        resp = await client.post(f"{base_url}/payments/webhook", json=payload)
+        if resp.status_code == 200:
+            await update.message.reply_text("Webhook processed successfully! License should be compiling now.")
+        else:
+            await update.message.reply_text(f"Webhook error: {resp.text}")
+
 async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = context.user_data.get('db_user_id')
     if not user_id:
@@ -244,6 +289,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("licenses", licenses_command))
     application.add_handler(CommandHandler("downloads", downloads_command))
+    application.add_handler(CommandHandler("mock_webhook", mock_webhook))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
