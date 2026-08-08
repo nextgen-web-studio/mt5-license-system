@@ -152,6 +152,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Failed to generate payment link.")
             return
             
+        if "error" in payment:
+            await update.message.reply_text(f"❌ *Payment Error:* {payment['error']}", parse_mode="Markdown")
+            return
+            
         payment_url = payment['payment_link_url']
         keyboard = [[InlineKeyboardButton(f"💳 Pay ₹{amount}", url=payment_url)]]
         
