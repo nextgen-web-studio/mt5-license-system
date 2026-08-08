@@ -36,7 +36,7 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
         import traceback
         error_msg = f"DB Error: {str(e)}\n{traceback.format_exc()}"
         print(error_msg)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=error_msg)
 
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
 async def get_user_orders(user_id: int, db: AsyncSession = Depends(get_db)):
