@@ -30,6 +30,7 @@ class ProductResponse(ProductBase):
 class OrderBase(BaseModel):
     product_id: int
     order_type: str
+    mt5_id: Optional[str] = None
 
 class OrderCreate(OrderBase):
     user_id: int

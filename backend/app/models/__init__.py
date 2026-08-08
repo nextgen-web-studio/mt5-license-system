@@ -31,6 +31,7 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
     order_type = Column(String) # 'EA' or 'VPS'
+    mt5_id = Column(String, nullable=True) # captured before payment
     # pending, paid, compiling, ready, delivered, expired, cancelled
     status = Column(String, default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())

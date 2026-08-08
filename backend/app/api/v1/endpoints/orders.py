@@ -16,6 +16,7 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
         user_id=order.user_id,
         product_id=order.product_id,
         order_type=order.order_type,
+        mt5_id=order.mt5_id,
         status="pending"
     )
     db.add(db_order)

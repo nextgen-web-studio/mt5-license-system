@@ -36,16 +36,20 @@ async def get_products(product_type=None):
             logging.error(f"Error fetching products: {e}")
             return []
 
-async def create_order(user_id, product_id, order_type):
+async def create_order(user_id, product_id, order_type, mt5_id=None):
     async with httpx.AsyncClient() as client:
         try:
+            payload = {
+                "user_id": user_id,
+                "product_id": product_id,
+                "order_type": order_type
+            }
+            if mt5_id:
+                payload["mt5_id"] = mt5_id
+                
             response = await client.post(
                 f"{BASE_URL}/orders/",
-                json={
-                    "user_id": user_id,
-                    "product_id": product_id,
-                    "order_type": order_type
-                }
+                json=payload
             )
             response.raise_for_status()
             return response.json()

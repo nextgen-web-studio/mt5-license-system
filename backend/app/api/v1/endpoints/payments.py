@@ -96,7 +96,10 @@ async def razorpay_webhook(request: Request, db: AsyncSession = Depends(get_db))
                 bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
                 if bot_token:
                     if product.type == "EA":
-                        msg = "✅ *Payment Received!*\n\nPlease enter your **MT5 ID** to generate your license:"
+                        if order.mt5_id:
+                            msg = "✅ *Payment Received!*\n\n⏳ *Creating your License...*"
+                        else:
+                            msg = "✅ *Payment Received!*\n\nPlease enter your **MT5 ID** to generate your license:"
                     else:
                         msg = "✅ *Payment Received!*\n\n⏳ *Creating VPS...*\n\nAdmin has been notified and will provision your VPS shortly."
                         
@@ -106,6 +109,10 @@ async def razorpay_webhook(request: Request, db: AsyncSession = Depends(get_db))
                             json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                         )
                         
+                    if product.type == "EA" and order.mt5_id:
+                        async with httpx.AsyncClient(verify=False) as client:
+                            await client.post(f"http://localhost:8000/api/v1/orders/{order.id}/start-fulfillment", json={"mt5_id": order.mt5_id})
+                            
                     if product.type != "EA":
                         # Hit fulfillment without MT5 ID
                         async with httpx.AsyncClient(verify=False) as client:

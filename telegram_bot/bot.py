@@ -70,33 +70,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("Session expired. Please send /start again.")
             return
             
-        order = await create_order(user_id, product_id, p_type)
-        if not order:
-            await query.edit_message_text("Failed to create order.")
-            return
-            
-        products = await get_products()
-        product = next((p for p in products if p['id'] == product_id), None)
-        if not product:
-            await query.edit_message_text("Product not found.")
-            return
-            
-        amount = product['price']
-        payment = await create_payment(order['id'], amount)
-        if not payment:
-            await query.edit_message_text("Failed to generate payment link.")
-            return
-            
-        payment_url = payment['payment_link_url']
-        keyboard = [[InlineKeyboardButton(f"💳 Pay ₹{amount}", url=payment_url)]]
+        context.user_data['awaiting_mt5_id'] = True
+        context.user_data['pending_product_id'] = product_id
+        context.user_data['pending_p_type'] = p_type
         
-        await query.edit_message_text(
-            text=f"Order #{order['id']} created!\n\nPlease click the button below to complete your payment securely via Razorpay.\n\n*(For Testing: Since webhooks aren't configured yet, just type any MT5 ID here in the chat to simulate a successful payment!)*",
-            parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        prompt = "Please enter your **MT5 ID**:" if p_type == "EA" else "Please enter your desired **Identifier/Username** for the VPS:"
         
-        context.user_data['current_order_id'] = order['id']
+        try:
+            await query.edit_message_text(f"{prompt}", parse_mode="Markdown")
+        except Exception:
+            pass
             
     elif data == "main_menu" or data == "home":
         try:
@@ -125,31 +108,49 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
         return
 
-    user_id = context.user_data.get('db_user_id')
-    if not user_id:
-        await update.message.reply_text("Please use /start to register first.")
-        return
+    if context.user_data.get('awaiting_mt5_id'):
+        context.user_data['awaiting_mt5_id'] = False
+        mt5_id = text.strip()
         
-    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    
-    async with httpx.AsyncClient(verify=False) as client:
-        resp = await client.get(f"{base_url}/orders/user/{user_id}")
-        if resp.status_code == 200:
-            orders = resp.json()
-            # Find the most recent 'paid' EA order that hasn't been fulfilled
-            paid_order = next((o for o in sorted(orders, key=lambda x: x['id'], reverse=True) if o['status'] == 'paid' and o['order_type'] == 'EA'), None)
+        product_id = context.user_data.get('pending_product_id')
+        p_type = context.user_data.get('pending_p_type')
+        user_id = context.user_data.get('db_user_id')
+        
+        if not user_id:
+            await update.message.reply_text("Session expired. Please /start again.")
+            return
             
-            if paid_order:
-                order_id = paid_order['id']
-                await update.message.reply_text(f"⏳ *Creating License* for MT5 ID: `{text}`...", parse_mode="Markdown")
-                
-                start_resp = await client.post(f"{base_url}/orders/{order_id}/start-fulfillment", json={"mt5_id": text})
-                if start_resp.status_code == 200:
-                    await update.message.reply_text("📦 *Compiling EA...* (This takes a few seconds)", parse_mode="Markdown")
-                else:
-                    await update.message.reply_text(f"Error starting fulfillment: {start_resp.text}")
-                return
-                
+        await update.message.reply_text("Creating your order...")
+        
+        order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id)
+        if not order:
+            await update.message.reply_text("Failed to create order.")
+            return
+            
+        products = await get_products()
+        product = next((p for p in products if p['id'] == product_id), None)
+        if not product:
+            await update.message.reply_text("Product not found.")
+            return
+            
+        amount = product['price']
+        payment = await create_payment(order['id'], amount)
+        if not payment:
+            await update.message.reply_text("Failed to generate payment link.")
+            return
+            
+        payment_url = payment['payment_link_url']
+        keyboard = [[InlineKeyboardButton(f"💳 Pay ₹{amount}", url=payment_url)]]
+        
+        await update.message.reply_text(
+            text=f"Order #{order['id']} created with ID `{mt5_id}`!\n\nPlease click the button below to complete your payment securely via Razorpay.",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+        
+        context.user_data['current_order_id'] = order['id']
+        return
+
     await update.message.reply_text("Please use the /start menu to select an option.")
 
 async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
