@@ -121,51 +121,60 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['awaiting_mt5_id'] = False
         mt5_id = text.strip()
         
-        product_id = context.user_data.get('pending_product_id')
-        p_type = context.user_data.get('pending_p_type')
-        user_id = context.user_data.get('db_user_id')
-        
-        if not user_id:
-            await update.message.reply_text("Session expired. Please /start again.")
-            return
+        try:
+            product_id = context.user_data.get('pending_product_id')
+            p_type = context.user_data.get('pending_p_type')
+            user_id = context.user_data.get('db_user_id')
             
-        await update.message.reply_text("Creating your order...")
-        
-        order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id)
-        if not order:
-            await update.message.reply_text("Failed to create order.")
-            return
+            if not user_id:
+                await update.message.reply_text("Session expired. Please /start again.")
+                return
+                
+            await update.message.reply_text("Creating your order...")
             
-        if "error" in order:
-            await update.message.reply_text(f"❌ *Error:* {order['error']}", parse_mode="Markdown")
-            return
+            order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id)
+            if not order:
+                await update.message.reply_text("Failed to create order.")
+                return
+                
+            if "error" in order:
+                await update.message.reply_text(f"❌ *Error:* {order['error']}", parse_mode="Markdown")
+                return
+                
+            products = await get_products()
+            product = next((p for p in products if p['id'] == product_id), None)
+            if not product:
+                await update.message.reply_text("Product not found.")
+                return
+                
+            amount = product['price']
+            payment = await create_payment(order['id'], amount)
+            if not payment:
+                await update.message.reply_text("Failed to generate payment link.")
+                return
+                
+            if "error" in payment:
+                await update.message.reply_text(f"❌ *Payment Error:* {payment['error']}", parse_mode="Markdown")
+                return
+                
+            payment_url = payment.get('payment_link_url')
+            if not payment_url:
+                await update.message.reply_text(f"Unexpected payment response: {payment}")
+                return
+                
+            keyboard = [[InlineKeyboardButton(f"💳 Pay ₹{amount}", url=payment_url)]]
             
-        products = await get_products()
-        product = next((p for p in products if p['id'] == product_id), None)
-        if not product:
-            await update.message.reply_text("Product not found.")
-            return
+            await update.message.reply_text(
+                text=f"Order #{order['id']} created with ID `{mt5_id}`!\n\nPlease click the button below to complete your payment securely via Razorpay.",
+                parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
             
-        amount = product['price']
-        payment = await create_payment(order['id'], amount)
-        if not payment:
-            await update.message.reply_text("Failed to generate payment link.")
-            return
-            
-        if "error" in payment:
-            await update.message.reply_text(f"❌ *Payment Error:* {payment['error']}", parse_mode="Markdown")
-            return
-            
-        payment_url = payment['payment_link_url']
-        keyboard = [[InlineKeyboardButton(f"💳 Pay ₹{amount}", url=payment_url)]]
-        
-        await update.message.reply_text(
-            text=f"Order #{order['id']} created with ID `{mt5_id}`!\n\nPlease click the button below to complete your payment securely via Razorpay.",
-            parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
-        
-        context.user_data['current_order_id'] = order['id']
+            context.user_data['current_order_id'] = order['id']
+        except Exception as e:
+            import traceback
+            err = traceback.format_exc()
+            await update.message.reply_text(f"❌ *Bot Crash:* {str(e)}\n\n```\n{err}\n```", parse_mode="Markdown")
         return
 
     await update.message.reply_text("Please use the /start menu to select an option.")
