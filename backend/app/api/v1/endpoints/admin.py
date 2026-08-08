@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy import func
 
 from app.db.database import get_db
-from app.models import User, Order, Payment, CompileJob, Product, VpsOrder
+from app.models import User, Order, Payment, CompileJob, License, Product, VpsOrder
 
 router = APIRouter()
 
@@ -53,6 +53,40 @@ async def get_compiler_jobs(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CompileJob).order_by(CompileJob.created_at.desc()))
     jobs = result.scalars().all()
     return jobs
+
+@router.post("/jobs/{job_id}/retry")
+async def retry_job(job_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Reset a failed or stuck compile job back to 'pending' so the worker
+    can claim and process it again on the next poll cycle.
+    """
+    from fastapi import HTTPException
+    result = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+    if job.status not in ("failed", "processing"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job {job_id} is '{job.status}' — can only retry 'failed' or stuck 'processing' jobs"
+        )
+
+    previous_status = job.status
+    job.status       = "pending"
+    job.error_message = None
+    job.worker_id    = None
+    job.started_at   = None
+    job.completed_at = None
+
+    await db.commit()
+
+    return {
+        "status": "success",
+        "message": f"Job {job_id} reset from '{previous_status}' to 'pending'",
+        "job_id": job_id
+    }
 
 @router.get("/all_orders")
 async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):

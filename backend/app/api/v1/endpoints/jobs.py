@@ -8,7 +8,7 @@ import httpx
 from datetime import datetime
 
 from app.db.database import get_db
-from app.models import CompileJob, License, Order
+from app.models import CompileJob, License, Order, Product
 
 router = APIRouter()
 
@@ -71,18 +71,34 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
     job.started_at = datetime.utcnow()
     job.attempt_count = job.attempt_count + 1
     
-    # Get associated license for mt5_id
+    # Get associated license for mt5_id, expiry_date
     lic_res = await db.execute(select(License).filter(License.id == job.license_id))
     lic = lic_res.scalar_one_or_none()
-    
+
+    # Get Order → Product to resolve the plan name
+    prod = None
+    if lic:
+        ord_res = await db.execute(select(Order).filter(Order.id == lic.order_id))
+        ord_obj = ord_res.scalar_one_or_none()
+        if ord_obj:
+            prod_res = await db.execute(select(Product).filter(Product.id == ord_obj.product_id))
+            prod = prod_res.scalar_one_or_none()
+
     await db.commit()
-    
+
+    # Format expiry as YYYY-MM-DD for compile_ea()
+    expiry_str = None
+    if lic and lic.expiry_date:
+        expiry_str = lic.expiry_date.strftime("%Y-%m-%d")
+
     return {
         "status": "success",
         "job": {
             "job_id": job.id,
             "license_id": job.license_id,
-            "mt5_id": lic.mt5_id if lic else None
+            "mt5_id": lic.mt5_id if lic else None,
+            "expiry_date": expiry_str,
+            "plan": prod.name if prod else "standard"
         }
     }
 
