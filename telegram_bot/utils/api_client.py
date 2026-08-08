@@ -51,6 +51,10 @@ async def create_order(user_id, product_id, order_type, mt5_id=None):
                 f"{BASE_URL}/orders/",
                 json=payload
             )
+            
+            if response.status_code == 400:
+                return {"error": response.json().get("detail", "Bad Request")}
+                
             response.raise_for_status()
             return response.json()
         except Exception as e:

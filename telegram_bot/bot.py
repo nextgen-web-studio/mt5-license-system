@@ -127,6 +127,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Failed to create order.")
             return
             
+        if "error" in order:
+            await update.message.reply_text(f"❌ *Error:* {order['error']}", parse_mode="Markdown")
+            return
+            
         products = await get_products()
         product = next((p for p in products if p['id'] == product_id), None)
         if not product:

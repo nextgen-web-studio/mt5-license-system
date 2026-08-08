@@ -12,6 +12,14 @@ router = APIRouter()
 
 @router.post("/", response_model=OrderResponse)
 async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
+    if order.order_type == "EA" and order.mt5_id:
+        existing_license = await db.execute(select(License).filter(
+            License.mt5_id == order.mt5_id,
+            License.status == "active"
+        ))
+        if existing_license.scalars().first():
+            raise HTTPException(status_code=400, detail="This MT5 ID already has an active license.")
+            
     db_order = Order(
         user_id=order.user_id,
         product_id=order.product_id,
