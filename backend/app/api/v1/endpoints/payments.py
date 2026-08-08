@@ -67,6 +67,22 @@ async def razorpay_webhook(request: Request, db: AsyncSession = Depends(get_db))
             order.status = "paid"
             await db.commit()
             
+            # Extract payment_id if available in payload
+            payment_id = None
+            try:
+                payment_id = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("id")
+            except:
+                pass
+                
+            # Update payment record
+            pay_result = await db.execute(select(Payment).filter(Payment.order_id == order_id))
+            payment = pay_result.scalar_one_or_none()
+            if payment:
+                payment.status = "paid"
+                if payment_id:
+                    payment.payment_id = payment_id
+                await db.commit()
+            
             # Get user telegram_id
             user_result = await db.execute(select(User).filter(User.id == order.user_id))
             user = user_result.scalar_one_or_none()

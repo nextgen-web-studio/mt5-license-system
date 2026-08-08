@@ -35,7 +35,13 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     db_user = result.scalar_one_or_none()
     
     if db_user:
-        return db_user # Return existing if already registered
+        # Update name if provided
+        db_user.name = user.name
+        if user.username:
+            db_user.username = user.username
+        await db.commit()
+        await db.refresh(db_user)
+        return db_user
         
     db_user = User(**user.dict())
     db.add(db_user)

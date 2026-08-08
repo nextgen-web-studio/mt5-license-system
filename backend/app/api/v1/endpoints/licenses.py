@@ -99,3 +99,63 @@ async def download_license(license_id: int, db: AsyncSession = Depends(get_db)):
         filename=os.path.basename(license_obj.generated_filename),
         media_type='application/zip'
     )
+
+from datetime import timedelta
+import csv
+import io
+from fastapi.responses import StreamingResponse
+from app.models import User, Payment
+
+@router.delete("/{license_id}")
+async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(License).filter(License.id == license_id))
+    license_obj = result.scalar_one_or_none()
+    
+    if not license_obj:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    if not license_obj.expiry_date:
+        raise HTTPException(status_code=400, detail="License has no expiry date")
+        
+    now = datetime.utcnow()
+    days_expired = (now - license_obj.expiry_date).days
+    
+    if days_expired < 5:
+        raise HTTPException(status_code=400, detail="License must be expired for at least 5 days before deletion")
+        
+    await db.delete(license_obj)
+    await db.commit()
+    return {"status": "success", "message": "License deleted"}
+
+@router.get("/export/csv")
+async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
+    # Query: User.name, Order.product_id, License.mt5_id, Payment.razorpay_order_id (or payment_id)
+    # Join License -> User
+    # Join License -> Order -> Payment
+    
+    stmt = (
+        select(User.name, Order.product_id, License.mt5_id, Payment.payment_id)
+        .join(License, User.id == License.user_id)
+        .join(Order, License.order_id == Order.id)
+        .outerjoin(Payment, Order.id == Payment.order_id)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Customer Name", "Product ID", "License (MT5 ID)", "Razorpay ID"])
+    
+    for row in rows:
+        name = row[0] or "Unknown"
+        product_id = row[1]
+        mt5_id = row[2]
+        razorpay_id = row[3] or "N/A"
+        writer.writerow([name, product_id, mt5_id, razorpay_id])
+        
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=licenses_export.csv"}
+    )

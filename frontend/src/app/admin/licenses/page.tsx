@@ -1,10 +1,11 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Key, Shield, ShieldAlert, Loader2, Copy } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function LicensesPage() {
+  const queryClient = useQueryClient();
   const { data: licenses = [], isLoading, error } = useQuery({
     queryKey: ['admin-licenses'],
     queryFn: async () => {
@@ -13,8 +14,25 @@ export default function LicensesPage() {
     }
   });
 
+  const deleteLicenseMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.delete(`/api/v1/licenses/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-licenses'] });
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || "Failed to delete license");
+    }
+  });
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const handleDownloadCsv = () => {
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/licenses/export/csv`, '_blank');
   };
 
   if (isLoading) {
@@ -40,6 +58,13 @@ export default function LicensesPage() {
           <h1 className="text-2xl font-bold text-white tracking-tight">Licenses</h1>
           <p className="text-neutral-400 mt-1">Manage active MT4/MT5 product licenses.</p>
         </div>
+        <button
+          onClick={handleDownloadCsv}
+          className="flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors"
+        >
+          <Download size={18} className="mr-2" />
+          Download CSV
+        </button>
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
@@ -48,10 +73,10 @@ export default function LicensesPage() {
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4">License Key</th>
-                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Customer ID</th>
                 <th className="px-6 py-4">MT4/MT5 ID</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Generated On</th>
+                <th className="px-6 py-4">Expiry Date</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -63,41 +88,60 @@ export default function LicensesPage() {
                   </td>
                 </tr>
               ) : (
-                licenses.map((license: any) => (
-                  <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs text-neutral-300 flex items-center space-x-2">
-                      <Key size={14} className="text-indigo-400" />
-                      <span>{license.id || license.key}</span>
-                    </td>
-                    <td className="px-6 py-4 text-neutral-400">{license.customer || 'Guest'}</td>
-                    <td className="px-6 py-4 font-mono text-xs text-white">{license.mt5_id || 'N/A'}</td>
-                    <td className="px-6 py-4">
-                      {license.status === 'active' || license.status === 'valid' ? (
-                        <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
-                          <Shield size={14} />
-                          <span>Active</span>
-                        </span>
-                      ) : (
-                        <span className="flex items-center space-x-1 text-red-400 text-xs font-medium">
-                          <ShieldAlert size={14} />
-                          <span>{license.status || 'Expired'}</span>
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-neutral-400">
-                      {new Date(license.created_at || Date.now()).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => copyToClipboard(license.id || license.key)}
-                        className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
-                        title="Copy Key"
-                      >
-                        <Copy size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                licenses.map((license: any) => {
+                  const expiryDate = license.expiry_date ? new Date(license.expiry_date) : null;
+                  const now = new Date();
+                  const daysExpired = expiryDate ? (now.getTime() - expiryDate.getTime()) / (1000 * 3600 * 24) : 0;
+                  const canDelete = daysExpired >= 5;
+
+                  return (
+                    <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
+                      <td className="px-6 py-4 font-mono text-xs text-neutral-300 flex items-center space-x-2">
+                        <Key size={14} className="text-indigo-400" />
+                        <span>{license.id || license.key}</span>
+                      </td>
+                      <td className="px-6 py-4 text-neutral-400">{license.user_id || 'Guest'}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-white">{license.mt5_id || 'N/A'}</td>
+                      <td className="px-6 py-4">
+                        {license.status === 'active' || license.status === 'valid' ? (
+                          <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
+                            <Shield size={14} />
+                            <span>Active</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center space-x-1 text-red-400 text-xs font-medium">
+                            <ShieldAlert size={14} />
+                            <span>{license.status || 'Expired'}</span>
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-neutral-400">
+                        {expiryDate ? expiryDate.toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-2">
+                        <button 
+                          onClick={() => copyToClipboard(license.id || license.key)}
+                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
+                          title="Copy Key"
+                        >
+                          <Copy size={16} />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (confirm('Are you sure you want to delete this expired license?')) {
+                              deleteLicenseMutation.mutate(license.id);
+                            }
+                          }}
+                          disabled={!canDelete}
+                          className={`p-2 rounded transition-colors ${canDelete ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer' : 'text-neutral-600 cursor-not-allowed'}`}
+                          title={canDelete ? "Delete License" : "Cannot delete until 5 days after expiry"}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

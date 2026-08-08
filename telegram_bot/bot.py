@@ -24,17 +24,15 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    db_user = await register_user(
-        telegram_id=user.id, name=user.first_name, username=user.username, phone=None
+    
+    # Ask for full name explicitly
+    await update.message.reply_text(
+        f"Welcome to Infinity Trader!\n\nPlease enter your **Full Name** to register and continue:",
+        parse_mode="Markdown"
     )
-    if db_user:
-        context.user_data['db_user_id'] = db_user['id']
-
-    welcome_text = (
-        f"Hello {user.first_name}! Welcome to Infinity Trader.\n\n"
-        "Please select an option below:"
-    )
-    await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
+    context.user_data['awaiting_name'] = True
+    context.user_data['temp_telegram_id'] = user.id
+    context.user_data['temp_username'] = user.username
     return ConversationHandler.END
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -107,11 +105,31 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    
+    if context.user_data.get('awaiting_name'):
+        context.user_data['awaiting_name'] = False
+        tid = context.user_data.get('temp_telegram_id')
+        username = context.user_data.get('temp_username')
+        
+        db_user = await register_user(
+            telegram_id=tid, name=text, username=username, phone=None
+        )
+        if db_user:
+            context.user_data['db_user_id'] = db_user['id']
+            
+        welcome_text = (
+            f"Hello {text}! Welcome to Infinity Trader.\n\n"
+            "Please select an option below:"
+        )
+        await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
+        return
+
     user_id = context.user_data.get('db_user_id')
     if not user_id:
+        await update.message.reply_text("Please use /start to register first.")
         return
         
-    text = update.message.text
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     
     async with httpx.AsyncClient(verify=False) as client:
