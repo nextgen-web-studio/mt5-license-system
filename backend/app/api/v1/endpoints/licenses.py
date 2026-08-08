@@ -72,3 +72,30 @@ async def list_licenses(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(License).order_by(License.created_at.desc()))
     licenses = result.scalars().all()
     return licenses
+
+@router.get("/user/{user_id}", response_model=List[LicenseResponse])
+async def get_user_licenses(user_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(License).filter(License.user_id == user_id).order_by(License.created_at.desc()))
+    licenses = result.scalars().all()
+    return licenses
+
+from fastapi.responses import FileResponse
+import os
+
+@router.get("/{license_id}/download")
+async def download_license(license_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(License).filter(License.id == license_id))
+    license_obj = result.scalar_one_or_none()
+    
+    if not license_obj:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    if not license_obj.generated_filename or not os.path.exists(license_obj.generated_filename):
+        raise HTTPException(status_code=404, detail="Generated file not found on server")
+        
+    # Serve the file
+    return FileResponse(
+        path=license_obj.generated_filename,
+        filename=os.path.basename(license_obj.generated_filename),
+        media_type='application/zip'
+    )

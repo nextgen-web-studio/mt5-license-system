@@ -53,6 +53,11 @@ async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, db: Asy
         if not req.mt5_id:
             raise HTTPException(status_code=400, detail="mt5_id is required for EA fulfillment")
             
+        # Check for MT5 ID uniqueness
+        existing_license = await db.execute(select(License).filter(License.mt5_id == req.mt5_id))
+        if existing_license.scalars().first():
+            raise HTTPException(status_code=400, detail="This MT5 ID is already in use by a license.")
+            
         expiry_date = datetime.utcnow() + timedelta(days=product.duration * 30)
         
         db_license = License(
@@ -92,6 +97,26 @@ async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, db: Asy
             status="unread"
         )
         db.add(notification)
+        await db.commit()
+        
+        # Notify Admin via Telegram
+        import os
+        import httpx
+        admin_chat_id = os.getenv("ADMIN_TELEGRAM_ID")
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if admin_chat_id and bot_token:
+            async with httpx.AsyncClient(verify=False) as client:
+                try:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={
+                            "chat_id": admin_chat_id,
+                            "text": f"🚨 *New VPS Order!*\n\nOrder #{order.id} needs VPS provisioning for {product.duration} months.",
+                            "parse_mode": "Markdown"
+                        }
+                    )
+                except Exception as e:
+                    print(f"Failed to send admin notification: {e}")
         
         return {"status": "success", "message": "VPS order created and admin notified"}
 

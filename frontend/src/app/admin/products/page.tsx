@@ -8,6 +8,7 @@ import api from '@/lib/api';
 export default function ProductsPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
   
   // Form State
   const [name, setName] = useState('');
@@ -35,12 +36,43 @@ export default function ProductsPage() {
     }
   });
 
-  const openModal = () => {
-    setName('');
-    setType('EA');
-    setPrice('');
-    setDuration('1');
-    setDescription('');
+  const updateProductMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      const { data } = await api.put(`/api/v1/products/${editingProductId}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      closeModal();
+    }
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.delete(`/api/v1/products/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+    }
+  });
+
+  const openModal = (product: any = null) => {
+    if (product) {
+      setEditingProductId(product.id);
+      setName(product.name);
+      setType(product.type);
+      setPrice(product.price.toString());
+      setDuration(product.duration.toString());
+      setDescription(product.description || '');
+    } else {
+      setEditingProductId(null);
+      setName('');
+      setType('EA');
+      setPrice('');
+      setDuration('1');
+      setDescription('');
+    }
     setIsModalOpen(true);
   };
 
@@ -50,14 +82,20 @@ export default function ProductsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createProductMutation.mutate({
+    const payload = {
       name,
       type,
       price: parseFloat(price),
       duration: parseInt(duration, 10),
       description,
       active: true
-    });
+    };
+    
+    if (editingProductId) {
+      updateProductMutation.mutate(payload);
+    } else {
+      createProductMutation.mutate(payload);
+    }
   };
 
   if (isLoading) {
@@ -138,10 +176,20 @@ export default function ProductsPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <button className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit">
+                      <button 
+                        onClick={() => openModal(product)}
+                        className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit"
+                      >
                         <Edit size={16} />
                       </button>
-                      <button className="p-2 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                      <button 
+                        onClick={() => {
+                          if (confirm('Are you sure you want to delete this product?')) {
+                            deleteProductMutation.mutate(product.id);
+                          }
+                        }}
+                        className="p-2 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete"
+                      >
                         <Trash2 size={16} />
                       </button>
                     </td>
@@ -159,8 +207,17 @@ export default function ProductsPage() {
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center">
-                <Plus size={18} className="mr-2 text-blue-400" />
-                Add New Product
+                {editingProductId ? (
+                  <>
+                    <Edit size={18} className="mr-2 text-blue-400" />
+                    Edit Product
+                  </>
+                ) : (
+                  <>
+                    <Plus size={18} className="mr-2 text-blue-400" />
+                    Add New Product
+                  </>
+                )}
               </h3>
               <button 
                 onClick={closeModal}
@@ -245,18 +302,18 @@ export default function ProductsPage() {
                 </button>
                 <button 
                   type="submit"
-                  disabled={createProductMutation.isPending}
+                  disabled={createProductMutation.isPending || updateProductMutation.isPending}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium flex items-center transition-colors"
                 >
-                  {createProductMutation.isPending ? (
+                  {createProductMutation.isPending || updateProductMutation.isPending ? (
                     <>
                       <Loader2 size={16} className="animate-spin mr-2" />
-                      Creating...
+                      {editingProductId ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
                     <>
                       <Check size={16} className="mr-2" />
-                      Create Product
+                      {editingProductId ? 'Update Product' : 'Create Product'}
                     </>
                   )}
                 </button>

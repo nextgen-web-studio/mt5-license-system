@@ -134,6 +134,62 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
     await update.message.reply_text("Please use the /start menu to select an option.")
 
+async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = context.user_data.get('db_user_id')
+    if not user_id:
+        await update.message.reply_text("Please use /start to initialize your session.")
+        return
+        
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    async with httpx.AsyncClient(verify=False) as client:
+        resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+        if resp.status_code == 200:
+            licenses = resp.json()
+            if not licenses:
+                await update.message.reply_text("You don't have any licenses yet.")
+                return
+                
+            text = "🔑 *Your MT5 Licenses:*\n\n"
+            for l in licenses:
+                text += f"• *MT5 ID:* `{l['mt5_id']}`\n"
+                text += f"  Status: {l['status']}\n"
+                text += f"  Expires: {l['expiry_date'][:10] if l['expiry_date'] else 'N/A'}\n\n"
+            
+            await update.message.reply_text(text, parse_mode="Markdown")
+        else:
+            await update.message.reply_text("Failed to fetch licenses.")
+
+async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = context.user_data.get('db_user_id')
+    if not user_id:
+        await update.message.reply_text("Please use /start to initialize your session.")
+        return
+        
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    await update.message.reply_text("Fetching your downloads...")
+    
+    async with httpx.AsyncClient(verify=False) as client:
+        resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+        if resp.status_code == 200:
+            licenses = resp.json()
+            active_licenses = [l for l in licenses if l['status'] == 'active']
+            if not active_licenses:
+                await update.message.reply_text("You don't have any active EA licenses to download.")
+                return
+                
+            for l in active_licenses:
+                download_url = f"{base_url}/licenses/{l['id']}/download"
+                file_resp = await client.get(download_url)
+                if file_resp.status_code == 200:
+                    import io
+                    doc = io.BytesIO(file_resp.content)
+                    doc.name = f"InfinityTrader_{l['mt5_id']}.zip"
+                    await update.message.reply_document(document=doc, caption=f"📦 EA for MT5 ID: {l['mt5_id']}")
+                else:
+                    await update.message.reply_text(f"Could not retrieve file for MT5 ID {l['mt5_id']}. It might still be compiling.")
+        else:
+            await update.message.reply_text("Failed to fetch downloads.")
+
 class DummyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -153,6 +209,8 @@ def main():
     application = ApplicationBuilder().token(token).build()
     
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("licenses", licenses_command))
+    application.add_handler(CommandHandler("downloads", downloads_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
