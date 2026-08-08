@@ -1,16 +1,37 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download } from 'lucide-react';
+import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function LicensesPage() {
   const queryClient = useQueryClient();
+  const [editingLicense, setEditingLicense] = useState<any>(null);
+  
   const { data: licenses = [], isLoading, error } = useQuery({
     queryKey: ['admin-licenses'],
     queryFn: async () => {
       const { data } = await api.get('/api/v1/licenses');
       return data;
+    }
+  });
+
+  const updateLicenseMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await api.put(`/api/v1/licenses/${data.id}`, {
+        mt5_id: data.mt5_id,
+        status: data.status,
+        expiry_date: data.expiry_date ? new Date(data.expiry_date).toISOString() : null
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-licenses'] });
+      setEditingLicense(null);
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || "Failed to update license");
     }
   });
 
@@ -127,6 +148,13 @@ export default function LicensesPage() {
                           <Copy size={16} />
                         </button>
                         <button 
+                          onClick={() => setEditingLicense(license)}
+                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
+                          title="Edit License"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
                           onClick={() => {
                             if (confirm('Are you sure you want to delete this expired license?')) {
                               deleteLicenseMutation.mutate(license.id);
@@ -147,6 +175,84 @@ export default function LicensesPage() {
           </table>
         </div>
       </div>
+      
+      {/* Edit Modal */}
+      {editingLicense && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl max-w-md w-full overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-neutral-800">
+              <h2 className="font-semibold text-white">Edit License</h2>
+              <button 
+                onClick={() => setEditingLicense(null)}
+                className="text-neutral-400 hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateLicenseMutation.mutate(editingLicense);
+              }}
+              className="p-4 space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">MT5 ID</label>
+                <input
+                  type="text"
+                  required
+                  value={editingLicense.mt5_id || ''}
+                  onChange={(e) => setEditingLicense({...editingLicense, mt5_id: e.target.value})}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Status</label>
+                <select
+                  value={editingLicense.status}
+                  onChange={(e) => setEditingLicense({...editingLicense, status: e.target.value})}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="expired">Expired</option>
+                  <option value="generating">Generating</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Expiry Date</label>
+                <input
+                  type="date"
+                  value={editingLicense.expiry_date ? editingLicense.expiry_date.split('T')[0] : ''}
+                  onChange={(e) => setEditingLicense({...editingLicense, expiry_date: e.target.value})}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingLicense(null)}
+                  className="px-4 py-2 text-neutral-400 hover:text-white transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateLicenseMutation.isPending}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center"
+                >
+                  {updateLicenseMutation.isPending && <Loader2 size={16} className="animate-spin mr-2" />}
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

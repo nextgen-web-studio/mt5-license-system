@@ -25,7 +25,33 @@ class LicenseCreate(BaseModel):
     order_id: int
     mt5_id: str
 
+from typing import Optional
+
+class LicenseUpdate(BaseModel):
+    mt5_id: Optional[str] = None
+    status: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+
 router = APIRouter()
+
+@router.put("/{license_id}", response_model=LicenseResponse)
+async def update_license(license_id: int, update_data: LicenseUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(License).filter(License.id == license_id))
+    license_obj = result.scalar_one_or_none()
+    
+    if not license_obj:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    if update_data.mt5_id is not None:
+        license_obj.mt5_id = update_data.mt5_id
+    if update_data.status is not None:
+        license_obj.status = update_data.status
+    if update_data.expiry_date is not None:
+        license_obj.expiry_date = update_data.expiry_date
+        
+    await db.commit()
+    await db.refresh(license_obj)
+    return license_obj
 
 @router.post("/", response_model=LicenseResponse)
 async def generate_license(license_in: LicenseCreate, db: AsyncSession = Depends(get_db)):
