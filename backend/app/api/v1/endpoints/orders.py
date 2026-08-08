@@ -89,14 +89,23 @@ async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, db: Asy
         
         compile_job = CompileJob(
             license_id=db_license.id,
-            status="pending"
+            status="completed" # SIMULATED
         )
         db.add(compile_job)
         
-        order.status = "compiling"
+        # SIMULATE COMPILER
+        import zipfile
+        import os
+        os.makedirs("downloads", exist_ok=True)
+        filename = f"downloads/EA_License_{req.mt5_id}.zip"
+        with zipfile.ZipFile(filename, 'w') as zf:
+            zf.writestr(f"infinity_trader_{req.mt5_id}.ex5", b"Dummy EA Content for MT5 ID: " + req.mt5_id.encode('utf-8'))
+        
+        db_license.generated_filename = filename
+        order.status = "delivered"
         await db.commit()
         
-        return {"status": "success", "message": "License created and compile job queued", "license_id": db_license.id}
+        return {"status": "success", "message": "License created and compiled automatically", "license_id": db_license.id}
         
     elif order.order_type == "VPS":
         vps_order = VpsOrder(
