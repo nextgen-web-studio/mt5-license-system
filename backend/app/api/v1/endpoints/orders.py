@@ -12,25 +12,31 @@ router = APIRouter()
 
 @router.post("/", response_model=OrderResponse)
 async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
-    if order.order_type == "EA" and order.mt5_id:
-        existing_license = await db.execute(select(License).filter(
-            License.mt5_id == order.mt5_id,
-            License.status == "active"
-        ))
-        if existing_license.scalars().first():
-            raise HTTPException(status_code=400, detail="This MT5 ID already has an active license.")
-            
-    db_order = Order(
-        user_id=order.user_id,
-        product_id=order.product_id,
-        order_type=order.order_type,
-        mt5_id=order.mt5_id,
-        status="pending"
-    )
-    db.add(db_order)
-    await db.commit()
-    await db.refresh(db_order)
-    return db_order
+    try:
+        if order.order_type == "EA" and order.mt5_id:
+            existing_license = await db.execute(select(License).filter(
+                License.mt5_id == order.mt5_id,
+                License.status == "active"
+            ))
+            if existing_license.scalars().first():
+                raise HTTPException(status_code=400, detail="This MT5 ID already has an active license.")
+                
+        db_order = Order(
+            user_id=order.user_id,
+            product_id=order.product_id,
+            order_type=order.order_type,
+            mt5_id=order.mt5_id,
+            status="pending"
+        )
+        db.add(db_order)
+        await db.commit()
+        await db.refresh(db_order)
+        return db_order
+    except Exception as e:
+        import traceback
+        error_msg = f"DB Error: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
 async def get_user_orders(user_id: int, db: AsyncSession = Depends(get_db)):
