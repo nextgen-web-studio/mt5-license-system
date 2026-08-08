@@ -127,25 +127,62 @@ async def download_license(license_id: int, db: AsyncSession = Depends(get_db)):
     if not license_obj:
         raise HTTPException(status_code=404, detail="License not found")
         
-    filename = license_obj.generated_filename
-    if not filename or not os.path.exists(filename):
-        # MOCK COMPILATION FALLBACK FOR STUCK LICENSES
-        import zipfile
-        os.makedirs("downloads", exist_ok=True)
-        filename = f"downloads/EA_License_{license_obj.mt5_id}.zip"
-        with zipfile.ZipFile(filename, 'w') as zf:
-            zf.writestr(f"infinity_trader_{license_obj.mt5_id}.ex5", b"Dummy EA Content for MT5 ID: " + license_obj.mt5_id.encode('utf-8'))
-            
-        license_obj.generated_filename = filename
-        license_obj.status = "active"
-        await db.commit()
+    file_path = license_obj.generated_filename
+    if not file_path:
+        raise HTTPException(status_code=400, detail="License file not generated yet")
         
-    # Serve the file
-    return FileResponse(
-        path=filename,
-        filename=os.path.basename(filename),
-        media_type='application/zip'
-    )
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_SECRET_KEY")
+    
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+        
+    try:
+        from supabase import create_client
+        supabase = create_client(supabase_url, supabase_key)
+        
+        # We can either stream it or generate a signed URL and redirect.
+        # Generating a public URL or signed URL is easiest.
+        bucket_name = "licenses"
+        url = supabase.storage.from_(bucket_name).get_public_url(file_path)
+        
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch license file: {e}")
+
+@router.get("/{license_id}/delivery-info")
+async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db)):
+    # Returns telegram_id, mt5_id, and download_url
+    result = await db.execute(select(License).filter(License.id == license_id))
+    lic = result.scalar_one_or_none()
+    if not lic:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    usr_res = await db.execute(select(User).filter(User.id == lic.user_id))
+    usr = usr_res.scalar_one_or_none()
+    if not usr:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    # Get supabase URL
+    file_path = lic.generated_filename
+    url = ""
+    if file_path:
+        try:
+            supabase_url = os.getenv("SUPABASE_URL")
+            supabase_key = os.getenv("SUPABASE_SECRET_KEY")
+            from supabase import create_client
+            supabase = create_client(supabase_url, supabase_key)
+            url = supabase.storage.from_("licenses").get_public_url(file_path)
+        except:
+            pass
+            
+    return {
+        "telegram_id": usr.telegram_id,
+        "mt5_id": lic.mt5_id,
+        "download_url": url
+    }
 
 from datetime import timedelta
 import csv

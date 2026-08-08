@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
+from typing import List, Optional
 import os
 import uuid
+import httpx
 from datetime import datetime
 
 from app.db.database import get_db
@@ -11,17 +12,26 @@ from app.models import CompileJob, License, Order
 
 router = APIRouter()
 
+def verify_worker_api_key(infinity_worker_api_key: Optional[str] = Header(None)):
+    expected_key = os.getenv("INFINITY_WORKER_API_KEY")
+    if not expected_key:
+        # If no key configured on server, reject all for safety
+        raise HTTPException(status_code=500, detail="Server missing worker API key configuration")
+    if not infinity_worker_api_key or infinity_worker_api_key != expected_key:
+        raise HTTPException(status_code=401, detail="Invalid worker API key")
+    return infinity_worker_api_key
+
 @router.get("/pending")
-async def get_pending_jobs(db: AsyncSession = Depends(get_db)):
+async def get_pending_jobs(db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
     """
-    Windows Worker polls this endpoint to get pending compilation jobs.
+    Optional: Just list pending jobs for debugging. 
+    Workers should prefer calling POST /claim directly.
     """
     result = await db.execute(select(CompileJob).filter(CompileJob.status == "pending").limit(10))
     jobs = result.scalars().all()
     
     response_jobs = []
     for job in jobs:
-        # Get associated license to know what MT5 ID to compile for
         lic_res = await db.execute(select(License).filter(License.id == job.license_id))
         lic = lic_res.scalar_one_or_none()
         if lic:
@@ -34,71 +44,117 @@ async def get_pending_jobs(db: AsyncSession = Depends(get_db)):
             
     return response_jobs
 
-@router.post("/{job_id}/claim")
-async def claim_job(job_id: int, worker_id: str, db: AsyncSession = Depends(get_db)):
+from pydantic import BaseModel
+class ClaimRequest(BaseModel):
+    worker_id: str
+
+@router.post("/claim")
+async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
     """
-    Worker claims a job so no other worker picks it up.
+    Atomically claim a single pending job.
     """
-    result = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
+    # Select ONE pending job FOR UPDATE SKIP LOCKED
+    stmt = (
+        select(CompileJob)
+        .filter(CompileJob.status == "pending")
+        .with_for_update(skip_locked=True)
+        .limit(1)
+    )
+    result = await db.execute(stmt)
     job = result.scalar_one_or_none()
     
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-        
-    if job.status != "pending":
-        raise HTTPException(status_code=400, detail="Job is not pending")
+        return {"status": "empty", "message": "No pending jobs available"}
         
     job.status = "processing"
-    job.worker_id = worker_id
+    job.worker_id = req.worker_id
     job.started_at = datetime.utcnow()
+    job.attempt_count = job.attempt_count + 1
+    
+    # Get associated license for mt5_id
+    lic_res = await db.execute(select(License).filter(License.id == job.license_id))
+    lic = lic_res.scalar_one_or_none()
+    
     await db.commit()
-    return {"status": "success", "message": "Job claimed"}
+    
+    return {
+        "status": "success",
+        "job": {
+            "job_id": job.id,
+            "license_id": job.license_id,
+            "mt5_id": lic.mt5_id if lic else None
+        }
+    }
+
+async def notify_telegram_bot(license_id: int):
+    """
+    Pings the internal webhook of the Telegram bot to notify it to send the file.
+    """
+    bot_webhook_url = os.getenv("BOT_WEBHOOK_URL", "http://localhost:8080/internal/delivery")
+    try:
+        async with httpx.AsyncClient(verify=False) as client:
+            await client.post(bot_webhook_url, json={"license_id": license_id})
+    except Exception as e:
+        print(f"Failed to notify Telegram bot: {e}")
 
 @router.post("/{job_id}/upload")
-async def upload_compiled_file(job_id: int, file: UploadFile = File(...), db: AsyncSession = Depends(get_db)):
+async def upload_compiled_file(
+    job_id: int, 
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...), 
+    db: AsyncSession = Depends(get_db), 
+    api_key: str = Depends(verify_worker_api_key)
+):
     """
-    Worker uploads the compiled .ex5 file (zipped).
+    Worker uploads the compiled .ex5 file.
     """
+    if not file.filename.endswith('.ex5') and not file.filename.endswith('.zip'):
+        raise HTTPException(status_code=400, detail="Only .ex5 or .zip files allowed")
+
+    # We do not use skip_locked here because we specifically want this exact job
     result = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
     job = result.scalar_one_or_none()
     
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
         
-    # Read file
-    content = await file.read()
-    
-    # Save locally (Temporary/Ephemeral on Render)
-    os.makedirs("downloads", exist_ok=True)
-    filename = f"downloads/EA_License_Job_{job.id}.zip"
-    with open(filename, "wb") as f:
-        f.write(content)
+    if job.status != "processing":
+        raise HTTPException(status_code=400, detail="Job is not in processing state")
         
-    # Attempt to upload to Supabase if configured (Persistent)
+    content = await file.read()
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="File is empty")
+        
     supabase_url = os.getenv("SUPABASE_URL")
     supabase_key = os.getenv("SUPABASE_SECRET_KEY")
-    if supabase_url and supabase_key:
-        try:
-            from supabase import create_client
-            supabase = create_client(supabase_url, supabase_key)
-            bucket_name = "licenses"
-            # Ensure bucket exists or just upload
-            file_path = f"ea_{job.id}_{uuid.uuid4().hex[:8]}.zip"
-            supabase.storage.from_(bucket_name).upload(file_path, content)
-            
-            # Get public URL
-            public_url = supabase.storage.from_(bucket_name).get_public_url(file_path)
-            # You could save public_url to the DB here if needed
-        except Exception as e:
-            print(f"Failed to upload to Supabase: {e}")
-            
-    # Update Job & License & Order
-    job.status = "completed"
     
+    if not supabase_url or not supabase_key:
+        raise HTTPException(status_code=500, detail="Supabase not configured on server")
+        
+    try:
+        from supabase import create_client
+        supabase = create_client(supabase_url, supabase_key)
+        bucket_name = "licenses"
+        
+        # licenses/{license_id}/{job_id}/bot.ex5
+        ext = ".zip" if file.filename.endswith('.zip') else ".ex5"
+        file_path = f"{job.license_id}/{job.id}/bot{ext}"
+        
+        supabase.storage.from_(bucket_name).upload(file_path, content)
+        
+    except Exception as e:
+        print(f"Failed to upload to Supabase: {e}")
+        raise HTTPException(status_code=500, detail=f"Storage error: {e}")
+            
+    # Update Job
+    job.status = "completed"
+    job.completed_at = datetime.utcnow()
+    
+    # Update License & Order
     lic_res = await db.execute(select(License).filter(License.id == job.license_id))
     lic = lic_res.scalar_one_or_none()
     if lic:
-        lic.generated_filename = filename
+        lic.generated_filename = file_path # Save the Supabase path
         lic.status = "active"
         
         ord_res = await db.execute(select(Order).filter(Order.id == lic.order_id))
@@ -106,5 +162,34 @@ async def upload_compiled_file(job_id: int, file: UploadFile = File(...), db: As
         if ord_obj:
             ord_obj.status = "delivered"
             
+    await db.commit()
+    
+    # Trigger background push to Telegram
+    background_tasks.add_task(notify_telegram_bot, job.license_id)
+    
+    return {"status": "success", "message": "File uploaded and completed"}
+
+class FailRequest(BaseModel):
+    worker_id: str
+    error_message: str
+
+@router.post("/{job_id}/fail")
+async def fail_job(job_id: int, req: FailRequest, db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
+    """
+    Worker reports a compilation failure.
+    """
+    result = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
+    job = result.scalar_one_or_none()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    if job.status != "processing":
+        raise HTTPException(status_code=400, detail="Job is not in processing state")
+        
+    job.status = "failed"
+    job.error_message = req.error_message
+    job.completed_at = datetime.utcnow()
+    
     await db.commit()
     return {"status": "success"}

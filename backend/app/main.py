@@ -49,6 +49,9 @@ async def run_migrations():
             await session.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS mt5_id VARCHAR"))
             await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS worker_id VARCHAR"))
             await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE"))
+            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP WITH TIME ZONE"))
+            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS error_message TEXT"))
+            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS attempt_count INTEGER DEFAULT 0"))
             await session.commit()
             return {"status": "success", "message": "Successfully ran migrations."}
     except Exception as e:

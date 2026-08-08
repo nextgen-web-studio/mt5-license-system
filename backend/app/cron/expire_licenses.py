@@ -24,7 +24,29 @@ async def run_expiration_check():
         result = await db.execute(select(License).filter(License.status == "active"))
         licenses = result.scalars().all()
         
+        # 0. Stale Job Recovery
         now = datetime.utcnow()
+        stale_threshold = now - timedelta(minutes=15)
+        stale_jobs_result = await db.execute(
+            select(CompileJob)
+            .filter(CompileJob.status == "processing")
+            .filter(CompileJob.started_at < stale_threshold)
+        )
+        stale_jobs = stale_jobs_result.scalars().all()
+        recovered_count = 0
+        for job in stale_jobs:
+            if job.attempt_count >= 3:
+                job.status = "failed"
+                job.error_message = "Max attempts reached after stale recovery"
+            else:
+                job.status = "pending"
+                job.worker_id = None
+                job.started_at = None
+            recovered_count += 1
+        
+        if recovered_count > 0:
+            await db.commit()
+            print(f"[{datetime.utcnow()}] Recovered {recovered_count} stale compile jobs.")
         notified_count = 0
         expired_count = 0
         

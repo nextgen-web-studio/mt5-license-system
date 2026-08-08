@@ -86,8 +86,11 @@ async def create_payment(order_id, amount):
                     "amount": amount
                 }
             )
+            if response.status_code >= 400:
+                return {"error": f"Payment API Error {response.status_code}: {response.text}"}
+                
             response.raise_for_status()
             return response.json()
         except Exception as e:
             logging.error(f"Error creating payment: {e}")
-            return None
+            return {"error": f"Payment Connection Error: {str(e)}"}

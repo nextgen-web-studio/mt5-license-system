@@ -281,18 +281,81 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text("Failed to fetch downloads.")
 
+import json
+
 class DummyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
         self.end_headers()
         self.wfile.write(b"OK")
+        
+    def do_POST(self):
+        if self.path == "/internal/delivery":
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                license_id = data.get('license_id')
+                if license_id:
+                    # We need to trigger an async task to send the document
+                    # Since we are in a sync thread, we use asyncio.run_coroutine_threadsafe if we had the event loop
+                    # But the simplest way is to use a background thread and requests or httpx to fetch the document
+                    # and send it via Telegram API directly.
+                    threading.Thread(target=self.send_delivery, args=(license_id,), daemon=True).start()
+                    
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+            except Exception as e:
+                logging.error(f"Internal delivery error: {e}")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"Error")
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def send_delivery(self, license_id):
+        import asyncio
+        asyncio.run(self.async_send_delivery(license_id))
+        
+    async def async_send_delivery(self, license_id):
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        token = os.getenv("TELEGRAM_BOT_TOKEN")
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                resp = await client.get(f"{base_url}/licenses/{license_id}/delivery-info")
+                if resp.status_code == 200:
+                    info = resp.json()
+                    chat_id = info.get("telegram_id")
+                    mt5_id = info.get("mt5_id")
+                    download_url = info.get("download_url")
+                    
+                    if chat_id and download_url:
+                        # Send file via telegram
+                        # Since it's a URL to a zip, we can just send the URL or download and send
+                        # Supabase public URLs can be sent as documents to Telegram directly!
+                        msg = f"✅ *Compilation Complete!*\n\nYour EA for MT5 ID `{mt5_id}` is ready."
+                        await client.post(
+                            f"https://api.telegram.org/bot{token}/sendMessage",
+                            json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}
+                        )
+                        
+                        await client.post(
+                            f"https://api.telegram.org/bot{token}/sendDocument",
+                            json={"chat_id": chat_id, "document": download_url, "caption": f"📦 InfinityTrader_{mt5_id}.ex5"}
+                        )
+        except Exception as e:
+            logging.error(f"Delivery failed: {e}")
 
 def start_dummy_server():
     port = int(os.environ.get("PORT", 8080))
     server = HTTPServer(("0.0.0.0", port), DummyHandler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    logging.info(f"Dummy web server started on port {port}")
+    logging.info(f"Webhook server started on port {port}")
 
 from telegram import BotCommand
 
