@@ -15,18 +15,16 @@ branch_labels = None
 depends_on = None
 
 def upgrade() -> None:
-    # Add mt5_id to orders if it doesn't exist (handled gracefully via raw SQL if needed, but Alembic usually uses add_column)
-    # Since sqlite doesn't support ADD COLUMN IF NOT EXISTS easily, and postgres does, 
-    # but we can just use standard op.add_column and catch exceptions or just let it run.
-    # To be perfectly safe across environments (some might have it from manual ALTER):
     conn = op.get_bind()
+    inspector = sa.inspect(conn)
     
     # Check if mt5_id exists in orders
-    if not conn.dialect.has_column(conn, 'orders', 'mt5_id'):
+    if 'mt5_id' not in [c['name'] for c in inspector.get_columns('orders')]:
         op.add_column('orders', sa.Column('mt5_id', sa.String(), nullable=True))
         
     # Check if worker_id exists in compile_jobs
-    if not conn.dialect.has_column(conn, 'compile_jobs', 'worker_id'):
+    compile_jobs_cols = [c['name'] for c in inspector.get_columns('compile_jobs')]
+    if 'worker_id' not in compile_jobs_cols:
         op.add_column('compile_jobs', sa.Column('worker_id', sa.String(), nullable=True))
         op.add_column('compile_jobs', sa.Column('started_at', sa.DateTime(timezone=True), nullable=True))
         op.add_column('compile_jobs', sa.Column('completed_at', sa.DateTime(timezone=True), nullable=True))
@@ -35,11 +33,13 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     conn = op.get_bind()
+    inspector = sa.inspect(conn)
     
-    if conn.dialect.has_column(conn, 'orders', 'mt5_id'):
+    if 'mt5_id' in [c['name'] for c in inspector.get_columns('orders')]:
         op.drop_column('orders', 'mt5_id')
         
-    if conn.dialect.has_column(conn, 'compile_jobs', 'worker_id'):
+    compile_jobs_cols = [c['name'] for c in inspector.get_columns('compile_jobs')]
+    if 'worker_id' in compile_jobs_cols:
         op.drop_column('compile_jobs', 'worker_id')
         op.drop_column('compile_jobs', 'started_at')
         op.drop_column('compile_jobs', 'completed_at')
