@@ -67,11 +67,14 @@ async def create_order(user_id, product_id, order_type, mt5_id=None):
             if response.status_code == 400:
                 return {"error": response.json().get("detail", "Bad Request")}
                 
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+                
             response.raise_for_status()
             return response.json()
         except Exception as e:
             logging.error(f"Error creating order: {e}")
-            return None
+            return {"error": f"Connection Error: {str(e)}"}
 
 async def create_payment(order_id, amount):
     async with httpx.AsyncClient() as client:
