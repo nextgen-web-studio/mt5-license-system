@@ -23,6 +23,18 @@ async def register_user(telegram_id, name, username, phone=None):
             logging.error(f"Error registering user: {e}")
             return None
 
+async def get_user(telegram_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(f"{BASE_URL}/users/{telegram_id}")
+            if response.status_code == 404:
+                return None
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error fetching user: {e}")
+            return None
+
 async def get_products(product_type=None):
     async with httpx.AsyncClient() as client:
         try:

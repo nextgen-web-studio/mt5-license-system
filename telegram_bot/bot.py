@@ -16,7 +16,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
 
 from keyboards.menu import get_main_menu_keyboard
-from utils.api_client import register_user, get_products, create_order, create_payment
+from utils.api_client import register_user, get_products, create_order, create_payment, get_user
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
@@ -25,6 +25,15 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     
+    db_user = await get_user(str(user.id))
+    if db_user:
+        context.user_data['db_user_id'] = db_user['id']
+        await update.message.reply_text(
+            f"Welcome back, {db_user['name']}!\n\nPlease select an option below:",
+            reply_markup=get_main_menu_keyboard()
+        )
+        return ConversationHandler.END
+        
     # Ask for full name explicitly
     await update.message.reply_text(
         f"Welcome to Infinity Trader!\n\nPlease enter your **Full Name** to register and continue:",
