@@ -110,13 +110,15 @@ async def razorpay_webhook(request: Request, db: AsyncSession = Depends(get_db))
                             json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                         )
                         
+                    base_url = str(request.base_url).rstrip('/')
+                    
                     if product.type == "EA" and order.mt5_id:
                         async with httpx.AsyncClient(verify=False) as client:
-                            await client.post(f"http://localhost:8000/api/v1/orders/{order.id}/start-fulfillment", json={"mt5_id": order.mt5_id})
+                            await client.post(f"{base_url}/api/v1/orders/{order.id}/start-fulfillment", json={"mt5_id": order.mt5_id})
                             
                     if product.type != "EA":
                         # Hit fulfillment without MT5 ID
                         async with httpx.AsyncClient(verify=False) as client:
-                            await client.post(f"http://localhost:8000/api/v1/orders/{order.id}/start-fulfillment", json={"mt5_id": None})
+                            await client.post(f"{base_url}/api/v1/orders/{order.id}/start-fulfillment", json={"mt5_id": None})
                         
     return {"status": "ok"}
