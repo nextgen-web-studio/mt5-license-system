@@ -40,22 +40,7 @@ app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
 def read_root():
     return {"message": "Welcome to Infinity Trader API"}
 
-@app.get("/migrate")
-async def run_migrations():
-    from app.db.database import AsyncSessionLocal
-    from sqlalchemy import text
-    try:
-        async with AsyncSessionLocal() as session:
-            await session.execute(text("ALTER TABLE orders ADD COLUMN IF NOT EXISTS mt5_id VARCHAR"))
-            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS worker_id VARCHAR"))
-            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE"))
-            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP WITH TIME ZONE"))
-            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS error_message TEXT"))
-            await session.execute(text("ALTER TABLE compile_jobs ADD COLUMN IF NOT EXISTS attempt_count INTEGER DEFAULT 0"))
-            await session.commit()
-            return {"status": "success", "message": "Successfully ran migrations."}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+
 
 @app.get("/health")
 def health_check():
