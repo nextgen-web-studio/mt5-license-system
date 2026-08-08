@@ -24,6 +24,18 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 def read_root():
     return {"message": "Welcome to Infinity Trader API"}
 
+@app.get("/migrate")
+async def run_migrations():
+    from app.db.database import AsyncSessionLocal
+    from sqlalchemy import text
+    try:
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("ALTER TABLE orders ADD COLUMN mt5_id VARCHAR"))
+            await session.commit()
+            return {"status": "success", "message": "Successfully added mt5_id column to orders table."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/health")
 def health_check():
     return {
