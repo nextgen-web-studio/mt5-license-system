@@ -17,12 +17,15 @@ export default function LicensesPage() {
     }
   });
 
-  const updateLicenseMutation = useMutation({
+    const updateLicenseMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await api.put(`/api/v1/licenses/${data.id}`, {
         mt5_id: data.mt5_id,
         status: data.status,
-        expiry_date: data.expiry_date ? new Date(data.expiry_date).toISOString() : null
+        expiry_date: data.expiry_date ? new Date(data.expiry_date).toISOString() : null,
+        purchase_date: data.purchase_date ? new Date(data.purchase_date).toISOString() : null,
+        download_count: parseInt(data.download_count, 10),
+        renew_count: parseInt(data.renew_count, 10)
       });
       return response.data;
     },
@@ -179,8 +182,8 @@ export default function LicensesPage() {
       {/* Edit Modal */}
       {editingLicense && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl max-w-md w-full overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-neutral-800">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl max-w-md w-full overflow-hidden shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-neutral-800 sticky top-0 bg-neutral-900 z-10">
               <h2 className="font-semibold text-white">Edit License</h2>
               <button 
                 onClick={() => setEditingLicense(null)}
@@ -211,7 +214,7 @@ export default function LicensesPage() {
               <div>
                 <label className="block text-sm font-medium text-neutral-400 mb-1">Status</label>
                 <select
-                  value={editingLicense.status}
+                  value={editingLicense.status || 'active'}
                   onChange={(e) => setEditingLicense({...editingLicense, status: e.target.value})}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
                 >
@@ -220,6 +223,16 @@ export default function LicensesPage() {
                   <option value="generating">Generating</option>
                   <option value="failed">Failed</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Purchase Date</label>
+                <input
+                  type="date"
+                  value={editingLicense.purchase_date ? editingLicense.purchase_date.split('T')[0] : ''}
+                  onChange={(e) => setEditingLicense({...editingLicense, purchase_date: e.target.value})}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                />
               </div>
 
               <div>
@@ -232,7 +245,30 @@ export default function LicensesPage() {
                 />
               </div>
 
-              <div className="flex justify-end space-x-3 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Download Count</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editingLicense.download_count ?? 0}
+                    onChange={(e) => setEditingLicense({...editingLicense, download_count: e.target.value})}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Renew Count</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editingLicense.renew_count ?? 0}
+                    onChange={(e) => setEditingLicense({...editingLicense, renew_count: e.target.value})}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4 sticky bottom-0 bg-neutral-900 pb-2">
                 <button
                   type="button"
                   onClick={() => setEditingLicense(null)}

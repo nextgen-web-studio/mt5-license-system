@@ -16,7 +16,9 @@ class LicenseResponse(BaseModel):
     license_uuid: str
     status: str
     purchase_date: datetime
-    expiry_date: datetime
+    expiry_date: Optional[datetime] = None
+    download_count: int
+    renew_count: int
     
     class Config:
         from_attributes = True
@@ -31,6 +33,9 @@ class LicenseUpdate(BaseModel):
     mt5_id: Optional[str] = None
     status: Optional[str] = None
     expiry_date: Optional[datetime] = None
+    purchase_date: Optional[datetime] = None
+    download_count: Optional[int] = None
+    renew_count: Optional[int] = None
 
 router = APIRouter()
 
@@ -48,6 +53,12 @@ async def update_license(license_id: int, update_data: LicenseUpdate, db: AsyncS
         license_obj.status = update_data.status
     if update_data.expiry_date is not None:
         license_obj.expiry_date = update_data.expiry_date
+    if update_data.purchase_date is not None:
+        license_obj.purchase_date = update_data.purchase_date
+    if update_data.download_count is not None:
+        license_obj.download_count = update_data.download_count
+    if update_data.renew_count is not None:
+        license_obj.renew_count = update_data.renew_count
         
     await db.commit()
     await db.refresh(license_obj)
