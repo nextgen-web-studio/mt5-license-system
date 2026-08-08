@@ -203,10 +203,20 @@ def start_dummy_server():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     logging.info(f"Dummy web server started on port {port}")
 
+from telegram import BotCommand
+
+async def post_init(application):
+    commands = [
+        BotCommand("start", "Start the bot and see the main menu"),
+        BotCommand("licenses", "View your active MT5 licenses"),
+        BotCommand("downloads", "Download your compiled EA files")
+    ]
+    await application.bot.set_my_commands(commands)
+
 def main():
     start_dummy_server()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
-    application = ApplicationBuilder().token(token).build()
+    application = ApplicationBuilder().token(token).post_init(post_init).build()
     
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("licenses", licenses_command))
