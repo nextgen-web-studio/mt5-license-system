@@ -174,9 +174,17 @@ async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db))
             supabase_key = os.getenv("SUPABASE_SECRET_KEY")
             from supabase import create_client
             supabase = create_client(supabase_url, supabase_key)
-            url = supabase.storage.from_("licenses").get_public_url(file_path)
-        except:
-            pass
+            
+            signed_res = supabase.storage.from_("licenses").create_signed_url(file_path, 3600)
+            if isinstance(signed_res, str):
+                url = signed_res
+            elif isinstance(signed_res, dict):
+                url = signed_res.get("signedURL") or signed_res.get("signedUrl") or ""
+            else:
+                url = getattr(signed_res, "signedURL", getattr(signed_res, "signedUrl", ""))
+                
+        except Exception as e:
+            print(f"Error generating signed URL: {e}")
             
     return {
         "telegram_id": usr.telegram_id,
