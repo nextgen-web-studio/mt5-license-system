@@ -106,10 +106,14 @@ async def notify_telegram_bot(license_id: int):
     """
     Pings the internal webhook of the Telegram bot to notify it to send the file.
     """
-    bot_webhook_url = os.getenv("BOT_WEBHOOK_URL", "http://localhost:8080/internal/delivery")
+    # Default to the production Telegram Bot Render URL if the env var is missing
+    bot_webhook_url = os.getenv("TELEGRAM_BOT_WEBHOOK_URL", "https://infinity-trader-telegram-bot.onrender.com/internal/delivery")
     try:
-        async with httpx.AsyncClient(verify=False) as client:
-            await client.post(bot_webhook_url, json={"license_id": license_id})
+        import httpx
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            resp = await client.post(bot_webhook_url, json={"license_id": license_id})
+            if resp.status_code != 200:
+                print(f"Telegram bot webhook returned {resp.status_code}: {resp.text}")
     except Exception as e:
         print(f"Failed to notify Telegram bot: {e}")
 
