@@ -344,10 +344,22 @@ class DummyHandler(BaseHTTPRequestHandler):
                             json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}
                         )
                         
-                        await client.post(
-                            f"https://api.telegram.org/bot{token}/sendDocument",
-                            json={"chat_id": chat_id, "document": download_url, "caption": f"📦 InfinityTrader_{mt5_id}.ex5"}
-                        )
+                        file_resp = await client.get(download_url)
+                        if file_resp.status_code == 200:
+                            files = {
+                                "document": (f"InfinityTrader_{mt5_id}.ex5", file_resp.content, "application/octet-stream")
+                            }
+                            data = {
+                                "chat_id": chat_id,
+                                "caption": f"📦 InfinityTrader_{mt5_id}.ex5"
+                            }
+                            await client.post(
+                                f"https://api.telegram.org/bot{token}/sendDocument",
+                                data=data,
+                                files=files
+                            )
+                        else:
+                            logging.error(f"Failed to download EX5: {file_resp.status_code}")
         except Exception as e:
             logging.error(f"Delivery failed: {e}")
 
