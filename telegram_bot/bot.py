@@ -353,11 +353,18 @@ class DummyHandler(BaseHTTPRequestHandler):
                                 "chat_id": chat_id,
                                 "caption": f"📦 InfinityTrader_{mt5_id}.ex5"
                             }
-                            await client.post(
+                            resp = await client.post(
                                 f"https://api.telegram.org/bot{token}/sendDocument",
                                 data=data,
                                 files=files
                             )
+                            if resp.status_code != 200:
+                                err_msg = f"Failed to attach file. Telegram API Error: {resp.text}"
+                                await client.post(
+                                    f"https://api.telegram.org/bot{token}/sendMessage",
+                                    json={"chat_id": chat_id, "text": err_msg}
+                                )
+                                logging.error(err_msg)
                         else:
                             logging.error(f"Failed to download EX5: {file_resp.status_code}")
         except Exception as e:
