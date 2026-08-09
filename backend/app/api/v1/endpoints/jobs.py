@@ -103,17 +103,16 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
     }
 
 async def notify_telegram_bot(license_id: int):
-    """
-    Pings the internal webhook of the Telegram bot to notify it to send the file.
-    """
-    # Default to the production Telegram Bot Render URL if the env var is missing
-    bot_webhook_url = os.getenv("TELEGRAM_BOT_WEBHOOK_URL", "https://infinity-trader-telegram-bot.onrender.com/internal/delivery")
+    # Force the production URL, ignoring any potentially broken env vars on Render
+    bot_webhook_url = "https://infinity-trader-telegram-bot.onrender.com/internal/delivery"
     try:
         import httpx
-        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+        async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
             resp = await client.post(bot_webhook_url, json={"license_id": license_id})
             if resp.status_code != 200:
                 print(f"Telegram bot webhook returned {resp.status_code}: {resp.text}")
+            else:
+                print(f"Successfully notified Telegram bot for license {license_id}")
     except Exception as e:
         print(f"Failed to notify Telegram bot: {e}")
 
