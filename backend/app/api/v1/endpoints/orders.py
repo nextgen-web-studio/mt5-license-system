@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
 from datetime import datetime, timedelta
+import dateutil.relativedelta
 
 from app.db.database import get_db
 from app.models import Order, Product, License, CompileJob, VpsOrder, AdminNotification
 from app.schemas import OrderCreate, OrderResponse, OrderFulfillmentRequest
+from app.core.azure_vm import start_azure_vm_if_needed
 
 router = APIRouter()
 
@@ -52,7 +54,7 @@ async def get_all_orders(db: AsyncSession = Depends(get_db)):
     return orders
 
 @router.post("/{order_id}/start-fulfillment")
-async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, db: AsyncSession = Depends(get_db)):
+async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Order).filter(Order.id == order_id))
     order = result.scalar_one_or_none()
     
@@ -74,7 +76,7 @@ async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, db: Asy
         if existing_license.scalars().first():
             raise HTTPException(status_code=400, detail="This MT5 ID is already in use by a license.")
             
-        expiry_date = datetime.utcnow() + timedelta(days=product.duration * 30)
+        expiry_date = datetime.utcnow() + dateutil.relativedelta.relativedelta(months=product.duration)
         
         db_license = License(
             order_id=order.id,
@@ -95,6 +97,8 @@ async def start_fulfillment(order_id: int, req: OrderFulfillmentRequest, db: Asy
         
         order.status = "compiling"
         await db.commit()
+        
+        background_tasks.add_task(start_azure_vm_if_needed)
         
         return {"status": "success", "message": "License created and compile job queued", "license_id": db_license.id}
         

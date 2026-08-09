@@ -65,7 +65,7 @@ async def update_license(license_id: int, update_data: LicenseUpdate, db: AsyncS
     return license_obj
 
 @router.post("/", response_model=LicenseResponse)
-async def generate_license(license_in: LicenseCreate, db: AsyncSession = Depends(get_db)):
+async def generate_license(license_in: LicenseCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     # 1. Fetch order and verify it's paid
     result = await db.execute(select(Order).filter(Order.id == license_in.order_id))
     order = result.scalar_one_or_none()
@@ -101,6 +101,8 @@ async def generate_license(license_in: LicenseCreate, db: AsyncSession = Depends
     job = CompileJob(license_id=db_license.id, status="pending")
     db.add(job)
     await db.commit()
+    
+    background_tasks.add_task(start_azure_vm_if_needed)
     
     return db_license
 
