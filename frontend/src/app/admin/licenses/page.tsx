@@ -96,18 +96,19 @@ export default function LicensesPage() {
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4">License Key</th>
-                <th className="px-6 py-4">Customer ID</th>
-                <th className="px-6 py-4">MT4/MT5 ID</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Expiry Date</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4 whitespace-nowrap">License Key</th>
+                <th className="px-6 py-4 whitespace-nowrap">Customer ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">MT4/MT5 ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">Type</th>
+                <th className="px-6 py-4 whitespace-nowrap">Status</th>
+                <th className="px-6 py-4 whitespace-nowrap">Expiry Date</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
               {licenses.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-neutral-500">
                     No licenses found.
                   </td>
                 </tr>
@@ -120,13 +121,20 @@ export default function LicensesPage() {
 
                   return (
                     <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
-                      <td className="px-6 py-4 font-mono text-xs text-neutral-300 flex items-center space-x-2">
+                      <td className="px-6 py-4 font-mono text-xs text-neutral-300 flex items-center space-x-2 whitespace-nowrap">
                         <Key size={14} className="text-indigo-400" />
                         <span>{license.id || license.key}</span>
                       </td>
-                      <td className="px-6 py-4 text-neutral-400">{license.user_id || 'Guest'}</td>
-                      <td className="px-6 py-4 font-mono text-xs text-white">{license.mt5_id || 'N/A'}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{license.user_id || 'Guest'}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {license.license_type === 'trial' ? (
+                          <span className="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded-full font-medium">Trial</span>
+                        ) : (
+                          <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full font-medium">Paid</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         {license.status === 'active' || license.status === 'valid' ? (
                           <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
                             <Shield size={14} />

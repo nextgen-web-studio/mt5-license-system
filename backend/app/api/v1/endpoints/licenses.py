@@ -10,7 +10,7 @@ from datetime import datetime
 
 class LicenseResponse(BaseModel):
     id: int
-    order_id: int
+    order_id: Optional[int] = None
     user_id: int
     mt5_id: str
     license_uuid: str
@@ -19,6 +19,7 @@ class LicenseResponse(BaseModel):
     expiry_date: Optional[datetime] = None
     download_count: int
     renew_count: int
+    license_type: str = "paid"
     
     class Config:
         from_attributes = True
