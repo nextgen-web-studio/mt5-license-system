@@ -54,7 +54,7 @@ def upgrade():
     
     # We also need to seed the trial settings with a default row if not exists.
     # We can do this in the app logic or via a direct insert here.
-    op.execute("INSERT INTO trial_settings (enabled, duration_days, max_trials_per_month, allow_existing_customers, trial_plan_name) VALUES (1, 2, 2, 0, 'Trial EA')")
+    op.execute("INSERT INTO trial_settings (enabled, duration_days, max_trials_per_month, allow_existing_customers, trial_plan_name) VALUES (true, 2, 2, false, 'Trial EA')")
 
 def downgrade():
     op.drop_index(op.f('ix_trial_activations_telegram_user_id'), table_name='trial_activations')
