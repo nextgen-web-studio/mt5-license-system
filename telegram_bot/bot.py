@@ -90,6 +90,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception:
             pass
             
+    elif data == "free_trial":
+        user_id = context.user_data.get('db_user_id')
+        if not user_id:
+            await query.edit_message_text("Session expired. Please send /start again.")
+            return
+            
+        context.user_data['awaiting_trial_mt5_id'] = True
+        
+        trial_msg = (
+            "🆓 *FREE TRIAL*\n\n"
+            "Try the EA before purchasing.\n\n"
+            "Please enter your **MT5 ID**:"
+        )
+        try:
+            await query.edit_message_text(trial_msg, parse_mode="Markdown")
+        except Exception:
+            pass
+            
     elif data == "main_menu" or data == "home":
         try:
             await query.edit_message_text("Please select an option below:", reply_markup=get_main_menu_keyboard())
@@ -176,6 +194,33 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             import traceback
             err = traceback.format_exc()
             await update.message.reply_text(f"❌ *Bot Crash:* {str(e)}\n\n```\n{err}\n```", parse_mode="Markdown")
+        return
+
+    if context.user_data.get('awaiting_trial_mt5_id'):
+        context.user_data['awaiting_trial_mt5_id'] = False
+        mt5_id = text.strip()
+        user_id = context.user_data.get('db_user_id')
+        tid = update.effective_user.id
+        
+        from utils.api_client import request_free_trial
+        
+        await update.message.reply_text("Checking trial eligibility...")
+        
+        resp = await request_free_trial(tid, mt5_id)
+        
+        if "error" in resp:
+            err_text = str(resp['error'])[:2000]
+            await update.message.reply_text(f"❌ *Trial Request Failed:*\n\n{err_text}", parse_mode="Markdown")
+            return
+            
+        success_msg = (
+            f"✅ *{resp.get('message', 'Trial Approved!')}*\n\n"
+            f"MT5 ID: `{mt5_id}`\n"
+            f"Duration: {resp.get('duration_days', 2)} Days\n"
+            f"Expires: {resp.get('expiry_date', 'Unknown')}\n\n"
+            "⚙️ Please wait 1-2 minutes while we compile your trial EA. We will send the file here automatically."
+        )
+        await update.message.reply_text(success_msg, parse_mode="Markdown")
         return
 
     await update.message.reply_text("Please use the /start menu to select an option.")

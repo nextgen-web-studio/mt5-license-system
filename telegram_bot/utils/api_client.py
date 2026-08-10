@@ -94,3 +94,28 @@ async def create_payment(order_id, amount):
         except Exception as e:
             logging.error(f"Error creating payment: {e}")
             return {"error": f"Payment Connection Error: {str(e)}"}
+
+async def request_free_trial(telegram_id, mt5_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{BASE_URL}/trials/request",
+                json={
+                    "telegram_user_id": str(telegram_id),
+                    "mt5_id": mt5_id
+                }
+            )
+            
+            if response.status_code >= 400:
+                err_detail = "Failed to request trial."
+                try:
+                    err_detail = response.json().get("detail", err_detail)
+                except:
+                    pass
+                return {"error": err_detail}
+                
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error requesting free trial: {e}")
+            return {"error": f"Connection Error: {str(e)}"}
