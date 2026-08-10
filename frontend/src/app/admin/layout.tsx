@@ -10,6 +10,7 @@ import {
   Key, 
   Server, 
   Terminal,
+  Gift,
   LogOut
 } from 'lucide-react';
 
@@ -20,6 +21,7 @@ const navigation = [
   { name: 'Licenses', href: '/admin/licenses', icon: Key },
   { name: 'VPS', href: '/admin/vps', icon: Server },
   { name: 'Compiler', href: '/admin/compiler', icon: Terminal },
+  { name: 'Free Trial', href: '/admin/trial', icon: Gift },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
