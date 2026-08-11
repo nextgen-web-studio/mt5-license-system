@@ -155,12 +155,26 @@ async def upload_compiled_file(
         supabase = create_client(supabase_url, supabase_key)
         bucket_name = "licenses"
         
+        # Attempt to auto-create the public bucket in case it was deleted or never created
+        try:
+            supabase.storage.create_bucket(bucket_name, {"public": True})
+        except Exception:
+            pass
+        
         # licenses/{license_id}/{job_id}/bot.ex5
         ext = ".zip" if file.filename.endswith('.zip') else ".ex5"
         file_path = f"{job.license_id}/{job.id}/bot{ext}"
         
-        supabase.storage.from_(bucket_name).upload(file_path, content)
+        res = supabase.storage.from_(bucket_name).upload(file_path, content)
         
+        # supabase-py sometimes returns an error dict instead of throwing an exception
+        if isinstance(res, dict) and res.get('error'):
+            raise Exception(res.get('error'))
+        if hasattr(res, 'error') and res.error:
+            raise Exception(res.error)
+        if hasattr(res, 'status_code') and res.status_code >= 400:
+            raise Exception(f"HTTP {res.status_code}")
+            
     except Exception as e:
         print(f"Failed to upload to Supabase: {e}")
         raise HTTPException(status_code=500, detail=f"Storage error: {e}")

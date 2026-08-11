@@ -99,9 +99,10 @@ export default function TrialAdminPage() {
               <label className="text-sm font-medium text-white block mb-1">Duration (Days)</label>
               <input 
                 type="number" 
+                disabled={!settings.enabled}
                 value={settings.duration_days}
                 onChange={e => setSettings({...settings, duration_days: parseInt(e.target.value)})}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" 
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" 
               />
             </div>
 
@@ -109,9 +110,10 @@ export default function TrialAdminPage() {
               <label className="text-sm font-medium text-white block mb-1">Max Trials Per Month</label>
               <input 
                 type="number" 
+                disabled={!settings.enabled}
                 value={settings.max_trials_per_month}
                 onChange={e => setSettings({...settings, max_trials_per_month: parseInt(e.target.value)})}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" 
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" 
               />
             </div>
 
@@ -119,9 +121,10 @@ export default function TrialAdminPage() {
               <label className="text-sm font-medium text-white block mb-1">Trial Plan Name (For Compiler)</label>
               <input 
                 type="text" 
+                disabled={!settings.enabled}
                 value={settings.trial_plan_name}
                 onChange={e => setSettings({...settings, trial_plan_name: e.target.value})}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" 
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" 
               />
             </div>
 
@@ -131,8 +134,9 @@ export default function TrialAdminPage() {
                 <span className="text-xs text-neutral-400">Can paid users claim trials?</span>
               </div>
               <button
+                disabled={!settings.enabled}
                 onClick={() => setSettings({ ...settings, allow_existing_customers: !settings.allow_existing_customers })}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   settings.allow_existing_customers ? 'bg-blue-500' : 'bg-neutral-600'
                 }`}
               >
