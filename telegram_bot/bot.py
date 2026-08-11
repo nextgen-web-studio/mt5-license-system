@@ -271,41 +271,40 @@ async def mock_webhook(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"Webhook error: {resp.text}")
 
 async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = context.user_data.get('db_user_id')
-    if not user_id:
-        await update.message.reply_text("Please use /start to initialize your session.")
-        return
-        
+    tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    
+    await update.message.reply_text("Fetching your active licenses...")
+    
     async with httpx.AsyncClient(verify=False) as client:
-        resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+        resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
             if not licenses:
-                await update.message.reply_text("You don't have any licenses yet.")
+                await update.message.reply_text("You don't have any active EA licenses.")
                 return
                 
-            text = "🔑 *Your MT5 Licenses:*\n\n"
+            text = "🔑 *Your Licenses:*\n\n"
             for l in licenses:
-                text += f"• *MT5 ID:* `{l['mt5_id']}`\n"
-                text += f"  Status: {l['status']}\n"
-                text += f"  Expires: {l['expiry_date'][:10] if l['expiry_date'] else 'N/A'}\n\n"
+                status_icon = "✅" if l['status'] == 'active' else "⏳" if l['status'] == 'generating' else "❌"
+                expiry = l['expiry_date'].split('T')[0] if l['expiry_date'] else "Lifetime"
+                text += f"{status_icon} *MT5 ID:* `{l['mt5_id']}`\n"
+                text += f"   Type: {l.get('license_type', 'Paid').title()}\n"
+                text += f"   Status: {l['status'].title()}\n"
+                text += f"   Expires: {expiry}\n\n"
             
             await update.message.reply_text(text, parse_mode="Markdown")
         else:
             await update.message.reply_text("Failed to fetch licenses.")
 
 async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = context.user_data.get('db_user_id')
-    if not user_id:
-        await update.message.reply_text("Please use /start to initialize your session.")
-        return
+    tid = str(update.effective_user.id)
         
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     await update.message.reply_text("Fetching your downloads...")
     
     async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
-        resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+        resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
             active_licenses = [l for l in licenses if l['status'] == 'active']

@@ -119,6 +119,32 @@ async def get_user_licenses(user_id: int, db: AsyncSession = Depends(get_db)):
     licenses = result.scalars().all()
     return licenses
 
+@router.get("/telegram/{telegram_id}", response_model=List[LicenseResponse])
+async def get_telegram_licenses(telegram_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models import User, TrialActivation
+    
+    # 1. Get user id from telegram id
+    user_res = await db.execute(select(User).filter(User.telegram_id == telegram_id))
+    user = user_res.scalar_one_or_none()
+    
+    licenses = []
+    
+    # 2. Get paid licenses
+    if user:
+        lic_res = await db.execute(select(License).filter(License.user_id == user.id).order_by(License.created_at.desc()))
+        licenses.extend(lic_res.scalars().all())
+        
+    # 3. Get trial licenses
+    trial_res = await db.execute(select(TrialActivation).filter(TrialActivation.telegram_user_id == telegram_id))
+    activations = trial_res.scalars().all()
+    
+    if activations:
+        trial_ids = [a.license_id for a in activations]
+        trial_lic_res = await db.execute(select(License).filter(License.id.in_(trial_ids)))
+        licenses.extend(trial_lic_res.scalars().all())
+        
+    return licenses
+
 from fastapi.responses import FileResponse
 import os
 
