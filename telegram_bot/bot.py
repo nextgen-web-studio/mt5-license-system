@@ -304,7 +304,7 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     await update.message.reply_text("Fetching your downloads...")
     
-    async with httpx.AsyncClient(verify=False) as client:
+    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
         resp = await client.get(f"{base_url}/licenses/user/{user_id}")
         if resp.status_code == 200:
             licenses = resp.json()
@@ -319,7 +319,7 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if file_resp.status_code == 200:
                     import io
                     doc = io.BytesIO(file_resp.content)
-                    doc.name = f"InfinityTrader_{l['mt5_id']}.zip"
+                    doc.name = f"InfinityTrader_{l['mt5_id']}.ex5"
                     await update.message.reply_document(document=doc, caption=f"📦 EA for MT5 ID: {l['mt5_id']}")
                 else:
                     await update.message.reply_text(f"Could not retrieve file for MT5 ID {l['mt5_id']}. It might still be compiling.")

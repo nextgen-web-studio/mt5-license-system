@@ -62,7 +62,7 @@ export default function DashboardPage() {
   const displayStats = stats ? {
     totalRevenue: stats.total_revenue || 0,
     totalOrders: stats.total_orders || 0,
-    activeLicenses: stats.compiler_queue || 0, // Using compiler_queue as placeholder for active licenses for now
+    activeLicenses: stats.active_licenses || 0,
     totalUsers: stats.total_users || 0
   } : {
     totalRevenue: 0,

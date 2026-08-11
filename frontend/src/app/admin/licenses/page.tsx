@@ -117,7 +117,7 @@ export default function LicensesPage() {
                   const expiryDate = license.expiry_date ? new Date(license.expiry_date) : null;
                   const now = new Date();
                   const daysExpired = expiryDate ? (now.getTime() - expiryDate.getTime()) / (1000 * 3600 * 24) : 0;
-                  const canDelete = daysExpired >= 5;
+                  const canDelete = true;
 
                   return (
                     <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
@@ -173,7 +173,7 @@ export default function LicensesPage() {
                           }}
                           disabled={!canDelete}
                           className={`p-2 rounded transition-colors ${canDelete ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer' : 'text-neutral-600 cursor-not-allowed'}`}
-                          title={canDelete ? "Delete License" : "Cannot delete until 5 days after expiry"}
+                          title="Delete License"
                         >
                           <Trash2 size={16} />
                         </button>

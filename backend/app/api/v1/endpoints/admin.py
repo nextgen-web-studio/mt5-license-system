@@ -23,6 +23,10 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     total_revenue = result.scalar() or 0
     total_revenue = total_revenue / 100 # Assuming stored in paise if Razorpay, wait no, my payment model uses float for amount. Wait, if it's stored in rupees, it's just total_revenue. I'll just use total_revenue.
 
+    # Active Licenses
+    result = await db.execute(select(func.count()).select_from(License).filter(License.status.in_(["active", "valid"])))
+    active_licenses = result.scalar() or 0
+
     # Compiler Queue (pending jobs)
     result = await db.execute(select(func.count()).select_from(CompileJob).filter(CompileJob.status == "pending"))
     compiler_queue = result.scalar() or 0
@@ -35,6 +39,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
         "total_users": total_users,
         "total_orders": total_orders,
         "total_revenue": total_revenue,
+        "active_licenses": active_licenses,
         "compiler_queue": compiler_queue,
         "recent_orders": [
             {
