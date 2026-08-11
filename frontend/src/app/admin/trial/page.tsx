@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Gift, Save, ShieldAlert, CheckCircle2, Clock, Users } from 'lucide-react';
+import api from '@/lib/api';
 
 interface TrialSettings {
   enabled: boolean;
@@ -27,8 +28,7 @@ export default function TrialAdminPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trials/settings`);
-      const data = await res.json();
+      const { data } = await api.get('/api/v1/trials/settings');
       setSettings(data);
     } catch (e) {
       console.error(e);
@@ -41,15 +41,9 @@ export default function TrialAdminPage() {
     setSaving(true);
     setMsg('');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/trials/settings`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      });
-      if (res.ok) {
-        setMsg('Settings saved successfully!');
-        setTimeout(() => setMsg(''), 3000);
-      }
+      await api.put('/api/v1/trials/settings', settings);
+      setMsg('Settings saved successfully!');
+      setTimeout(() => setMsg(''), 3000);
     } catch (e) {
       console.error(e);
       setMsg('Failed to save settings');
