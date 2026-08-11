@@ -371,7 +371,7 @@ class DummyHandler(BaseHTTPRequestHandler):
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:
-            async with httpx.AsyncClient(verify=False) as client:
+            async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
                 resp = await client.get(f"{base_url}/licenses/{license_id}/delivery-info")
                 if resp.status_code == 200:
                     info = resp.json()
