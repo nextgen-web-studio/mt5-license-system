@@ -422,7 +422,11 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     products = await get_products()
     product = next((p for p in products if p['id'] == product_id), None)
     
-    admin_username = os.getenv("ADMIN_USERNAME", "@infinitytrader004")
+    from utils.api_client import get_settings
+    settings = await get_settings()
+    admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+    if not admin_username.startswith("@"):
+        admin_username = f"@{admin_username}"
     
     summary = (
         f"📋 *ORDER SUMMARY*\n\n"
