@@ -9,6 +9,10 @@ from app.db.database import get_db
 from app.models import Order, Product, License, CompileJob, VpsOrder, AdminNotification
 from app.schemas import OrderCreate, OrderResponse, OrderFulfillmentRequest
 from app.core.azure_vm import start_azure_vm_if_needed
+from pydantic import BaseModel
+
+class OrderMt5Update(BaseModel):
+    mt5_id: str
 
 router = APIRouter()
 
@@ -30,6 +34,14 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
         import logging
         logging.error(f"DB Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An internal server error occurred.")
+
+@router.get("/{order_id}", response_model=OrderResponse)
+async def get_order_by_id(order_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Order).filter(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
 
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
 async def get_user_orders(user_id: int, db: AsyncSession = Depends(get_db)):
@@ -85,6 +97,17 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     order.status = "approved_waiting_for_mt5_id"
     await db.commit()
     return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id}
+
+@router.put("/{order_id}/mt5")
+async def update_order_mt5(order_id: int, payload: OrderMt5Update, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Order).filter(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+        
+    order.mt5_id = payload.mt5_id
+    await db.commit()
+    return {"status": "success", "message": "MT5 ID saved successfully"}
 
 @router.post("/{order_id}/reject")
 async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):

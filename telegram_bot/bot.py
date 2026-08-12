@@ -63,8 +63,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         resp = await approve_order(order_id)
         if "error" not in resp:
-            kb = [[InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]]
-            await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nThe customer has been asked to provide their MT5 ID.", reply_markup=InlineKeyboardMarkup(kb))
+            await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nThe customer has been asked to provide their MT5 ID.")
             
             # Notify Customer
             try:
@@ -114,6 +113,49 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
+    if data.startswith("generate_lifetime_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("You are not authorized to perform this action.", show_alert=True)
+            return
+            
+        parts = data.split("_")
+        order_id = int(parts[2])
+        mt5_id = parts[3]
+        
+        await query.edit_message_text(f"🚀 Generating Lifetime License for Order #{order_id} (MT5: {mt5_id})...")
+        
+        from utils.api_client import generate_license
+        resp = await generate_license(order_id, mt5_id)
+        
+        if "error" in resp:
+            await query.edit_message_text(f"❌ *Error generating license:*\n{resp['error']}", parse_mode="Markdown")
+            return
+            
+        await query.edit_message_text(f"✅ Lifetime License successfully generated for Order #{order_id}. The EA is compiling and will be sent to the customer shortly.")
+        
+        # Notify customer
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            order_resp = await client.get(f"{base_url}/orders/{order_id}")
+            if order_resp.status_code == 200:
+                user_id = order_resp.json().get("user_id")
+                user_resp = await client.get(f"{base_url}/users/id/{user_id}")
+                if user_resp.status_code == 200:
+                    telegram_id = user_resp.json().get("telegram_id")
+                    if telegram_id:
+                        msg = (
+                            f"✅ *License Generated!*\n\n"
+                            f"Your MT5 ID (`{mt5_id}`) has been fully processed.\n"
+                            f"Your Lifetime EA is compiling and will be delivered here instantly."
+                        )
+                        try:
+                            await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                        except:
+                            pass
+        return
+
     if data.startswith("create_installment_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
         if str(update.effective_user.id) != str(admin_id):
@@ -121,6 +163,21 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         order_id = int(data.split("_")[2])
+        
+        # Verify MT5 ID exists
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            resp = await client.get(f"{base_url}/orders/{order_id}")
+            if resp.status_code == 200:
+                order_data = resp.json()
+                if not order_data.get("mt5_id"):
+                    await query.answer("MT5 ID has not been received yet. Please wait for the customer to submit their MT5 ID.", show_alert=True)
+                    return
+            else:
+                await query.answer("Failed to fetch order details to verify MT5 ID.", show_alert=True)
+                return
+
         context.user_data['install_order_id'] = order_id
         context.user_data['install_step'] = 'total_amount'
         
@@ -714,25 +771,35 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         mt5_id = text.strip()
         order_id = context.user_data.get('pending_order_id')
         
-        await update.message.reply_text("🔄 Verifying your MT5 ID...")
-        await update.message.reply_text("🔐 Creating your Lifetime License...\n📦 Preparing your EA...\n⚙️ Compilation started...")
+        await update.message.reply_text("🔄 Verifying and saving your MT5 ID...")
         
-        from utils.api_client import generate_license
-        resp = await generate_license(order_id, mt5_id)
+        from utils.api_client import save_order_mt5_id
+        resp = await save_order_mt5_id(order_id, mt5_id)
         
         if "error" in resp:
             await update.message.reply_text(f"❌ *Error:*\n{resp['error']}", parse_mode="Markdown")
             return
             
         success_msg = (
-            f"✅ *Compilation Complete!*\n\n"
-            f"Your personalized EA is ready.\n\n"
-            f"MT5 ID: `{mt5_id}`\n"
-            f"License: Lifetime\n"
-            f"Status: Active\n\n"
-            f"The compiled EA file is attached below."
+            f"✅ *MT5 ID Saved!*\n\n"
+            f"Thank you. Your MT5 ID (`{mt5_id}`) has been received.\n"
+            f"Your EA will be prepared shortly."
         )
         await update.message.reply_text(success_msg, parse_mode="Markdown")
+        
+        # Notify Admin with buttons
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if admin_id:
+            admin_msg = f"📩 *MT5 ID Received*\n\nCustomer for Order #{order_id} submitted MT5 ID: `{mt5_id}`\n\nWhat would you like to do?"
+            kb = [
+                [InlineKeyboardButton("🚀 Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
+                [InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
+            ]
+            try:
+                await context.bot.send_message(chat_id=admin_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+            except Exception as e:
+                import logging
+                logging.error(f"Failed to notify admin: {e}")
         
         context.user_data['pending_order_id'] = None
         return

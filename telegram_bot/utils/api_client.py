@@ -115,7 +115,7 @@ async def generate_license(order_id, mt5_id):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                f"{BASE_URL}/licenses/",
+                f"{BASE_URL}/licenses/generate",
                 json={
                     "order_id": order_id,
                     "mt5_id": mt5_id
@@ -127,6 +127,23 @@ async def generate_license(order_id, mt5_id):
             return response.json()
         except Exception as e:
             logging.error(f"Error generating license: {e}")
+            return {"error": str(e)}
+
+async def save_order_mt5_id(order_id, mt5_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.put(
+                f"{BASE_URL}/orders/{order_id}/mt5",
+                json={
+                    "mt5_id": mt5_id
+                }
+            )
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error saving MT5 ID: {e}")
             return {"error": str(e)}
 
 async def request_free_trial(telegram_id, mt5_id):
