@@ -69,11 +69,11 @@ async def update_license(license_id: int, update_data: LicenseUpdate, db: AsyncS
 @router.post("/generate", response_model=LicenseResponse)
 async def generate_license(license_in: LicenseCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     try:
-        # 1. Fetch order and verify it's paid
+        # 1. Fetch order and verify it's in an approvable state
         result = await db.execute(select(Order).filter(Order.id == license_in.order_id))
         order = result.scalar_one_or_none()
         
-        if not order or order.status != "approved_waiting_for_mt5_id":
+        if not order or order.status not in ("approved_waiting_for_mt5_id", "compiling", "delivered", "approved"):
             raise HTTPException(status_code=400, detail="Order not found or not approved")
             
         # 2. Get product duration
@@ -88,25 +88,33 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         import uuid
         import logging
         
-        # Handle Lifetime Plan
+        # Handle Lifetime Plan (duration=0 or >=999 means lifetime, no expiry)
         if product.duration == 0 or product.duration >= 999:
             expiry = None
         else:
             expiry = datetime.now(timezone.utc) + relativedelta(months=product.duration)
         
-        # 3. Create License
-        db_license = License(
-            order_id=order.id,
-            user_id=order.user_id,
-            mt5_id=license_in.mt5_id,
-            expiry_date=expiry,
-            status="generating",
-            license_uuid=str(uuid.uuid4())
-        )
-        db.add(db_license)
-        await db.flush() # flush to get db_license.id before committing
+        # 3. Create or Update License
+        lic_result = await db.execute(select(License).filter(License.order_id == order.id))
+        db_license = lic_result.scalar_one_or_none()
         
-        # 4. Enqueue compilation job for background worker
+        if db_license:
+            db_license.mt5_id = license_in.mt5_id
+            db_license.expiry_date = expiry
+            db_license.status = "generating"
+        else:
+            db_license = License(
+                order_id=order.id,
+                user_id=order.user_id,
+                mt5_id=license_in.mt5_id,
+                expiry_date=expiry,
+                status="generating",
+                license_uuid=str(uuid.uuid4())
+            )
+            db.add(db_license)
+            await db.flush()
+        
+        # 4. Enqueue compilation job
         job = CompileJob(license_id=db_license.id, status="pending")
         db.add(job)
         

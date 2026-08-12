@@ -117,6 +117,7 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
     if lic:
         if is_final:
             lic.expiry_date = None
+            lic.license_type = "paid"
         else:
             lic.expiry_date = order.next_due_date
         lic.status = "generating"

@@ -202,20 +202,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             resp = await client.get(f"{base_url}/installments/admin/{order_id}")
             if resp.status_code == 200:
                 data_json = resp.json()
+                is_final = data_json['installments_paid'] >= data_json['installment_count']
+                expiry_val = data_json['license_expiry']
+                expiry_display = expiry_val.split('T')[0] if expiry_val else 'Lifetime ♾️'
                 msg = (
-                    f"💳 *INSTALLMENT*\n\n"
-                    f"Order: ORD-{order_id}\n\n"
+                    f"💳 *INSTALLMENT MANAGEMENT*\n\n"
+                    f"Order: ORD-{order_id}\n"
                     f"MT5 ID: `{data_json['mt5_id']}`\n\n"
                     f"Total: ₹{data_json['total_amount']:,.0f}\n"
-                    f"Installment: ₹{data_json['installment_amount']:,.0f}\n\n"
+                    f"Per Installment: ₹{data_json['installment_amount']:,.0f}\n\n"
                     f"Paid: ₹{data_json['amount_paid']:,.0f}\n"
                     f"Remaining: ₹{data_json['amount_remaining']:,.0f}\n\n"
-                    f"Progress:\n{data_json['installments_paid']}/{data_json['installment_count']}\n\n"
-                    f"License:\n{data_json['license_status'].title()}\n\n"
-                    f"Expires:\n{data_json['license_expiry'].split('T')[0] if data_json['license_expiry'] else 'Never'}"
+                    f"Progress: {data_json['installments_paid']}/{data_json['installment_count']} payments\n\n"
+                    f"License: {data_json['license_status'].title()}\n"
+                    f"Expires: {expiry_display}"
                 )
                 kb = [
                     [InlineKeyboardButton("Mark Payment Received", callback_data=f"mark_install_paid_{order_id}")],
+                    [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
                     [InlineKeyboardButton("Payment History", callback_data=f"install_history_{order_id}")],
                     [InlineKeyboardButton("Disable Arrangement", callback_data=f"disable_install_{order_id}")]
                 ]
@@ -243,7 +247,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if pay_resp.status_code == 200:
                     await query.edit_message_text(
                         f"✅ Payment of ₹{amount:,.0f} recorded for Order #{order_id}.\n\nLicense extended and compilation queued.",
-                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]])
+                        reply_markup=InlineKeyboardMarkup([
+                            [InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")],
+                            [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")]
+                        ])
                     )
                     # Notify customer
                     try:
@@ -277,6 +284,42 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await query.answer("Could not fetch installment details.", show_alert=True)
         return
 
+
+    if data.startswith("check_compile_status_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("Not authorized.", show_alert=True)
+            return
+            
+        order_id = int(data.split("_")[3])
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            order_resp = await client.get(f"{base_url}/orders/{order_id}")
+            if order_resp.status_code != 200:
+                await query.answer("Order not found.", show_alert=True)
+                return
+                
+            user_id = order_resp.json().get("user_id")
+            lic_resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+            if lic_resp.status_code == 200:
+                lics = lic_resp.json()
+                lic = next((l for l in lics if l.get("order_id") == order_id), None)
+                if lic:
+                    status = lic.get("status")
+                    if status == "active":
+                        await query.answer("✅ File compiled and sent to customer.", show_alert=True)
+                    elif status in ("generating", "pending"):
+                        await query.answer("⏳ Still compiling. Will be delivered automatically when done.", show_alert=True)
+                    elif status == "failed":
+                        await query.answer("❌ Compilation failed. Please contact admin.", show_alert=True)
+                    else:
+                        await query.answer(f"Status: {status}", show_alert=True)
+                else:
+                    await query.answer("No license found for this order yet.", show_alert=True)
+            else:
+                await query.answer("Could not fetch license status.", show_alert=True)
+        return
 
     if data == "license_details":
         await render_licenses(update, context)
@@ -1252,38 +1295,56 @@ class DummyHandler(BaseHTTPRequestHandler):
                     download_url = info.get("download_url")
                     
                     if chat_id and download_url:
-                        # Send file via telegram
-                        # Since it's a URL to a zip, we can just send the URL or download and send
-                        # Supabase public URLs can be sent as documents to Telegram directly!
-                        msg = f"✅ *Compilation Complete!*\n\nYour EA for MT5 ID `{mt5_id}` is ready."
+                        # Notify customer EA is ready
+                        msg = f"✅ *Your EA is Ready!*\n\nYour EA for MT5 ID `{mt5_id}` has been compiled.\nDownloading and sending your file now..."
                         await client.post(
                             f"https://api.telegram.org/bot{token}/sendMessage",
                             json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}
                         )
                         
                         file_resp = await client.get(download_url)
+                        admin_chat_id = os.getenv("ADMIN_CHAT_ID")
                         if file_resp.status_code == 200:
                             files = {
                                 "document": (f"InfinityTrader_{mt5_id}.ex5", file_resp.content, "application/octet-stream")
                             }
-                            data = {
+                            send_data = {
                                 "chat_id": chat_id,
-                                "caption": f"📦 InfinityTrader_{mt5_id}.ex5"
+                                "caption": f"📦 *InfinityTrader EA*\nMT5 ID: `{mt5_id}`\n\n✅ Your EA file is ready. Install it in MetaTrader 5 Expert Advisors folder.",
+                                "parse_mode": "Markdown"
                             }
-                            resp = await client.post(
+                            doc_resp = await client.post(
                                 f"https://api.telegram.org/bot{token}/sendDocument",
-                                data=data,
+                                data=send_data,
                                 files=files
                             )
-                            if resp.status_code != 200:
-                                err_msg = f"Failed to attach file. Telegram API Error: {resp.text}"
-                                await client.post(
-                                    f"https://api.telegram.org/bot{token}/sendMessage",
-                                    json={"chat_id": chat_id, "text": err_msg}
-                                )
-                                logging.error(err_msg)
+                            if doc_resp.status_code == 200:
+                                # Notify admin of successful delivery
+                                if admin_chat_id:
+                                    await client.post(
+                                        f"https://api.telegram.org/bot{token}/sendMessage",
+                                        json={
+                                            "chat_id": admin_chat_id,
+                                            "text": f"✅ *EA Delivered Successfully*\n\nMT5 ID: `{mt5_id}`\nCustomer Telegram: `{chat_id}`\n\nFile sent to customer.",
+                                            "parse_mode": "Markdown"
+                                        }
+                                    )
+                            else:
+                                admin_chat_id = os.getenv('ADMIN_CHAT_ID')
+                                if admin_chat_id:
+                                    admin_note = f'✅ EA file delivered to customer.\nMT5 ID: `{mt5_id}`\nTelegram ID: `{chat_id}`'
+                                    await client.post(
+                                        f'https://api.telegram.org/bot{token}/sendMessage',
+                                        json={'chat_id': admin_chat_id, 'text': admin_note, 'parse_mode': 'Markdown'}
+                                    )
                         else:
                             logging.error(f"Failed to download EX5: {file_resp.status_code}")
+                            admin_chat_id = os.getenv('ADMIN_CHAT_ID')
+                            if admin_chat_id:
+                                await client.post(
+                                    f'https://api.telegram.org/bot{token}/sendMessage',
+                                    json={'chat_id': admin_chat_id, 'text': f'❌ Failed to deliver EA to customer {chat_id} (MT5: {mt5_id}). File not found in storage.'}
+                                )
         except Exception as e:
             logging.error(f"Delivery failed: {e}")
 
