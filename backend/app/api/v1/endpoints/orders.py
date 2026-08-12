@@ -43,6 +43,31 @@ async def get_all_orders(db: AsyncSession = Depends(get_db)):
     orders = result.scalars().all()
     return orders
 
+@router.get("/telegram/{telegram_id}")
+async def get_telegram_orders(telegram_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models import User, Product
+    # Fetch orders belonging to this telegram_id
+    query = (
+        select(Order, Product)
+        .join(User, Order.user_id == User.id)
+        .join(Product, Order.product_id == Product.id)
+        .filter(User.telegram_id == telegram_id)
+        .order_by(Order.created_at.desc())
+    )
+    result = await db.execute(query)
+    rows = result.all()
+    
+    orders = []
+    for order, product in rows:
+        orders.append({
+            "id": order.id,
+            "status": order.status,
+            "created_at": order.created_at.isoformat() if order.created_at else None,
+            "product_name": product.name,
+            "price": product.price
+        })
+    return orders
+
 @router.post("/{order_id}/approve")
 async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     from app.models import User

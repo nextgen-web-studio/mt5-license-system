@@ -113,8 +113,80 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
+    if data == "license_details":
+        await render_licenses(update, context)
+        return
+        
+    if data.startswith("view_license_"):
+        lic_id = int(data.split("_")[2])
+        tid = str(update.effective_user.id)
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        
+        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+            resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
+            if resp.status_code == 200:
+                licenses = resp.json()
+                lic = next((l for l in licenses if l['id'] == lic_id), None)
+                if lic:
+                    status_icon = "🟢" if lic['status'] == 'active' else "🔴" if lic['status'] == 'expired' else "⚫"
+                    expiry = lic['expiry_date'].split('T')[0] if lic['expiry_date'] else "Never"
+                    activated = lic['purchase_date'].split('T')[0] if lic['purchase_date'] else "Unknown"
+                    ltype = "Trial" if lic.get('license_type') == 'trial' else "Lifetime"
+                    
+                    text = (
+                        f"🔐 *LICENSE DETAILS*\n\n"
+                        f"MT5 ID: `{lic['mt5_id']}`\n"
+                        f"License Type: {ltype}\n"
+                        f"Status: {status_icon} {lic['status'].title()}\n"
+                        f"Activated: {activated}\n"
+                        f"Expires: {expiry}"
+                    )
+                    kb = [[InlineKeyboardButton("⬅️ Back to Licenses", callback_data="license_details")]]
+                    await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+                    return
+        await query.edit_message_text("❌ License not found.")
+        return
 
-
+    if data == "my_orders":
+        await render_orders(update, context)
+        return
+        
+    if data == "downloads":
+        await render_downloads(update, context)
+        return
+        
+    if data.startswith("download_ea_"):
+        parts = data.split("_")
+        lic_id = int(parts[2])
+        mt5_id = parts[3]
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        
+        await query.edit_message_text(f"⏳ Retrieving your EA file for MT5 ID {mt5_id}...")
+        
+        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+            # We add a security check: ensure the license actually belongs to the user by querying their licenses first
+            tid = str(update.effective_user.id)
+            resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
+            if resp.status_code == 200:
+                licenses = resp.json()
+                if not any(l['id'] == lic_id for l in licenses):
+                    await query.edit_message_text("❌ Access denied. This file does not belong to you.")
+                    return
+            else:
+                await query.edit_message_text("❌ Authorization failed.")
+                return
+                
+            download_url = f"{base_url}/licenses/{lic_id}/download"
+            file_resp = await client.get(download_url)
+            if file_resp.status_code == 200:
+                import io
+                doc = io.BytesIO(file_resp.content)
+                doc.name = f"InfinityTrader_{mt5_id}.ex5"
+                await query.message.reply_document(document=doc, caption=f"📦 Here is your EA for MT5 ID: {mt5_id}")
+                await query.edit_message_text("✅ File sent below!")
+            else:
+                await query.edit_message_text(f"❌ Could not retrieve file for MT5 ID {mt5_id}.\nIt might still be compiling or there is an issue with the storage.")
+        return
     if data == "broker_change":
         user_id = context.user_data.get('db_user_id')
         tid = update.effective_user.id
@@ -439,7 +511,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         f"Your EA will only be generated after admin approval."
     )
     
-    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}开展")]]
+    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
     
     if update.message:
         await update.message.reply_text(summary, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -669,38 +741,106 @@ async def mock_webhook(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await update.message.reply_text(f"Webhook error: {resp.text}")
 
-async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     
-    await update.message.reply_text("Fetching your active licenses...")
+    msg_target = update.message if update.message else update.callback_query
+    await msg_target.reply_text("Fetching your licenses...")
     
-    async with httpx.AsyncClient(verify=False) as client:
+    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
         resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
             if not licenses:
-                await update.message.reply_text("You don't have any active EA licenses.")
+                await msg_target.reply_text("❌ *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown")
                 return
                 
-            text = "🔑 *Your Licenses:*\n\n"
-            for l in licenses:
-                status_icon = "✅" if l['status'] == 'active' else "⏳" if l['status'] == 'generating' else "❌"
-                expiry = l['expiry_date'].split('T')[0] if l['expiry_date'] else "Lifetime"
-                text += f"{status_icon} *MT5 ID:* `{l['mt5_id']}`\n"
-                text += f"   Type: {l.get('license_type', 'Paid').title()}\n"
-                text += f"   Status: {l['status'].title()}\n"
-                text += f"   Expires: {expiry}\n\n"
-            
-            await update.message.reply_text(text, parse_mode="Markdown")
+            if len(licenses) == 1:
+                l = licenses[0]
+                status_icon = "🟢" if l['status'] == 'active' else "🔴" if l['status'] == 'expired' else "⚫"
+                expiry = l['expiry_date'].split('T')[0] if l['expiry_date'] else "Never"
+                activated = l['purchase_date'].split('T')[0] if l['purchase_date'] else "Unknown"
+                ltype = "Trial" if l.get('license_type') == 'trial' else "Lifetime"
+                
+                text = (
+                    f"🔐 *LICENSE DETAILS*\n\n"
+                    f"MT5 ID: `{l['mt5_id']}`\n"
+                    f"License Type: {ltype}\n"
+                    f"Status: {status_icon} {l['status'].title()}\n"
+                    f"Activated: {activated}\n"
+                    f"Expires: {expiry}"
+                )
+                await msg_target.reply_text(text, parse_mode="Markdown")
+                return
+                
+            # Multiple licenses
+            text = "🔐 *Select a license:*\n\n"
+            kb = []
+            for idx, l in enumerate(licenses, 1):
+                status_icon = "🟢" if l['status'] == 'active' else "🔴" if l['status'] == 'expired' else "⚫"
+                ltype = "Trial" if l.get('license_type') == 'trial' else "Lifetime"
+                text += f"{idx}️⃣ MT5 ID: {l['mt5_id']}\n   {ltype}\n   {status_icon} {l['status'].title()}\n\n"
+                
+                kb.append([InlineKeyboardButton(f"MT5 {l['mt5_id']}", callback_data=f"view_license_{l['id']}")])
+                
+            await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
-            await update.message.reply_text("Failed to fetch licenses.")
+            await msg_target.reply_text("❌ Unable to load your licenses right now.\nPlease try again or contact support.")
 
-async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
-        
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    await update.message.reply_text("Fetching your downloads...")
+    
+    msg_target = update.message if update.message else update.callback_query
+    await msg_target.reply_text("Fetching your orders...")
+    
+    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        resp = await client.get(f"{base_url}/orders/telegram/{tid}")
+        if resp.status_code == 200:
+            orders = resp.json()
+            if not orders:
+                await msg_target.reply_text("📭 *You don't have any orders yet.*", parse_mode="Markdown")
+                return
+                
+            text = "🧾 *MY ORDERS*\n\n"
+            for order in orders:
+                status = order['status']
+                if status == "approved" or "approved" in status:
+                    status_display = "✅ Approved"
+                elif status == "pending_admin_approval":
+                    status_display = "⏳ Pending Admin Approval"
+                elif status == "rejected":
+                    status_display = "❌ Rejected"
+                else:
+                    status_display = f"ℹ️ {status.replace('_', ' ').title()}"
+                    
+                created = order['created_at'].split('T')[0] if order.get('created_at') else "Unknown"
+                price_str = f"₹{order.get('price', 0):,.0f}" if order.get('price') else "Free"
+                
+                text += (
+                    f"Order #ORD-{order['id']}\n"
+                    f"Plan: {order.get('product_name', 'Unknown')}\n"
+                    f"Price: {price_str}\n"
+                    f"Status: {status_display}\n"
+                    f"Created: {created}\n\n"
+                )
+            
+            await msg_target.reply_text(text, parse_mode="Markdown")
+        else:
+            await msg_target.reply_text("❌ Unable to load your orders right now.\nPlease try again or contact support.")
+
+async def orders_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await render_orders(update, context)
+
+async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await render_licenses(update, context)
+
+async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tid = str(update.effective_user.id)
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    msg_target = update.message if update.message else update.callback_query
+    await msg_target.reply_text("Fetching your downloads...")
     
     async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
         resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
@@ -708,21 +848,31 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             licenses = resp.json()
             active_licenses = [l for l in licenses if l['status'] == 'active']
             if not active_licenses:
-                await update.message.reply_text("You don't have any active EA licenses to download.")
+                await msg_target.reply_text("❌ *No files available.*\n\nYou don't have any active EA licenses to download.", parse_mode="Markdown")
                 return
                 
-            for l in active_licenses:
-                download_url = f"{base_url}/licenses/{l['id']}/download"
-                file_resp = await client.get(download_url)
-                if file_resp.status_code == 200:
-                    import io
-                    doc = io.BytesIO(file_resp.content)
-                    doc.name = f"InfinityTrader_{l['mt5_id']}.ex5"
-                    await update.message.reply_document(document=doc, caption=f"📦 EA for MT5 ID: {l['mt5_id']}")
-                else:
-                    await update.message.reply_text(f"Could not retrieve file for MT5 ID {l['mt5_id']}. It might still be compiling.")
+            text = "📥 *YOUR DOWNLOADS*\n\n"
+            kb = []
+            
+            for idx, l in enumerate(active_licenses, 1):
+                ltype = "Trial" if l.get('license_type') == 'trial' else "Lifetime"
+                gen = l['purchase_date'].split('T')[0] if l['purchase_date'] else "Unknown"
+                
+                text += (
+                    f"{idx}️⃣ InfinityTrader_{l['mt5_id']}.ex5\n"
+                    f"   MT5 ID: {l['mt5_id']}\n"
+                    f"   License: {ltype}\n"
+                    f"   Generated: {gen}\n\n"
+                )
+                
+                kb.append([InlineKeyboardButton(f"⬇️ Download EA (MT5 {l['mt5_id']})", callback_data=f"download_ea_{l['id']}_{l['mt5_id']}")])
+                
+            await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
-            await update.message.reply_text("Failed to fetch downloads.")
+            await msg_target.reply_text("❌ Unable to load your downloads right now.\nPlease try again or contact support.")
+
+async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await render_downloads(update, context)
 
 import json
 
