@@ -16,7 +16,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
 
 from keyboards.menu import get_main_menu_keyboard
-from utils.api_client import register_user, get_products, create_order, create_payment, get_user
+from utils.api_client import register_user, get_products, create_order, get_user
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
