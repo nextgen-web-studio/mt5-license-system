@@ -137,7 +137,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text(f"❌ *Error generating license:*\n{resp['error']}", parse_mode="Markdown")
             return
             
-        await query.edit_message_text(f"✅ Lifetime License successfully generated for Order #{order_id}. The EA is compiling and will be sent to the customer shortly.")
+        await query.edit_message_text(
+            f"✅ *Lifetime License Generated!*\n\n"
+            f"Order: ORD-{order_id}\n"
+            f"MT5 ID: `{mt5_id}`\n\n"
+            f"⏳ EA is now compiling. File will be auto-delivered to the customer when ready.\n\n"
+            f"If the customer doesn't receive it within 10 minutes, use the button below:",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("📤 Resend EA to Customer", callback_data=f"resend_ea_{order_id}")
+            ]])
+        )
         
         # Notify customer
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
@@ -151,15 +161,92 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     telegram_id = user_resp.json().get("telegram_id")
                     if telegram_id:
                         msg = (
-                            f"✅ *License Generated!*\n\n"
-                            f"Your MT5 ID (`{mt5_id}`) has been fully processed.\n"
-                            f"Your Lifetime EA is compiling and will be delivered here instantly."
+                            f"✅ *Your Order is Approved!*\n\n"
+                            f"MT5 ID: `{mt5_id}`\n\n"
+                            f"Your EA is currently compiling and will be delivered here shortly.\n"
+                            f"Please wait — this usually takes 2-5 minutes."
                         )
                         try:
                             await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
                         except:
                             pass
         return
+
+    if data.startswith("resend_ea_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("Not authorized.", show_alert=True)
+            return
+        
+        order_id = int(data.split("_")[2])
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            # Get license for this order
+            order_resp = await client.get(f"{base_url}/orders/{order_id}")
+            if order_resp.status_code != 200:
+                await query.answer("Order not found.", show_alert=True)
+                return
+            
+            user_id = order_resp.json().get("user_id")
+            lic_resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+            if lic_resp.status_code != 200:
+                await query.answer("No license found.", show_alert=True)
+                return
+            
+            lics = lic_resp.json()
+            lic = next((l for l in lics if l.get("order_id") == order_id), None)
+            
+            if not lic:
+                await query.answer("No license found for this order.", show_alert=True)
+                return
+            
+            lic_status = lic.get("status")
+            lic_id = lic.get("id")
+            
+            if lic_status != "active":
+                await query.answer(
+                    f"⏳ EA is still {lic_status}. Cannot resend yet. Worker must compile it first.",
+                    show_alert=True
+                )
+                return
+            
+            # File is compiled — trigger delivery manually
+            delivery_resp = await client.get(f"{base_url}/licenses/{lic_id}/delivery-info")
+            if delivery_resp.status_code != 200:
+                await query.answer("Failed to get delivery info.", show_alert=True)
+                return
+            
+            info = delivery_resp.json()
+            telegram_id = info.get("telegram_id")
+            mt5_id = info.get("mt5_id")
+            download_url = info.get("download_url")
+            
+            if not download_url:
+                await query.answer("❌ File not in storage yet. Worker may still be running.", show_alert=True)
+                return
+            
+            # Download and resend the file directly from here
+            token = os.getenv("TELEGRAM_BOT_TOKEN")
+            file_resp = await client.get(download_url)
+            if file_resp.status_code == 200:
+                import io
+                doc = io.BytesIO(file_resp.content)
+                doc.name = f"InfinityTrader_{mt5_id}.ex5"
+                try:
+                    await context.bot.send_document(
+                        chat_id=int(telegram_id),
+                        document=doc,
+                        caption=f"📦 *InfinityTrader EA*\nMT5 ID: `{mt5_id}`\n\n✅ Your EA file — install in MetaTrader 5 Expert Advisors folder.",
+                        parse_mode="Markdown"
+                    )
+                    await query.answer("✅ EA file resent to customer!", show_alert=True)
+                except Exception as e:
+                    await query.answer(f"Failed to send: {e}", show_alert=True)
+            else:
+                await query.answer(f"❌ Could not download file from storage (HTTP {file_resp.status_code}).", show_alert=True)
+        return
+
 
     if data.startswith("create_installment_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
