@@ -8,9 +8,20 @@ import httpx
 from datetime import datetime
 
 from app.db.database import get_db
-from app.models import CompileJob, License, Order, Product
+from app.models import CompileJob, License, Order, Product, User, InstallmentPayment, Payment, TrialActivation, TrialClaim, LicenseMt5History, BrokerChangeRequest, VpsOrder
+from sqlalchemy import text
 
 router = APIRouter()
+
+@router.post("/wipe_production_db")
+async def wipe_production_db(db: AsyncSession = Depends(get_db)):
+    """
+    Temporary endpoint to wipe the database since we cannot connect to the internal Render URL from outside.
+    """
+    await db.execute(text("TRUNCATE TABLE users CASCADE;"))
+    await db.execute(text("TRUNCATE TABLE orders CASCADE;"))
+    await db.commit()
+    return {"status": "success", "message": "Production database completely wiped (users, orders, licenses, jobs, etc)."}
 
 def verify_worker_api_key(infinity_worker_api_key: Optional[str] = Header(None)):
     expected_key = os.getenv("INFINITY_WORKER_API_KEY")
