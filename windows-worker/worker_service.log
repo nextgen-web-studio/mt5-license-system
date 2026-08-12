@@ -2226,3 +2226,5 @@ operable program or batch file.
 2026-08-12 07:41:24,414 [WORKER] [INFO] Upload successful
 2026-08-12 07:41:24,414 [WORKER] [SUCCESS] Job completed: 66
 2026-08-12 07:49:34,427 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 67, 'license_id': 63, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'EA Basic Plan (1month)'}
+2026-08-12 07:52:50,069 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 68, 'license_id': 64, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'EA Basic Plan (1month)'}
+2026-08-12 07:53:32,470 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 69, 'license_id': 65, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'EA Basic Plan (1month)'}

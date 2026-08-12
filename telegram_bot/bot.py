@@ -595,7 +595,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         products = await get_products(product_type=p_type)
         if not products:
             try:
-                await query.edit_message_text(f"No EA products available at this time.", reply_markup=get_main_menu_keyboard())
+                await query.edit_message_text("No EA products available at this time.", reply_markup=get_main_menu_keyboard())
             except Exception:
                 pass
             return
@@ -605,21 +605,42 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("Session expired. Please send /start again.")
             return
         
-        # Show plan selection
-        keyboard = []
-        for p in products:
-            duration_label = "Lifetime" if p.get('duration', 0) == 0 else f"{p['duration']} Month{'s' if p['duration'] > 1 else ''}"
-            keyboard.append([InlineKeyboardButton(
-                f"📦 {p['name']} — ₹{p['price']:,.0f}",
-                callback_data=f"buy_product_{p['id']}_{p_type}"
-            )])
-        keyboard.append([InlineKeyboardButton("« Back", callback_data="main_menu")])
+        # Only show Lifetime plan (duration == 0), no price on button
+        lifetime_plans = [p for p in products if p.get('duration', 0) == 0]
+        if not lifetime_plans:
+            lifetime_plans = products  # fallback: show all if none are lifetime
         
-        await query.edit_message_text(
-            "🛒 *Select Your EA Plan*\n\nChoose a plan to continue:",
-            parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        if len(lifetime_plans) == 1:
+            # Only one plan — skip selection, go straight to MT5 ID
+            plan = lifetime_plans[0]
+            context.user_data['pending_product_id'] = plan['id']
+            context.user_data['pending_p_type'] = p_type
+            
+            if not context.user_data.get('db_user_phone'):
+                await query.edit_message_text("Please enter your **Mobile Number** to continue:", parse_mode="Markdown")
+                context.user_data['awaiting_phone'] = True
+                return
+            
+            await query.edit_message_text(
+                f"📦 *{plan['name']}*\n\nPlease enter your **MT5 ID** to continue:",
+                parse_mode="Markdown"
+            )
+            context.user_data['awaiting_mt5_id'] = True
+        else:
+            # Multiple lifetime plans — show selection without price
+            keyboard = []
+            for p in lifetime_plans:
+                keyboard.append([InlineKeyboardButton(
+                    f"📦 {p['name']}",
+                    callback_data=f"buy_product_{p['id']}_{p_type}"
+                )])
+            keyboard.append([InlineKeyboardButton("« Back", callback_data="main_menu")])
+            
+            await query.edit_message_text(
+                "🛒 *Select Your EA Plan*\n\nChoose a plan to continue:",
+                parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
         
     elif data == "buy_vps":
         p_type = "VPS"
