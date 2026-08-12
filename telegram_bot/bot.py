@@ -752,8 +752,9 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
+            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
             if not licenses:
-                await msg_target.reply_text("❌ *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown")
+                await msg_target.reply_text("❌ *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown", reply_markup=home_kb)
                 return
                 
             if len(licenses) == 1:
@@ -771,7 +772,7 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"Activated: {activated}\n"
                     f"Expires: {expiry}"
                 )
-                await msg_target.reply_text(text, parse_mode="Markdown")
+                await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=home_kb)
                 return
                 
             # Multiple licenses
@@ -784,6 +785,7 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 kb.append([InlineKeyboardButton(f"MT5 {l['mt5_id']}", callback_data=f"view_license_{l['id']}")])
                 
+            kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
             await msg_target.reply_text("❌ Unable to load your licenses right now.\nPlease try again or contact support.")
@@ -799,8 +801,9 @@ async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await client.get(f"{base_url}/orders/telegram/{tid}")
         if resp.status_code == 200:
             orders = resp.json()
+            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
             if not orders:
-                await msg_target.reply_text("📭 *You don't have any orders yet.*", parse_mode="Markdown")
+                await msg_target.reply_text("📭 *You don't have any orders yet.*", parse_mode="Markdown", reply_markup=home_kb)
                 return
                 
             text = "🧾 *MY ORDERS*\n\n"
@@ -826,7 +829,7 @@ async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"Created: {created}\n\n"
                 )
             
-            await msg_target.reply_text(text, parse_mode="Markdown")
+            await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=home_kb)
         else:
             await msg_target.reply_text("❌ Unable to load your orders right now.\nPlease try again or contact support.")
 
@@ -847,8 +850,9 @@ async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if resp.status_code == 200:
             licenses = resp.json()
             active_licenses = [l for l in licenses if l['status'] == 'active']
+            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
             if not active_licenses:
-                await msg_target.reply_text("❌ *No files available.*\n\nYou don't have any active EA licenses to download.", parse_mode="Markdown")
+                await msg_target.reply_text("❌ *No files available.*\n\nYou don't have any active EA licenses to download.", parse_mode="Markdown", reply_markup=home_kb)
                 return
                 
             text = "📥 *YOUR DOWNLOADS*\n\n"
@@ -867,6 +871,7 @@ async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 kb.append([InlineKeyboardButton(f"⬇️ Download EA (MT5 {l['mt5_id']})", callback_data=f"download_ea_{l['id']}_{l['mt5_id']}")])
                 
+            kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
             await msg_target.reply_text("❌ Unable to load your downloads right now.\nPlease try again or contact support.")
@@ -991,7 +996,7 @@ async def admintest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_id = os.getenv("ADMIN_CHAT_ID")
     if str(update.effective_user.id) != str(admin_id):
-        await update.message.reply_text(f"Unauthorized. Your Telegram ID is: {update.effective_user.id}. (Configured Admin ID: {admin_id})")
+        await update.message.reply_text("❌ You are not authorized to access the admin panel.")
         return
         
     from utils.api_client import get_settings

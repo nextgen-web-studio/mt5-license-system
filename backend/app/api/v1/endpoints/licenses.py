@@ -66,54 +66,65 @@ async def update_license(license_id: int, update_data: LicenseUpdate, db: AsyncS
     await db.refresh(license_obj)
     return license_obj
 
-@router.post("/", response_model=LicenseResponse)
+@router.post("/generate", response_model=LicenseResponse)
 async def generate_license(license_in: LicenseCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
-    # 1. Fetch order and verify it's paid
-    result = await db.execute(select(Order).filter(Order.id == license_in.order_id))
-    order = result.scalar_one_or_none()
-    
-    if not order or order.status != "approved_waiting_for_mt5_id":
-        raise HTTPException(status_code=400, detail="Order not found or not approved")
+    try:
+        # 1. Fetch order and verify it's paid
+        result = await db.execute(select(Order).filter(Order.id == license_in.order_id))
+        order = result.scalar_one_or_none()
         
-    # 2. Get product duration
-    prod_result = await db.execute(select(Product).filter(Product.id == order.product_id))
-    product = prod_result.scalar_one_or_none()
-    
-    if not product or product.type != "EA":
-        raise HTTPException(status_code=400, detail="Invalid product type for license")
+        if not order or order.status != "approved_waiting_for_mt5_id":
+            raise HTTPException(status_code=400, detail="Order not found or not approved")
+            
+        # 2. Get product duration
+        prod_result = await db.execute(select(Product).filter(Product.id == order.product_id))
+        product = prod_result.scalar_one_or_none()
         
-    import datetime
-    from dateutil.relativedelta import relativedelta
-    
-    # Handle Lifetime Plan
-    if product.duration == 0 or product.duration >= 999:
-        expiry = None
-    else:
-        expiry = datetime.datetime.now() + relativedelta(months=product.duration)
-    
-    # 3. Create License
-    db_license = License(
-        order_id=order.id,
-        user_id=order.user_id,
-        mt5_id=license_in.mt5_id,
-        expiry_date=expiry,
-        status="generating"
-    )
-    db.add(db_license)
-    await db.commit()
-    await db.refresh(db_license)
-    
-    # 4. Enqueue compilation job for background worker
-    job = CompileJob(license_id=db_license.id, status="pending")
-    db.add(job)
-    
-    order.status = "compiling"
-    
-    await db.commit()
-    
-    background_tasks.add_task(start_azure_vm_if_needed)
-    
-    return db_license
+        if not product or product.type != "EA":
+            raise HTTPException(status_code=400, detail="Invalid product type for license")
+            
+        from datetime import datetime, timezone
+        from dateutil.relativedelta import relativedelta
+        import uuid
+        import logging
+        
+        # Handle Lifetime Plan
+        if product.duration == 0 or product.duration >= 999:
+            expiry = None
+        else:
+            expiry = datetime.now(timezone.utc) + relativedelta(months=product.duration)
+        
+        # 3. Create License
+        db_license = License(
+            order_id=order.id,
+            user_id=order.user_id,
+            mt5_id=license_in.mt5_id,
+            expiry_date=expiry,
+            status="generating",
+            license_uuid=str(uuid.uuid4())
+        )
+        db.add(db_license)
+        await db.flush() # flush to get db_license.id before committing
+        
+        # 4. Enqueue compilation job for background worker
+        job = CompileJob(license_id=db_license.id, status="pending")
+        db.add(job)
+        
+        order.status = "compiling"
+        
+        await db.commit()
+        await db.refresh(db_license)
+        
+        background_tasks.add_task(start_azure_vm_if_needed)
+        
+        return db_license
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.error(f"[LICENSE GENERATE] DB Error: {str(e)}", exc_info=True)
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database or Server Error during license generation: {str(e)}")
 
 @router.get("/", response_model=List[LicenseResponse])
 async def list_licenses(db: AsyncSession = Depends(get_db)):
