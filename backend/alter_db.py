@@ -11,11 +11,19 @@ async def alter_table():
     print("Altering table...")
     async with AsyncSessionLocal() as db:
         try:
-            await db.execute(text("ALTER TABLE orders ADD COLUMN mt5_id VARCHAR;"))
+            await db.execute(text("ALTER TABLE licenses ADD COLUMN broker VARCHAR;"))
             await db.commit()
-            print("Successfully added mt5_id to orders table.")
+            print("Added broker to licenses table.")
         except Exception as e:
-            print(f"Error (maybe already exists?): {e}")
+            print(f"Error adding broker to licenses: {e}")
+            
+        try:
+            await db.execute(text("ALTER TABLE broker_change_requests ADD COLUMN old_broker VARCHAR;"))
+            await db.execute(text("ALTER TABLE broker_change_requests ADD COLUMN new_broker VARCHAR;"))
+            await db.commit()
+            print("Added old_broker and new_broker to broker_change_requests table.")
+        except Exception as e:
+            print(f"Error adding to broker_change_requests: {e}")
 
 if __name__ == "__main__":
     asyncio.run(alter_table())

@@ -97,23 +97,130 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data == "broker_change":
         user_id = context.user_data.get('db_user_id')
+        tid = update.effective_user.id
         if not user_id:
             await query.edit_message_text("Session expired. Please send /start again.")
             return
             
+        await query.edit_message_text("Fetching your active licenses...")
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+            resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
+            
+        if resp.status_code != 200:
+            await query.edit_message_text("Failed to fetch your licenses. Please contact support.")
+            return
+            
+        licenses = resp.json()
+        active_licenses = [lic for lic in licenses if lic['status'] == 'active' and lic.get('license_type') == 'paid']
+        
+        if not active_licenses:
+            await query.edit_message_text("You do not have any active Lifetime licenses eligible for a broker change.")
+            return
+            
+        if len(active_licenses) == 1:
+            lic = active_licenses[0]
+            context.user_data['bc_license_id'] = lic['id']
+            context.user_data['bc_old_mt5_id'] = lic['mt5_id']
+            context.user_data['bc_old_broker'] = lic.get('broker', 'Unknown')
+            
+            context.user_data['awaiting_broker_change_mt5_id'] = True
+            await query.edit_message_text(
+                f"🔄 *Broker Change*\n\nSelected License:\nMT5 ID: `{lic['mt5_id']}`\nBroker: `{lic.get('broker', 'Unknown')}`\n\nPlease enter your **NEW MT5 ID**:",
+                parse_mode="Markdown"
+            )
+            return
+            
         msg = (
-            "🔄 *Changed your broker?*\n\n"
-            "If your new broker has provided you with a new MT5 account/ID, you can submit a Broker Change request.\n\n"
-            "Your existing Lifetime License is currently linked to your old MT5 ID.\n"
-            "The old MT5 license will be deactivated when the broker change is approved."
+            "🔄 *BROKER CHANGE*\n\n"
+            "You have multiple active EA licenses.\n"
+            "Please select the license for which you want to change the broker."
         )
-        kb = [[InlineKeyboardButton("📩 Request Broker Change", callback_data="start_broker_change")]]
+        kb = []
+        for lic in active_licenses:
+            broker_name = lic.get('broker', 'Unknown')
+            kb.append([InlineKeyboardButton(f"🔄 MT5 {lic['mt5_id']} - {broker_name}", callback_data=f"bc_select_{lic['id']}_{lic['mt5_id']}_{broker_name}")])
+        kb.append([InlineKeyboardButton("⬅️ Back", callback_data="main_menu")])
+        
         await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         return
         
-    if data == "start_broker_change":
-        context.user_data['awaiting_new_mt5_id'] = True
-        await query.edit_message_text("Please enter your **NEW MT5 ID**:")
+    if data.startswith("bc_select_"):
+        parts = data.split("_")
+        lic_id = parts[2]
+        old_mt5 = parts[3]
+        old_broker = "_".join(parts[4:])
+        
+        context.user_data['bc_license_id'] = lic_id
+        context.user_data['bc_old_mt5_id'] = old_mt5
+        context.user_data['bc_old_broker'] = old_broker
+        
+        context.user_data['awaiting_broker_change_mt5_id'] = True
+        await query.edit_message_text(
+            f"🔄 *Broker Change*\n\nSelected License:\nMT5 ID: `{old_mt5}`\nBroker: `{old_broker}`\n\nPlease enter your **NEW MT5 ID**:",
+            parse_mode="Markdown"
+        )
+        return
+
+    if data == "cancel_broker_change":
+        context.user_data['bc_license_id'] = None
+        context.user_data['bc_new_mt5_id'] = None
+        context.user_data['bc_new_broker'] = None
+        await query.edit_message_text("❌ Broker change request cancelled.")
+        return
+        
+    if data == "submit_broker_change":
+        lic_id = context.user_data.get('bc_license_id')
+        new_mt5 = context.user_data.get('bc_new_mt5_id')
+        new_broker = context.user_data.get('bc_new_broker')
+        tid = update.effective_user.id
+        
+        if not lic_id or not new_mt5 or not new_broker:
+            await query.edit_message_text("Session data lost. Please try again.")
+            return
+            
+        await query.edit_message_text("Submitting your request...")
+        from utils.api_client import request_broker_change
+        resp = await request_broker_change(lic_id, new_mt5, new_broker, tid)
+        
+        if "error" in resp:
+            await query.edit_message_text(f"❌ Failed: {resp['error']}")
+            return
+            
+        request_id = resp['request_id']
+        
+        # Notify Admin
+        admin_chat_id = os.getenv("ADMIN_CHAT_ID")
+        if admin_chat_id:
+            admin_msg = (
+                f"🔄 *BROKER CHANGE REQUEST*\n\n"
+                f"Request ID: BCR-{request_id}\n"
+                f"Customer: {context.user_data.get('db_user_name', 'Unknown')}\n"
+                f"Telegram ID: `{tid}`\n\n"
+                f"Selected License ID: {lic_id}\n"
+                f"Old MT5 ID: `{context.user_data.get('bc_old_mt5_id')}`\n"
+                f"Old Broker: `{context.user_data.get('bc_old_broker')}`\n\n"
+                f"Requested Change:\n"
+                f"New MT5 ID: `{new_mt5}`\n"
+                f"New Broker: `{new_broker}`\n\n"
+                f"Status: Pending Admin Approval"
+            )
+            kb = [
+                [InlineKeyboardButton("✅ APPROVE", callback_data=f"approve_change_{request_id}"),
+                 InlineKeyboardButton("❌ REJECT", callback_data=f"reject_change_{request_id}")]
+            ]
+            try:
+                await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+            except Exception as e:
+                logging.error(f"Failed to notify admin: {e}")
+                
+        await query.edit_message_text("✅ Your broker change request has been submitted and is pending admin approval.")
+        
+        # Clear state
+        context.user_data['bc_license_id'] = None
+        context.user_data['bc_new_mt5_id'] = None
+        context.user_data['bc_new_broker'] = None
         return
 
     if data.startswith("approve_change_") or data.startswith("reject_change_"):
@@ -432,85 +539,42 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"❌ Failed to update `{setting_key}`.")
         return
 
-    if context.user_data.get('awaiting_new_mt5_id'):
-        context.user_data['awaiting_new_mt5_id'] = False
+    if context.user_data.get('awaiting_broker_change_mt5_id'):
+        context.user_data['awaiting_broker_change_mt5_id'] = False
         new_mt5_id = text.strip()
+        context.user_data['bc_new_mt5_id'] = new_mt5_id
         
-        # We need to find their active license
-        user_id = context.user_data.get('db_user_id')
-        tid = update.effective_user.id
+        context.user_data['awaiting_broker_change_broker_name'] = True
+        await update.message.reply_text("Please enter your **NEW BROKER NAME**:", parse_mode="Markdown")
+        return
+
+    if context.user_data.get('awaiting_broker_change_broker_name'):
+        context.user_data['awaiting_broker_change_broker_name'] = False
+        new_broker = text.strip()
         
-        await update.message.reply_text("Finding your active license...")
+        lic_id = context.user_data.get('bc_license_id')
+        old_mt5 = context.user_data.get('bc_old_mt5_id')
+        old_broker = context.user_data.get('bc_old_broker')
+        new_mt5_id = context.user_data.get('bc_new_mt5_id')
         
-        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
-        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
-            resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
-            if resp.status_code == 200:
-                licenses = resp.json()
-                active_licenses = [l for l in licenses if l['status'] == 'active' and l.get('license_type', 'paid') != 'trial']
-                if not active_licenses:
-                    await update.message.reply_text("You don't have any active paid EA licenses eligible for a broker change.")
-                    return
-                
-                # Assume they only have one lifetime license as per rules
-                lic = active_licenses[0]
-                old_mt5_id = lic['mt5_id']
-                license_id = lic['id']
-                
-                from utils.api_client import request_broker_change
-                change_resp = await request_broker_change(license_id, new_mt5_id)
-                if "error" in change_resp:
-                    await update.message.reply_text(f"❌ Failed: {change_resp['error']}")
-                    return
-                    
-                request_id = change_resp['request_id']
-                
-                # Notify User
-                admin_username = os.getenv("ADMIN_USERNAME", "@infinitytrader004")
-                summary = (
-                    f"📋 *BROKER CHANGE REQUEST*\n\n"
-                    f"Old MT5 ID: `{old_mt5_id}`\n"
-                    f"New MT5 ID: `{new_mt5_id}`\n"
-                    f"Product: Infinity Trader EA\n"
-                    f"License: Lifetime\n\n"
-                    f"Status: ⏳ Pending Admin Approval\n\n"
-                    f"Please contact the admin to confirm your broker change."
-                )
-                
-                kb = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}开展")]]
-                await update.message.reply_text(summary, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-                
-                # Notify Admin
-                admin_chat_id = os.getenv("ADMIN_CHAT_ID")
-                if admin_chat_id:
-                    admin_msg = (
-                        f"🔄 *BROKER CHANGE REQUEST*\n\n"
-                        f"👤 Customer: {context.user_data.get('db_user_name', 'Unknown')}\n"
-                        f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-                        f"💬 Telegram: @{update.effective_user.username or update.effective_user.id}\n"
-                        f"Old MT5 ID: `{old_mt5_id}`\n"
-                        f"New MT5 ID: `{new_mt5_id}`\n"
-                        f"License: Lifetime\n\n"
-                        f"Status: ⏳ PENDING APPROVAL"
-                    )
-                    admin_kb = [
-                        [
-                            InlineKeyboardButton("✅ APPROVE CHANGE", callback_data=f"approve_change_{request_id}"),
-                            InlineKeyboardButton("❌ REJECT CHANGE", callback_data=f"reject_change_{request_id}")
-                        ]
-                    ]
-                    try:
-                        await context.bot.send_message(
-                            chat_id=admin_chat_id,
-                            text=admin_msg,
-                            parse_mode="Markdown",
-                            reply_markup=InlineKeyboardMarkup(admin_kb)
-                        )
-                    except Exception as e:
-                        logging.error(f"Failed to notify admin: {e}")
-            else:
-                await update.message.reply_text("Failed to fetch your licenses.")
+        msg = (
+            "📋 *BROKER CHANGE REQUEST*\n\n"
+            f"Current MT5 ID: `{old_mt5}`\n"
+            f"Current Broker: `{old_broker}`\n\n"
+            f"New MT5 ID: `{new_mt5_id}`\n"
+            f"New Broker: `{new_broker}`\n\n"
+            "License: Lifetime\n"
+            "Status: Pending Admin Approval"
+        )
+        
+        context.user_data['bc_new_broker'] = new_broker
+        
+        kb = [
+            [InlineKeyboardButton("📨 Submit Request", callback_data="submit_broker_change")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="cancel_broker_change")]
+        ]
+        
+        await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         return
 
     if context.user_data.get('awaiting_trial_mt5_id'):

@@ -154,12 +154,12 @@ async def request_free_trial(telegram_id, mt5_id):
             logging.error(f"Error requesting free trial: {e}")
             return {"error": f"Connection Error: {str(e)}"}
 
-async def request_broker_change(license_id, new_mt5_id):
+async def request_broker_change(license_id, new_mt5_id, new_broker, telegram_id):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
                 f"{BASE_URL}/licenses/{license_id}/broker-change-request",
-                params={"new_mt5_id": new_mt5_id}
+                json={"new_mt5_id": new_mt5_id, "new_broker": new_broker, "telegram_id": str(telegram_id)}
             )
             if response.status_code >= 400:
                 return {"error": f"API Error {response.status_code}: {response.text}"}

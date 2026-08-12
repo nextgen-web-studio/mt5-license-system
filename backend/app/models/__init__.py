@@ -54,6 +54,7 @@ class License(Base):
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=True) # nullable for manual/trial grants
     user_id = Column(Integer, ForeignKey("users.id"))
     mt5_id = Column(String)
+    broker = Column(String, nullable=True)
     license_type = Column(String, default="paid") # 'paid' or 'trial'
     purchase_date = Column(DateTime(timezone=True), server_default=func.now())
     expiry_date = Column(DateTime(timezone=True))
@@ -143,7 +144,9 @@ class BrokerChangeRequest(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     license_id = Column(Integer, ForeignKey("licenses.id"))
     old_mt5_id = Column(String)
+    old_broker = Column(String, nullable=True)
     new_mt5_id = Column(String)
+    new_broker = Column(String, nullable=True)
     status = Column(String, default="pending_broker_change_approval")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

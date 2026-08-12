@@ -288,28 +288,72 @@ async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=licenses_export.csv"}
     )
+class BrokerChangePayload(BaseModel):
+    new_mt5_id: str
+    new_broker: str
+    telegram_id: str
+
 @router.post("/{license_id}/broker-change-request")
-async def request_broker_change(license_id: int, new_mt5_id: str, db: AsyncSession = Depends(get_db)):
-    from app.models import BrokerChangeRequest
+async def request_broker_change(license_id: int, payload: BrokerChangePayload, db: AsyncSession = Depends(get_db)):
+    from app.models import BrokerChangeRequest, User
     
-    result = await db.execute(select(License).filter(License.id == license_id))
-    lic = result.scalar_one_or_none()
-    
-    if not lic:
-        raise HTTPException(status_code=404, detail="License not found")
+    try:
+        # Verify user exists by telegram_id
+        user_result = await db.execute(select(User).filter(User.telegram_id == payload.telegram_id))
+        user = user_result.scalar_one_or_none()
         
-    req = BrokerChangeRequest(
-        user_id=lic.user_id,
-        license_id=lic.id,
-        old_mt5_id=lic.mt5_id,
-        new_mt5_id=new_mt5_id,
-        status="pending_broker_change_approval"
-    )
-    db.add(req)
-    await db.commit()
-    await db.refresh(req)
-    
-    return {"status": "success", "request_id": req.id}
+        if not user:
+            raise HTTPException(status_code=403, detail="Unauthorized: User not found")
+            
+        result = await db.execute(select(License).filter(License.id == license_id))
+        lic = result.scalar_one_or_none()
+        
+        if not lic:
+            raise HTTPException(status_code=404, detail="License not found")
+            
+        if lic.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Unauthorized: License does not belong to you")
+            
+        if lic.status != "active":
+            raise HTTPException(status_code=400, detail="License must be active to request a broker change")
+            
+        if lic.license_type != "paid":
+            raise HTTPException(status_code=400, detail="Only Lifetime (paid) licenses can request a broker change")
+            
+        if lic.mt5_id == payload.new_mt5_id:
+            raise HTTPException(status_code=400, detail="New MT5 ID cannot be the same as the current one")
+            
+        if not payload.new_mt5_id:
+            raise HTTPException(status_code=400, detail="New MT5 ID cannot be empty")
+            
+        # Check for duplicate pending requests
+        existing_req_result = await db.execute(
+            select(BrokerChangeRequest)
+            .filter(BrokerChangeRequest.license_id == license_id, BrokerChangeRequest.status == "pending_broker_change_approval")
+        )
+        if existing_req_result.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="A broker change request is already pending for this license")
+            
+        req = BrokerChangeRequest(
+            user_id=lic.user_id,
+            license_id=lic.id,
+            old_mt5_id=lic.mt5_id,
+            old_broker=lic.broker,
+            new_mt5_id=payload.new_mt5_id,
+            new_broker=payload.new_broker,
+            status="pending_broker_change_approval"
+        )
+        db.add(req)
+        await db.commit()
+        await db.refresh(req)
+        
+        return {"status": "success", "request_id": req.id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.error(f"Internal Error in broker-change-request: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An unexpected error occurred while processing your request")
 
 @router.post("/broker-change/{request_id}/approve")
 async def approve_broker_change(request_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
@@ -345,6 +389,7 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     
     # 4. Update license
     lic.mt5_id = req.new_mt5_id
+    lic.broker = req.new_broker
     # Note: lifetime expiry remains NULL, no need to touch it
     
     # 5. Update request status
