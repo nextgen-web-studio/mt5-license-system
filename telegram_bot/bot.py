@@ -119,9 +119,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer("You are not authorized to perform this action.", show_alert=True)
             return
             
-        parts = data.split("_")
-        order_id = int(parts[2])
-        mt5_id = parts[3]
+        # Format: generate_lifetime_{order_id}_{mt5_id}
+        # Use maxsplit=3 to preserve underscores in the MT5 ID
+        _, _, order_id_str, mt5_id = data.split("_", 3)
+        order_id = int(order_id_str)
         
         await query.edit_message_text(f"🚀 Generating Lifetime License for Order #{order_id} (MT5: {mt5_id})...")
         
@@ -141,7 +142,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
             if order_resp.status_code == 200:
                 user_id = order_resp.json().get("user_id")
-                user_resp = await client.get(f"{base_url}/users/id/{user_id}")
+                user_resp = await client.get(f"{base_url}/users/by-id/{user_id}")
                 if user_resp.status_code == 200:
                     telegram_id = user_resp.json().get("telegram_id")
                     if telegram_id:
