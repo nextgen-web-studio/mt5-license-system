@@ -96,7 +96,7 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
         
     order.status = "approved_waiting_for_mt5_id"
     await db.commit()
-    return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id}
+    return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id, "mt5_id": order.mt5_id or ""}
 
 @router.put("/{order_id}/mt5")
 async def update_order_mt5(order_id: int, payload: OrderMt5Update, db: AsyncSession = Depends(get_db)):

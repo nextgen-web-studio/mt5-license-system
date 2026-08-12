@@ -63,7 +63,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         resp = await approve_order(order_id)
         if "error" not in resp:
-            await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nThe customer has been asked to provide their MT5 ID.")
+            mt5_id = resp.get("mt5_id", "")
+            kb = [
+                [InlineKeyboardButton("🚀 Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
+                [InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
+            ]
+            await query.edit_message_text(
+                f"✅ Order #{order_id} has been APPROVED.\n\nMT5 ID: `{mt5_id}`\n\nWhat would you like to do?",
+                parse_mode="Markdown",
+                reply_markup=InlineKeyboardMarkup(kb)
+            )
             
             # Notify Customer
             try:
@@ -71,15 +80,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if telegram_id:
                     msg = (
                         f"✅ *YOUR ORDER HAS BEEN APPROVED*\n\n"
-                        f"Your EA Lifetime License order (ORD-{order_id}) has been approved.\n\n"
-                        f"Please enter your **MT5 ID** to continue with license generation:"
+                        f"Your EA order (ORD-{order_id}) has been approved.\n\n"
+                        f"Your EA is being prepared and will be delivered to you shortly."
                     )
                     await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
-                    # We can't set user_data of another user directly without a persistence backend that shares state perfectly,
-                    # but python-telegram-bot allows context.application.user_data[int(telegram_id)] if memory is shared.
-                    # We will update the user data for the specific user.
-                    context.application.user_data[int(telegram_id)]['awaiting_approved_mt5_id'] = True
-                    context.application.user_data[int(telegram_id)]['pending_order_id'] = order_id
             except Exception as e:
                 logging.error(f"Failed to notify user: {e}")
         else:
@@ -574,9 +578,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data['awaiting_phone'] = True
             return
             
-        # If they already have a phone, proceed directly to order summary
-        # We need to simulate an update passing to proceed_to_order_summary
-        await proceed_to_order_summary(update, context)
+        # Phone already on file - ask for MT5 ID next
+        await query.edit_message_text("Please enter your **MT5 ID** to continue with the order:", parse_mode="Markdown")
+        context.user_data["awaiting_mt5_id"] = True
         
     elif data == "free_trial":
         user_id = context.user_data.get('db_user_id')
@@ -606,6 +610,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     product_id = context.user_data.get('pending_product_id')
     p_type = context.user_data.get('pending_p_type')
     user_id = context.user_data.get('db_user_id')
+    mt5_id = context.user_data.get('pending_mt5_id', '')
     
     if not user_id:
         if update.message:
@@ -614,7 +619,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             await update.callback_query.edit_message_text("Session expired. Please /start again.")
         return
         
-    order = await create_order(user_id, product_id, p_type)
+    order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id)
     if not order or "error" in order:
         err = order.get("error", "Unknown") if order else "Failed to create order"
         msg = f"❌ *Error:*\n```\n{err}\n```"
@@ -638,6 +643,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         f"Order ID: #ORD-{order['id']}\n"
         f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
         f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+        f"🖥 MT5 ID: `{mt5_id}`\n"
         f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
         f"Status: ⏳ Pending Admin Approval\n\n"
         f"Please contact the admin to discuss and confirm your order.\n"
@@ -658,6 +664,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             f"Order ID: ORD-{order['id']}\n"
             f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
             f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+            f"MT5 ID: `{mt5_id}`\n"
             f"Telegram ID: `{update.effective_user.id}`\n"
             f"Plan: {product['name'] if product else 'Unknown'}\n"
             f"Status: Pending Admin Approval"
@@ -679,6 +686,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             logging.error(f"Failed to notify admin: {e}")
             
     context.user_data['pending_product_id'] = None
+    context.user_data['pending_mt5_id'] = None
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
@@ -755,9 +763,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_phone(user_id, phone)
             context.user_data['db_user_phone'] = phone
             
-        # Check if they were in the middle of a purchase
+        # Check if they were in the middle of a purchase — now ask MT5 ID next
         if context.user_data.get('pending_product_id'):
-            await proceed_to_order_summary(update, context)
+            await update.message.reply_text(
+                "Please enter your **MT5 ID** to continue:",
+                parse_mode="Markdown"
+            )
+            context.user_data['awaiting_mt5_id'] = True
             return
             
         welcome_text = (
@@ -767,44 +779,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
         return
 
-    if context.user_data.get('awaiting_approved_mt5_id'):
-        context.user_data['awaiting_approved_mt5_id'] = False
+    if context.user_data.get('awaiting_mt5_id'):
+        context.user_data['awaiting_mt5_id'] = False
         mt5_id = text.strip()
-        order_id = context.user_data.get('pending_order_id')
-        
-        await update.message.reply_text("🔄 Verifying and saving your MT5 ID...")
-        
-        from utils.api_client import save_order_mt5_id
-        resp = await save_order_mt5_id(order_id, mt5_id)
-        
-        if "error" in resp:
-            await update.message.reply_text(f"❌ *Error:*\n{resp['error']}", parse_mode="Markdown")
-            return
-            
-        success_msg = (
-            f"✅ *MT5 ID Saved!*\n\n"
-            f"Thank you. Your MT5 ID (`{mt5_id}`) has been received.\n"
-            f"Your EA will be prepared shortly."
-        )
-        await update.message.reply_text(success_msg, parse_mode="Markdown")
-        
-        # Notify Admin with buttons
-        admin_id = os.getenv("ADMIN_CHAT_ID")
-        if admin_id:
-            admin_msg = f"📩 *MT5 ID Received*\n\nCustomer for Order #{order_id} submitted MT5 ID: `{mt5_id}`\n\nWhat would you like to do?"
-            kb = [
-                [InlineKeyboardButton("🚀 Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
-                [InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
-            ]
-            try:
-                await context.bot.send_message(chat_id=admin_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-            except Exception as e:
-                import logging
-                logging.error(f"Failed to notify admin: {e}")
-        
-        context.user_data['pending_order_id'] = None
+        context.user_data['pending_mt5_id'] = mt5_id
+        await proceed_to_order_summary(update, context)
         return
-        
+
     setting_key = context.user_data.get('awaiting_admin_setting_key')
     if setting_key:
         context.user_data['awaiting_admin_setting_key'] = None
