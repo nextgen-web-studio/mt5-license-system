@@ -47,24 +47,48 @@ async def get_pending_jobs(db: AsyncSession = Depends(get_db), api_key: str = De
 @router.post("/reset-stuck")
 async def reset_stuck_jobs(db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
     """
-    Reset all 'processing' or 'failed' jobs back to 'pending' so the worker can retry them.
-    Use this when the worker crashed mid-job or was never running.
+    Reset all 'processing' jobs back to 'pending' so the worker can retry them.
+    Skips permanently failed jobs (PERMANENTLY_SKIPPED error) and jobs with no MT5 ID.
     """
     from sqlalchemy import update as sql_update
     
-    # Reset processing jobs (worker crashed without uploading)
-    stmt1 = (
-        sql_update(CompileJob)
-        .where(CompileJob.status.in_(["processing", "failed"]))
-        .values(status="pending", worker_id=None, started_at=None, attempt_count=0)
+    # Find stuck processing/failed jobs that are NOT permanently skipped
+    result = await db.execute(
+        select(CompileJob).where(
+            CompileJob.status.in_(["processing", "failed"]),
+            ~CompileJob.error_message.like("PERMANENTLY_SKIPPED%") if CompileJob.error_message is not None else True
+        )
     )
-    result1 = await db.execute(stmt1)
+    stuck_jobs = result.scalars().all()
+    
+    reset_count = 0
+    skipped_count = 0
+    for job in stuck_jobs:
+        # Skip permanently failed
+        if job.error_message and job.error_message.startswith("PERMANENTLY_SKIPPED"):
+            skipped_count += 1
+            continue
+        # Check if the license has a valid MT5 ID
+        lic_res = await db.execute(select(License).filter(License.id == job.license_id))
+        lic = lic_res.scalar_one_or_none()
+        if not lic or not lic.mt5_id or lic.mt5_id.strip() == "":
+            # Mark as permanently failed so it doesn't keep cycling
+            job.status = "failed"
+            job.error_message = "PERMANENTLY_SKIPPED: License has no MT5 ID."
+            skipped_count += 1
+            continue
+        job.status = "pending"
+        job.worker_id = None
+        job.started_at = None
+        job.attempt_count = 0
+        reset_count += 1
     
     await db.commit()
     return {
         "status": "success",
-        "reset_count": result1.rowcount,
-        "message": f"Reset {result1.rowcount} stuck jobs back to pending"
+        "reset_count": reset_count,
+        "skipped_count": skipped_count,
+        "message": f"Reset {reset_count} stuck jobs to pending. Skipped {skipped_count} jobs (no MT5 ID or permanently failed)."
     }
 
 @router.get("/status")

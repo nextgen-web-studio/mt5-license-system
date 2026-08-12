@@ -3,7 +3,7 @@
 
 input string MT5_ID = "87543677";
 input string EXPIRY = "2026-09-06";
-input string PLAN   = "EA Basic Plan (1month)";
+input string PLAN   = "Infinity Trader EA - Lifetime";
 
 int OnInit()
 {

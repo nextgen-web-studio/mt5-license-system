@@ -1,8 +1,8 @@
 #property strict
 #property version "1.00"
 
-input string MT5_ID = "123589";
-input string EXPIRY = "2026-09-09";
+input string MT5_ID = "3571592";
+input string EXPIRY = "2026-09-07";
 input string PLAN   = "Infinity Trader EA - Lifetime";
 
 int OnInit()
