@@ -171,7 +171,8 @@ async def get_customer_installment(telegram_id: str, db: AsyncSession = Depends(
         license_status=lic.status if lic else "None",
         license_expiry=lic.expiry_date if lic else None,
         next_due_date=order.next_due_date,
-        installment_status=order.installment_status or "unknown",
+        installment_status=order.installment_status or "active",
+        license_period_days=order.license_period_days,
         payments=[InstallmentPaymentRecord.model_validate(p) for p in payments]
     )
 
@@ -204,6 +205,7 @@ async def get_admin_installment(order_id: int, db: AsyncSession = Depends(get_db
         license_status=lic.status if lic else "None",
         license_expiry=lic.expiry_date if lic else None,
         next_due_date=order.next_due_date,
-        installment_status=order.installment_status or "unknown",
+        installment_status=order.installment_status or "active",
+        license_period_days=order.license_period_days,
         payments=[InstallmentPaymentRecord.model_validate(p) for p in payments]
     )

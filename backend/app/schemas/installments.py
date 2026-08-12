@@ -33,6 +33,7 @@ class InstallmentCustomerResponse(BaseModel):
     license_expiry: Optional[datetime]
     next_due_date: Optional[datetime]
     installment_status: str
+    license_period_days: Optional[int] = None
     payments: List[InstallmentPaymentRecord]
 
 class InstallmentPayRequest(BaseModel):

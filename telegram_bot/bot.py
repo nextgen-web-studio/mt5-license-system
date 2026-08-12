@@ -231,25 +231,103 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         order_id = int(data.split("_")[3])
-        # In a real app we'd confirm, but for now we'll just process it
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
         async with httpx.AsyncClient(verify=False) as client:
-            # First fetch installment_amount
+            # Fetch installment info
             resp = await client.get(f"{base_url}/installments/admin/{order_id}")
             if resp.status_code == 200:
-                amount = resp.json()['installment_amount']
+                inst_data = resp.json()
+                amount = inst_data['installment_amount']
                 pay_resp = await client.post(f"{base_url}/installments/pay", json={"order_id": order_id, "amount": amount})
                 if pay_resp.status_code == 200:
-                    await query.edit_message_text(f"✅ Payment of ₹{amount:,.0f} recorded for Order #{order_id}.\n\nLicense extended and compilation queued.")
+                    await query.edit_message_text(
+                        f"✅ Payment of ₹{amount:,.0f} recorded for Order #{order_id}.\n\nLicense extended and compilation queued.",
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]])
+                    )
+                    # Notify customer
+                    try:
+                        order_resp = await client.get(f"{base_url}/orders/{order_id}")
+                        if order_resp.status_code == 200:
+                            user_id = order_resp.json().get("user_id")
+                            user_resp = await client.get(f"{base_url}/users/by-id/{user_id}")
+                            if user_resp.status_code == 200:
+                                telegram_id = user_resp.json().get("telegram_id")
+                                if telegram_id:
+                                    # Re-fetch updated installment data after payment
+                                    updated_resp = await client.get(f"{base_url}/installments/admin/{order_id}")
+                                    updated_data = updated_resp.json() if updated_resp.status_code == 200 else inst_data
+                                    next_due = updated_data.get("next_due_date", "")
+                                    next_due_str = next_due.split("T")[0] if next_due else "N/A"
+                                    remaining = updated_data.get("amount_remaining", 0)
+                                    cust_msg = (
+                                        f"✅ *INSTALLMENT PAYMENT CONFIRMED*\n\n"
+                                        f"Payment of ₹{amount:,.0f} has been confirmed.\n\n"
+                                        f"Your EA is being recompiled for the next {inst_data['installment_amount'] > 0 and inst_data.get('license_period_days') or 35}-day period.\n\n"
+                                        f"Remaining balance: ₹{remaining:,.0f}\n"
+                                        f"Next payment due: {next_due_str}\n\n"
+                                        f"Your updated EA file will be delivered here shortly."
+                                    )
+                                    await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
+                    except Exception as e:
+                        logging.error(f"Failed to notify customer after payment: {e}")
                 else:
                     await query.answer("Failed to record payment.", show_alert=True)
+            else:
+                await query.answer("Could not fetch installment details.", show_alert=True)
         return
+
 
     if data == "license_details":
         await render_licenses(update, context)
         return
         
+    if data == "my_installment":
+        tid = str(update.effective_user.id)
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            resp = await client.get(f"{base_url}/installments/customer/{tid}")
+            if resp.status_code == 200:
+                d = resp.json()
+                license_expiry = d.get("license_expiry", "")
+                expiry_str = license_expiry.split("T")[0] if license_expiry else "N/A"
+                next_due = d.get("next_due_date", "")
+                next_due_str = next_due.split("T")[0] if next_due else "N/A"
+                status_icon = "✅" if d.get("installment_status") == "active" else "⏳" if d.get("installment_status") == "unknown" else "🔴"
+                
+                msg = (
+                    f"💳 *MY INSTALLMENT STATUS*\n\n"
+                    f"Plan: {d.get('product_name', 'EA')}\n"
+                    f"MT5 ID: `{d.get('mt5_id', 'N/A')}`\n\n"
+                    f"Total: ₹{d.get('total_amount', 0):,.0f}\n"
+                    f"Per Installment: ₹{d.get('installment_amount', 0):,.0f}\n"
+                    f"Paid: ₹{d.get('amount_paid', 0):,.0f}\n"
+                    f"Remaining: ₹{d.get('amount_remaining', 0):,.0f}\n\n"
+                    f"Progress: {d.get('installments_paid', 0)}/{d.get('installment_count', 0)} payments\n\n"
+                    f"License: {d.get('license_status', 'N/A').title()}\n"
+                    f"Expires: {expiry_str}\n"
+                    f"Next payment due: {next_due_str}\n\n"
+                    f"To make your next payment, contact the admin."
+                )
+                from utils.api_client import get_settings
+                settings = await get_settings()
+                admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+                if not admin_username.startswith("@"):
+                    admin_username = f"@{admin_username}"
+                kb = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")],
+                      [InlineKeyboardButton("🏠 Home", callback_data="home")]]
+                await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+            elif resp.status_code == 404:
+                await query.edit_message_text(
+                    "ℹ️ *No active installment arrangement found.*\n\nIf you have an installment plan, please contact the admin.",
+                    parse_mode="Markdown",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
+                )
+            else:
+                await query.answer("Failed to fetch installment status.", show_alert=True)
+        return
+
     if data.startswith("view_license_"):
         lic_id = int(data.split("_")[2])
         tid = str(update.effective_user.id)
@@ -732,10 +810,43 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             async with httpx.AsyncClient(verify=False) as client:
                 resp = await client.post(f"{base_url}/installments/create", json=payload)
                 if resp.status_code == 200:
-                    await update.message.reply_text("✅ Installment arrangement created and first payment recorded!")
+                    kb = InlineKeyboardMarkup([[InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]])
+                    await update.message.reply_text(
+                        f"✅ *Installment Arrangement Created*\n\n"
+                        f"Order #{order_id}\n"
+                        f"Total: ₹{payload['total_amount']:,.0f}\n"
+                        f"Installment: ₹{payload['installment_amount']:,.0f} × {payload['installment_count']}\n"
+                        f"First payment: ₹{payload['first_payment_amount']:,.0f} ✅ Confirmed\n"
+                        f"License period: {duration} days\n\n"
+                        f"EA is now compiling and will be delivered to the customer.",
+                        parse_mode="Markdown",
+                        reply_markup=kb
+                    )
+                    # Notify customer
+                    try:
+                        order_resp = await client.get(f"{base_url}/orders/{order_id}")
+                        if order_resp.status_code == 200:
+                            user_id = order_resp.json().get("user_id")
+                            user_resp = await client.get(f"{base_url}/users/by-id/{user_id}")
+                            if user_resp.status_code == 200:
+                                telegram_id = user_resp.json().get("telegram_id")
+                                if telegram_id:
+                                    cust_msg = (
+                                        f"✅ *INSTALLMENT ARRANGEMENT SET UP*\n\n"
+                                        f"Your installment plan has been created.\n\n"
+                                        f"First payment of ₹{payload['first_payment_amount']:,.0f} has been confirmed.\n"
+                                        f"Your EA is now being compiled and will be delivered here shortly.\n\n"
+                                        f"License will be active for {duration} days.\n"
+                                        f"Remaining balance: ₹{payload['total_amount'] - payload['first_payment_amount']:,.0f}\n\n"
+                                        f"Contact admin to confirm each subsequent payment and extend your license."
+                                    )
+                                    await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
+                    except Exception as e:
+                        logging.error(f"Failed to notify customer on arrangement: {e}")
                 else:
                     await update.message.reply_text(f"❌ Error creating arrangement: {resp.text}")
             return
+
 
     if context.user_data.get('awaiting_name'):
         context.user_data['awaiting_name'] = False
