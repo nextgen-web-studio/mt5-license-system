@@ -35,6 +35,17 @@ async def get_user(telegram_id):
             logging.error(f"Error fetching user: {e}")
             return None
 
+async def update_user_phone(user_id, phone):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.put(f"{BASE_URL}/users/{user_id}/phone", json={"phone": phone})
+            if response.status_code >= 400:
+                return False
+            return True
+        except Exception as e:
+            logging.error(f"Error updating phone: {e}")
+            return False
+
 async def get_products(product_type=None):
     async with httpx.AsyncClient() as client:
         try:
@@ -76,24 +87,47 @@ async def create_order(user_id, product_id, order_type, mt5_id=None):
             logging.error(f"Error creating order: {e}")
             return {"error": f"Connection Error: {str(e)}"}
 
-async def create_payment(order_id, amount):
+async def approve_order(order_id):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                f"{BASE_URL}/payments/create-payment-link",
-                json={
-                    "order_id": order_id,
-                    "amount": amount
-                }
-            )
+            response = await client.post(f"{BASE_URL}/orders/{order_id}/approve")
             if response.status_code >= 400:
-                return {"error": f"Payment API Error {response.status_code}: {response.text}"}
-                
+                return {"error": f"API Error {response.status_code}: {response.text}"}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error creating payment: {e}")
-            return {"error": f"Payment Connection Error: {str(e)}"}
+            logging.error(f"Error approving order: {e}")
+            return {"error": str(e)}
+
+async def reject_order(order_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(f"{BASE_URL}/orders/{order_id}/reject")
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error rejecting order: {e}")
+            return {"error": str(e)}
+
+async def generate_license(order_id, mt5_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{BASE_URL}/licenses/",
+                json={
+                    "order_id": order_id,
+                    "mt5_id": mt5_id
+                }
+            )
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error generating license: {e}")
+            return {"error": str(e)}
 
 async def request_free_trial(telegram_id, mt5_id):
     async with httpx.AsyncClient() as client:
@@ -119,3 +153,42 @@ async def request_free_trial(telegram_id, mt5_id):
         except Exception as e:
             logging.error(f"Error requesting free trial: {e}")
             return {"error": f"Connection Error: {str(e)}"}
+
+async def request_broker_change(license_id, new_mt5_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{BASE_URL}/licenses/{license_id}/broker-change-request",
+                params={"new_mt5_id": new_mt5_id}
+            )
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error requesting broker change: {e}")
+            return {"error": str(e)}
+
+async def approve_broker_change(request_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(f"{BASE_URL}/licenses/broker-change/{request_id}/approve")
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error approving broker change: {e}")
+            return {"error": str(e)}
+
+async def reject_broker_change(request_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(f"{BASE_URL}/licenses/broker-change/{request_id}/reject")
+            if response.status_code >= 400:
+                return {"error": f"API Error {response.status_code}: {response.text}"}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error rejecting broker change: {e}")
+            return {"error": str(e)}

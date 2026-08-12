@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
@@ -71,8 +71,8 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
     result = await db.execute(select(Order).filter(Order.id == license_in.order_id))
     order = result.scalar_one_or_none()
     
-    if not order or order.status != "paid":
-        raise HTTPException(status_code=400, detail="Order not found or not paid")
+    if not order or order.status != "approved_waiting_for_mt5_id":
+        raise HTTPException(status_code=400, detail="Order not found or not approved")
         
     # 2. Get product duration
     prod_result = await db.execute(select(Product).filter(Product.id == order.product_id))
@@ -81,10 +81,14 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
     if not product or product.type != "EA":
         raise HTTPException(status_code=400, detail="Invalid product type for license")
         
-    # Calculate expiry (rough estimation based on 30 days per month)
     import datetime
     from dateutil.relativedelta import relativedelta
-    expiry = datetime.datetime.now() + relativedelta(months=product.duration)
+    
+    # Handle Lifetime Plan
+    if product.duration == 0 or product.duration >= 999:
+        expiry = None
+    else:
+        expiry = datetime.datetime.now() + relativedelta(months=product.duration)
     
     # 3. Create License
     db_license = License(
@@ -101,6 +105,9 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
     # 4. Enqueue compilation job for background worker
     job = CompileJob(license_id=db_license.id, status="pending")
     db.add(job)
+    
+    order.status = "compiling"
+    
     await db.commit()
     
     background_tasks.add_task(start_azure_vm_if_needed)
@@ -280,3 +287,90 @@ async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=licenses_export.csv"}
     )
+@router.post("/{license_id}/broker-change-request")
+async def request_broker_change(license_id: int, new_mt5_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models import BrokerChangeRequest
+    
+    result = await db.execute(select(License).filter(License.id == license_id))
+    lic = result.scalar_one_or_none()
+    
+    if not lic:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    req = BrokerChangeRequest(
+        user_id=lic.user_id,
+        license_id=lic.id,
+        old_mt5_id=lic.mt5_id,
+        new_mt5_id=new_mt5_id,
+        status="pending_broker_change_approval"
+    )
+    db.add(req)
+    await db.commit()
+    await db.refresh(req)
+    
+    return {"status": "success", "request_id": req.id}
+
+@router.post("/broker-change/{request_id}/approve")
+async def approve_broker_change(request_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    from app.models import BrokerChangeRequest, LicenseMt5History, User
+    from app.core.azure_vm import start_azure_vm_if_needed
+    
+    # 1. Fetch request and user
+    result = await db.execute(select(BrokerChangeRequest).filter(BrokerChangeRequest.id == request_id))
+    req = result.scalar_one_or_none()
+    
+    if not req or req.status != "pending_broker_change_approval":
+        raise HTTPException(status_code=400, detail="Request not found or not pending")
+        
+    # 2. Fetch license
+    lic_result = await db.execute(select(License).filter(License.id == req.license_id))
+    lic = lic_result.scalar_one_or_none()
+    
+    if not lic:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    user_result = await db.execute(select(User).filter(User.id == req.user_id))
+    user = user_result.scalar_one_or_none()
+        
+    # 3. Create history
+    history = LicenseMt5History(
+        license_id=lic.id,
+        old_mt5_id=lic.mt5_id,
+        new_mt5_id=req.new_mt5_id,
+        change_reason="Broker Change",
+        approved_by="Admin"
+    )
+    db.add(history)
+    
+    # 4. Update license
+    lic.mt5_id = req.new_mt5_id
+    # Note: lifetime expiry remains NULL, no need to touch it
+    
+    # 5. Update request status
+    req.status = "approved"
+    
+    # 6. Queue compile job
+    job = CompileJob(license_id=lic.id, status="pending")
+    db.add(job)
+    
+    await db.commit()
+    background_tasks.add_task(start_azure_vm_if_needed)
+    
+    return {"status": "success", "telegram_id": user.telegram_id if user else None}
+
+@router.post("/broker-change/{request_id}/reject")
+async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_db)):
+    from app.models import BrokerChangeRequest, User
+    result = await db.execute(select(BrokerChangeRequest).filter(BrokerChangeRequest.id == request_id))
+    req = result.scalar_one_or_none()
+    
+    if not req or req.status != "pending_broker_change_approval":
+        raise HTTPException(status_code=400, detail="Request not found or not pending")
+        
+    req.status = "rejected"
+    await db.commit()
+    
+    user_result = await db.execute(select(User).filter(User.id == req.user_id))
+    user = user_result.scalar_one_or_none()
+    
+    return {"status": "success", "telegram_id": user.telegram_id if user else None}

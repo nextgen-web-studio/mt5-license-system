@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import products, payments, users, licenses, orders, admin, jobs, trials
+from app.api.v1.endpoints import products, users, licenses, orders, admin, jobs, trials
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -29,7 +29,6 @@ app.add_middleware(
 )
 
 app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
-app.include_router(payments.router, prefix="/api/v1/payments", tags=["payments"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(licenses.router, prefix="/api/v1/licenses", tags=["licenses"])
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])

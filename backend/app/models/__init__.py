@@ -124,3 +124,26 @@ class TrialActivation(Base):
     month_key = Column(String, index=True) # e.g. "2026-08"
     status = Column(String, default="active") # active, expired, revoked
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class LicenseMt5History(Base):
+    __tablename__ = "license_mt5_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    license_id = Column(Integer, ForeignKey("licenses.id"))
+    old_mt5_id = Column(String)
+    new_mt5_id = Column(String)
+    change_reason = Column(String)
+    changed_at = Column(DateTime(timezone=True), server_default=func.now())
+    approved_by = Column(String, nullable=True)
+
+class BrokerChangeRequest(Base):
+    __tablename__ = "broker_change_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    license_id = Column(Integer, ForeignKey("licenses.id"))
+    old_mt5_id = Column(String)
+    new_mt5_id = Column(String)
+    status = Column(String, default="pending_broker_change_approval")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

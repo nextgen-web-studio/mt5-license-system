@@ -56,3 +56,17 @@ async def get_user(telegram_id: str, db: AsyncSession = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+class PhoneUpdate(BaseModel):
+    phone: str
+
+@router.put("/{user_id}/phone")
+async def update_phone(user_id: int, payload: PhoneUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).filter(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.phone = payload.phone
+    await db.commit()
+    return {"status": "success"}

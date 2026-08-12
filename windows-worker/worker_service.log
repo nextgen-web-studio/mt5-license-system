@@ -1255,3 +1255,219 @@ operable program or batch file.
 2026-08-10 14:54:01,461 [WORKER] [INFO] Upload started
 2026-08-10 14:54:03,543 [WORKER] [INFO] Upload successful
 2026-08-10 14:54:03,544 [WORKER] [SUCCESS] Job completed: 53
+2026-08-10 15:33:09,103 [WORKER] [INFO] Job claimed: 54
+2026-08-10 15:33:09,114 [WORKER] [INFO] MT5 ID: 1123365 | Expiry: 2026-11-10 | Plan: EA gold (3 months)
+2026-08-10 15:33:09,115 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 1123365
+[INFO] Plan                : EA gold (3 months)
+[INFO] Expiry (raw)        : '2026-11-10'
+[INFO] Expiry (normalized) : 2026-11-10
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_1123365_2026-11-10.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_1123365_2026-11-10.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_1123365_2026-11-10.ex5
+[INFO] EX5 size      : 7880 bytes
+2026-08-10 15:33:10,862 [WORKER] [INFO] Compilation successful
+2026-08-10 15:33:10,862 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_1123365_2026-11-10.ex5 (7880 bytes)
+2026-08-10 15:33:10,863 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-10 15:33:10,863 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-10 15:33:10,863 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-10 15:33:10,863 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_1123365_2026-11-10.ex5
+2026-08-10 15:33:10,863 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_1123365_2026-11-10.ex5
+[INFO] Source size      : 7880 bytes
+2026-08-10 15:33:10,863 Source size      : 7880 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-10 15:33:10,863 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-10 15:33:10,863 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-10 15:33:10,883 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-10 15:33:10,883 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-10 15:33:10,883 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-10 15:33:10,883 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-10 15:33:10,883 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-10 15:33:10,884 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_1123365_2026-11-10.ex5
+2026-08-10 15:33:10,885 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_1123365_2026-11-10.ex5
+[INFO] Calculating source SHA-256...
+2026-08-10 15:33:10,885 Calculating source SHA-256...
+[INFO] Source SHA-256   : bdfefc7075ad301fc542e1e3a9792d3f0148fbb3ed74bf6829f4c3976947c23e
+2026-08-10 15:33:10,887 Source SHA-256   : bdfefc7075ad301fc542e1e3a9792d3f0148fbb3ed74bf6829f4c3976947c23e
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-10 15:33:10,887 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 7880 bytes
+2026-08-10 15:33:10,890 Destination size : 7880 bytes
+[INFO] File sizes match [OK]
+2026-08-10 15:33:10,890 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-10 15:33:10,890 Calculating destination SHA-256...
+[INFO] Destination SHA-256: bdfefc7075ad301fc542e1e3a9792d3f0148fbb3ed74bf6829f4c3976947c23e
+2026-08-10 15:33:10,898 Destination SHA-256: bdfefc7075ad301fc542e1e3a9792d3f0148fbb3ed74bf6829f4c3976947c23e
+[INFO] SHA-256 hashes match [OK]
+2026-08-10 15:33:10,898 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-10 15:33:10,898 EX5 deployment completed
+[INFO] ============================================================
+2026-08-10 15:33:10,898 ============================================================
+2026-08-10 15:33:10,899 [WORKER] [INFO] MT5 deployment successful
+2026-08-10 15:33:10,899 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_1123365_2026-11-10.ex5
+2026-08-10 15:33:10,899 [WORKER] [INFO] Size: 7880 bytes | SHA-256 match: True
+2026-08-10 15:33:10,899 [WORKER] [INFO] Upload started
+2026-08-10 15:33:13,193 [WORKER] [INFO] Upload successful
+2026-08-10 15:33:13,193 [WORKER] [SUCCESS] Job completed: 54
+2026-08-11 04:10:59,234 [WORKER] [INFO] Job claimed: 55
+2026-08-11 04:10:59,243 [WORKER] [INFO] MT5 ID: 32165487 | Expiry: 2026-08-13 | Plan: standard
+2026-08-11 04:10:59,245 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 32165487
+[INFO] Plan                : standard
+[INFO] Expiry (raw)        : '2026-08-13'
+[INFO] Expiry (normalized) : 2026-08-13
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_32165487_2026-08-13.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_32165487_2026-08-13.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_32165487_2026-08-13.ex5
+[INFO] EX5 size      : 6788 bytes
+2026-08-11 04:11:00,877 [WORKER] [INFO] Compilation successful
+2026-08-11 04:11:00,878 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_32165487_2026-08-13.ex5 (6788 bytes)
+2026-08-11 04:11:00,878 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-11 04:11:00,878 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-11 04:11:00,878 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-11 04:11:00,878 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_32165487_2026-08-13.ex5
+2026-08-11 04:11:00,878 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_32165487_2026-08-13.ex5
+[INFO] Source size      : 6788 bytes
+2026-08-11 04:11:00,878 Source size      : 6788 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-11 04:11:00,878 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-11 04:11:00,878 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-11 04:11:00,903 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-11 04:11:00,903 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-11 04:11:00,903 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-11 04:11:00,903 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-11 04:11:00,903 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-11 04:11:00,903 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_32165487_2026-08-13.ex5
+2026-08-11 04:11:00,904 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_32165487_2026-08-13.ex5
+[INFO] Calculating source SHA-256...
+2026-08-11 04:11:00,904 Calculating source SHA-256...
+[INFO] Source SHA-256   : 08f5628f5770a2c1ea3202961b3f47fefe225882e6c8b7f52a1b3446f4aa5f40
+2026-08-11 04:11:00,906 Source SHA-256   : 08f5628f5770a2c1ea3202961b3f47fefe225882e6c8b7f52a1b3446f4aa5f40
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-11 04:11:00,906 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 6788 bytes
+2026-08-11 04:11:00,910 Destination size : 6788 bytes
+[INFO] File sizes match [OK]
+2026-08-11 04:11:00,910 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-11 04:11:00,910 Calculating destination SHA-256...
+[INFO] Destination SHA-256: 08f5628f5770a2c1ea3202961b3f47fefe225882e6c8b7f52a1b3446f4aa5f40
+2026-08-11 04:11:00,917 Destination SHA-256: 08f5628f5770a2c1ea3202961b3f47fefe225882e6c8b7f52a1b3446f4aa5f40
+[INFO] SHA-256 hashes match [OK]
+2026-08-11 04:11:00,917 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-11 04:11:00,917 EX5 deployment completed
+[INFO] ============================================================
+2026-08-11 04:11:00,918 ============================================================
+2026-08-11 04:11:00,918 [WORKER] [INFO] MT5 deployment successful
+2026-08-11 04:11:00,918 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_32165487_2026-08-13.ex5
+2026-08-11 04:11:00,918 [WORKER] [INFO] Size: 6788 bytes | SHA-256 match: True
+2026-08-11 04:11:00,918 [WORKER] [INFO] Upload started
+2026-08-11 04:11:03,629 [WORKER] [INFO] Upload successful
+2026-08-11 04:11:03,629 [WORKER] [SUCCESS] Job completed: 55
+2026-08-11 04:16:18,716 [WORKER] [INFO] Job claimed: 56
+2026-08-11 04:16:18,723 [WORKER] [INFO] MT5 ID: 6799766 | Expiry: 2026-08-13 | Plan: standard
+2026-08-11 04:16:18,724 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 6799766
+[INFO] Plan                : standard
+[INFO] Expiry (raw)        : '2026-08-13'
+[INFO] Expiry (normalized) : 2026-08-13
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_6799766_2026-08-13.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_6799766_2026-08-13.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_6799766_2026-08-13.ex5
+[INFO] EX5 size      : 6610 bytes
+2026-08-11 04:16:20,119 [WORKER] [INFO] Compilation successful
+2026-08-11 04:16:20,119 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_6799766_2026-08-13.ex5 (6610 bytes)
+2026-08-11 04:16:20,119 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-11 04:16:20,119 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-11 04:16:20,119 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-11 04:16:20,119 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_6799766_2026-08-13.ex5
+2026-08-11 04:16:20,119 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_6799766_2026-08-13.ex5
+[INFO] Source size      : 6610 bytes
+2026-08-11 04:16:20,119 Source size      : 6610 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-11 04:16:20,119 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-11 04:16:20,120 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-11 04:16:20,122 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-11 04:16:20,123 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-11 04:16:20,123 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-11 04:16:20,123 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-11 04:16:20,124 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-11 04:16:20,124 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_6799766_2026-08-13.ex5
+2026-08-11 04:16:20,125 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_6799766_2026-08-13.ex5
+[INFO] Calculating source SHA-256...
+2026-08-11 04:16:20,125 Calculating source SHA-256...
+[INFO] Source SHA-256   : 4b755816788a4f0ced258311eae1cb7cd69b3e090a59981ac9124bd29d8e81bb
+2026-08-11 04:16:20,127 Source SHA-256   : 4b755816788a4f0ced258311eae1cb7cd69b3e090a59981ac9124bd29d8e81bb
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-11 04:16:20,127 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 6610 bytes
+2026-08-11 04:16:20,130 Destination size : 6610 bytes
+[INFO] File sizes match [OK]
+2026-08-11 04:16:20,130 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-11 04:16:20,130 Calculating destination SHA-256...
+[INFO] Destination SHA-256: 4b755816788a4f0ced258311eae1cb7cd69b3e090a59981ac9124bd29d8e81bb
+2026-08-11 04:16:20,139 Destination SHA-256: 4b755816788a4f0ced258311eae1cb7cd69b3e090a59981ac9124bd29d8e81bb
+[INFO] SHA-256 hashes match [OK]
+2026-08-11 04:16:20,139 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-11 04:16:20,139 EX5 deployment completed
+[INFO] ============================================================
+2026-08-11 04:16:20,139 ============================================================
+2026-08-11 04:16:20,139 [WORKER] [INFO] MT5 deployment successful
+2026-08-11 04:16:20,140 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_6799766_2026-08-13.ex5
+2026-08-11 04:16:20,140 [WORKER] [INFO] Size: 6610 bytes | SHA-256 match: True
+2026-08-11 04:16:20,140 [WORKER] [INFO] Upload started
+2026-08-11 04:16:22,293 [WORKER] [INFO] Upload successful
+2026-08-11 04:16:22,294 [WORKER] [SUCCESS] Job completed: 56
+2026-08-11 05:58:42,255 [WORKER] [WARNING] Request timed out while polling. Sleeping 5s.
+2026-08-11 05:59:09,074 [WORKER] [WARNING] Request timed out while polling. Sleeping 5s.
+2026-08-11 05:59:41,923 [WORKER] [WARNING] Request timed out while polling. Sleeping 5s.
