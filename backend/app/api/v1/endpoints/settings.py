@@ -14,31 +14,47 @@ class SettingUpdate(BaseModel):
 
 @router.get("/")
 async def get_all_settings(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(AdminSettings))
-    settings = result.scalars().all()
-    
-    # Return as a dictionary mapping key -> value
-    return {s.setting_key: s.setting_value for s in settings}
+    try:
+        result = await db.execute(select(AdminSettings))
+        settings = result.scalars().all()
+        return {s.setting_key: s.setting_value for s in settings}
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching all settings: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Database error occurred while fetching settings")
 
 @router.get("/{key}")
 async def get_setting(key: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(AdminSettings).filter(AdminSettings.setting_key == key))
-    setting = result.scalars().first()
-    if not setting:
-        raise HTTPException(status_code=404, detail="Setting not found")
-    return {"key": setting.setting_key, "value": setting.setting_value}
+    try:
+        result = await db.execute(select(AdminSettings).filter(AdminSettings.setting_key == key))
+        setting = result.scalars().first()
+        if not setting:
+            raise HTTPException(status_code=404, detail="Setting not found")
+        return {"key": setting.setting_key, "value": setting.setting_value}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching setting '{key}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Database error occurred while fetching setting '{key}'")
 
 @router.put("/{key}")
 async def update_setting(key: str, payload: SettingUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(AdminSettings).filter(AdminSettings.setting_key == key))
-    setting = result.scalars().first()
-    
-    if not setting:
-        # Create it if it doesn't exist
-        setting = AdminSettings(setting_key=key, setting_value=payload.setting_value)
-        db.add(setting)
-    else:
-        setting.setting_value = payload.setting_value
+    try:
+        result = await db.execute(select(AdminSettings).filter(AdminSettings.setting_key == key))
+        setting = result.scalars().first()
         
-    await db.commit()
-    return {"status": "success", "key": key, "value": setting.setting_value}
+        if not setting:
+            # Create it if it doesn't exist
+            setting = AdminSettings(setting_key=key, setting_value=payload.setting_value)
+            db.add(setting)
+        else:
+            setting.setting_value = payload.setting_value
+            
+        await db.commit()
+        return {"status": "success", "key": key, "value": setting.setting_value}
+    except Exception as e:
+        await db.rollback()
+        import logging
+        logging.error(f"Error updating setting '{key}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Database error occurred while updating setting '{key}'")

@@ -51,46 +51,66 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     data = query.data
     
-    if data.startswith("approve_") or data.startswith("reject_"):
+    if data.startswith("approve_") and not data.startswith("approve_change_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
         if str(update.effective_user.id) != str(admin_id):
             await query.answer("You are not authorized to perform this action.", show_alert=True)
             return
             
-        action = data.split("_")[0]
         order_id = int(data.split("_")[1])
         
         from utils.api_client import approve_order, reject_order
         
-        if action == "approve":
-            resp = await approve_order(order_id)
-            if "error" not in resp:
-                await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nPlease enter the customer's MT5 ID:")
-                
-                # Tell the admin's state to wait for mt5_id
-                context.user_data['awaiting_admin_mt5_id'] = True
-                context.user_data['pending_order_id'] = order_id
-                context.user_data['pending_telegram_id'] = resp.get("telegram_id")
-            else:
-                await query.answer(f"Failed: {resp['error']}", show_alert=True)
-                
-        elif action == "reject":
-            resp = await reject_order(order_id)
-            if "error" not in resp:
-                await query.edit_message_text(f"❌ Order #{order_id} has been REJECTED.")
-                try:
-                    telegram_id = resp.get("telegram_id")
-                    if telegram_id:
-                        msg = (
-                            f"❌ *Order Not Approved*\n\n"
-                            f"Order ID: ORD-{order_id}\n\n"
-                            f"Please contact the administrator for more information."
-                        )
-                        await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
-                except:
-                    pass
-            else:
-                await query.answer(f"Failed: {resp['error']}", show_alert=True)
+        resp = await approve_order(order_id)
+        if "error" not in resp:
+            await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nThe customer has been asked to provide their MT5 ID.")
+            
+            # Notify Customer
+            try:
+                telegram_id = resp.get("telegram_id")
+                if telegram_id:
+                    msg = (
+                        f"✅ *YOUR ORDER HAS BEEN APPROVED*\n\n"
+                        f"Your EA Lifetime License order (ORD-{order_id}) has been approved.\n\n"
+                        f"Please enter your **MT5 ID** to continue with license generation:"
+                    )
+                    await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                    # We can't set user_data of another user directly without a persistence backend that shares state perfectly,
+                    # but python-telegram-bot allows context.application.user_data[int(telegram_id)] if memory is shared.
+                    # We will update the user data for the specific user.
+                    context.application.user_data[int(telegram_id)]['awaiting_approved_mt5_id'] = True
+                    context.application.user_data[int(telegram_id)]['pending_order_id'] = order_id
+            except Exception as e:
+                logging.error(f"Failed to notify user: {e}")
+        else:
+            await query.answer(f"Failed: {resp['error']}", show_alert=True)
+        return
+
+    if data.startswith("reject_") and not data.startswith("reject_change_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("You are not authorized to perform this action.", show_alert=True)
+            return
+            
+        order_id = int(data.split("_")[1])
+        from utils.api_client import reject_order
+        
+        resp = await reject_order(order_id)
+        if "error" not in resp:
+            await query.edit_message_text(f"❌ Order #{order_id} has been REJECTED.")
+            try:
+                telegram_id = resp.get("telegram_id")
+                if telegram_id:
+                    msg = (
+                        f"❌ *ORDER NOT APPROVED*\n\n"
+                        f"Your EA order (ORD-{order_id}) has not been approved by the administrator.\n\n"
+                        f"Please contact support for more information."
+                    )
+                    await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+            except:
+                pass
+        else:
+            await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
 
@@ -492,13 +512,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
         return
 
-    if context.user_data.get('awaiting_admin_mt5_id'):
-        context.user_data['awaiting_admin_mt5_id'] = False
+    if context.user_data.get('awaiting_approved_mt5_id'):
+        context.user_data['awaiting_approved_mt5_id'] = False
         mt5_id = text.strip()
         order_id = context.user_data.get('pending_order_id')
-        telegram_id = context.user_data.get('pending_telegram_id')
         
-        await update.message.reply_text("Generating the Lifetime License and queueing compilation...")
+        await update.message.reply_text("🔄 Verifying your MT5 ID...")
+        await update.message.reply_text("🔐 Creating your Lifetime License...\n📦 Preparing your EA...\n⚙️ Compilation started...")
+        
         from utils.api_client import generate_license
         resp = await generate_license(order_id, mt5_id)
         
@@ -506,24 +527,17 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"❌ *Error:*\n{resp['error']}", parse_mode="Markdown")
             return
             
-        await update.message.reply_text(f"✅ EA successfully compiled and dispatched to customer.")
+        success_msg = (
+            f"✅ *Compilation Complete!*\n\n"
+            f"Your personalized EA is ready.\n\n"
+            f"MT5 ID: `{mt5_id}`\n"
+            f"License: Lifetime\n"
+            f"Status: Active\n\n"
+            f"The compiled EA file is attached below."
+        )
+        await update.message.reply_text(success_msg, parse_mode="Markdown")
         
-        # Send confirmation to the customer
-        if telegram_id:
-            try:
-                cust_msg = (
-                    f"✅ *Order Approved!*\n\n"
-                    f"Your EA has been generated successfully.\n\n"
-                    f"MT5 ID: `{mt5_id}`\n"
-                    f"License: Lifetime\n"
-                    f"Status: Active\n\n"
-                    f"Your EA file is attached below (once compilation finishes)."
-                )
-                await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
-            except Exception as e:
-                logging.error(f"Failed to notify customer: {e}")
-                
-        context.user_data['pending_telegram_id'] = None
+        context.user_data['pending_order_id'] = None
         return
         
     setting_key = context.user_data.get('awaiting_admin_setting_key')
