@@ -72,6 +72,11 @@ def normalize_expiry(expiry: str) -> str:
     """
     expiry = expiry.strip()
 
+    # ── Lifetime license — no expiry date ────────────────────────────────────
+    if expiry.lower() in ("lifetime", "none", ""):
+        _log("INFO", "Expiry is LIFETIME — no expiry date will be embedded")
+        return "lifetime"
+
     # ── Attempt 1: standard YYYY-MM-DD (also handles YYYY-M-D via %Y-%m-%d) ─
     for fmt in ("%Y-%m-%d",):
         try:
@@ -161,9 +166,11 @@ def compile_ea(mt5_id: str, expiry: str, plan: str) -> str:
         _log("ERROR", f"MQ5 compilation failed — template not found: {template_path}")
         raise FileNotFoundError(f"EA template not found: {template_path}")
 
-    # ── Build output file names using normalized expiry ──────────────────────
-    output_name = f"InfinityTrader_{mt5_id}_{normalized_expiry}.ex5"
-    source_name = f"InfinityTrader_{mt5_id}_{normalized_expiry}.mq5"
+    # ── Build output file names ───────────────────────────────────────────────
+    # For lifetime licenses, use "lifetime" in the filename instead of a date
+    file_label = normalized_expiry  # either "YYYY-MM-DD" or "lifetime"
+    output_name = f"InfinityTrader_{mt5_id}_{file_label}.ex5"
+    source_name = f"InfinityTrader_{mt5_id}_{file_label}.mq5"
 
     source_path = OUTPUT_DIR / source_name
     ex5_path    = OUTPUT_DIR / output_name

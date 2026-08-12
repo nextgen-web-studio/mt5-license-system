@@ -252,10 +252,10 @@ def process_job(
         _report_failure(job_id, "Invalid MT5 ID format")
         return
 
-    if not expiry_date:
-        _log("ERROR", f"No expiry_date in job payload for job {job_id}")
-        _report_failure(job_id, "Missing expiry_date in job payload")
-        return
+    # expiry_date of None means Lifetime license (no expiry)
+    if expiry_date is None or str(expiry_date).lower() in ("", "none", "lifetime"):
+        expiry_date = "lifetime"
+        _log("INFO", f"Job {job_id}: expiry_date is None/empty — treating as LIFETIME license")
 
     if not plan:
         _log("WARNING", f"No plan in job payload for job {job_id} — defaulting to 'standard'")
@@ -436,13 +436,12 @@ def run_worker() -> None:
                 time.sleep(POLL_INTERVAL)
                 continue
 
+            # expiry of None means Lifetime license
             if expiry is None:
-                _log("ERROR", f"Job {job_id} has no expiry_date — cannot compile. Reporting failure.")
-                _report_failure(job_id, "Job payload missing expiry_date")
-                time.sleep(POLL_INTERVAL)
-                continue
+                expiry = "lifetime"
+                _log("INFO", f"Job {job_id}: expiry_date is None — treating as LIFETIME license")
 
-            # ── Process ──────────────────────────────────────────────────────
+            # ── Process ──────────────────────────────────────────────
             process_job(
                 job_id=int(job_id),
                 mt5_id=str(mt5_id),

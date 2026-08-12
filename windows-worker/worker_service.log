@@ -3131,3 +3131,740 @@ operable program or batch file.
 2026-08-12 08:39:38,873 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_357412_2026-09-09.ex5
 2026-08-12 08:39:38,873 [WORKER] [INFO] Size: 7594 bytes | SHA-256 match: True
 2026-08-12 08:39:38,873 [WORKER] [INFO] Upload started
+2026-08-12 08:39:41,584 [WORKER] [INFO] Upload successful
+2026-08-12 08:39:41,584 [WORKER] [SUCCESS] Job completed: 39
+2026-08-12 08:39:47,825 [WORKER] [INFO] Job claimed: 40
+2026-08-12 08:39:47,825 [WORKER] [INFO] MT5 ID: 123589 | Expiry: 2026-09-09 | Plan: Infinity Trader EA - Lifetime
+2026-08-12 08:39:47,825 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 123589
+[INFO] Plan                : Infinity Trader EA - Lifetime
+[INFO] Expiry (raw)        : '2026-09-09'
+[INFO] Expiry (normalized) : 2026-09-09
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_123589_2026-09-09.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_123589_2026-09-09.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_123589_2026-09-09.ex5
+[INFO] EX5 size      : 7768 bytes
+2026-08-12 08:39:48,952 [WORKER] [INFO] Compilation successful
+2026-08-12 08:39:48,952 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_123589_2026-09-09.ex5 (7768 bytes)
+2026-08-12 08:39:48,952 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-12 08:39:48,952 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-12 08:39:48,952 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-12 08:39:48,952 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_123589_2026-09-09.ex5
+2026-08-12 08:39:48,953 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_123589_2026-09-09.ex5
+[INFO] Source size      : 7768 bytes
+2026-08-12 08:39:48,953 Source size      : 7768 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-12 08:39:48,953 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-12 08:39:48,953 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-12 08:39:48,954 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-12 08:39:48,954 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-12 08:39:48,955 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-12 08:39:48,955 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-12 08:39:48,955 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-12 08:39:48,955 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_123589_2026-09-09.ex5
+2026-08-12 08:39:48,955 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_123589_2026-09-09.ex5
+[INFO] Destination file already exists — will overwrite safely
+2026-08-12 08:39:48,955 Destination file already exists — will overwrite safely
+[INFO] Calculating source SHA-256...
+2026-08-12 08:39:48,955 Calculating source SHA-256...
+[INFO] Source SHA-256   : 8a29a0be3481ba12b46c0820e5caa8a966f6f0e986609530fecd4522490844ae
+2026-08-12 08:39:48,956 Source SHA-256   : 8a29a0be3481ba12b46c0820e5caa8a966f6f0e986609530fecd4522490844ae
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-12 08:39:48,956 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 7768 bytes
+2026-08-12 08:39:48,956 Destination size : 7768 bytes
+[INFO] File sizes match [OK]
+2026-08-12 08:39:48,956 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-12 08:39:48,957 Calculating destination SHA-256...
+[INFO] Destination SHA-256: 8a29a0be3481ba12b46c0820e5caa8a966f6f0e986609530fecd4522490844ae
+2026-08-12 08:39:48,965 Destination SHA-256: 8a29a0be3481ba12b46c0820e5caa8a966f6f0e986609530fecd4522490844ae
+[INFO] SHA-256 hashes match [OK]
+2026-08-12 08:39:48,965 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-12 08:39:48,965 EX5 deployment completed
+[INFO] ============================================================
+2026-08-12 08:39:48,965 ============================================================
+2026-08-12 08:39:48,965 [WORKER] [INFO] MT5 deployment successful
+2026-08-12 08:39:48,965 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_123589_2026-09-09.ex5
+2026-08-12 08:39:48,965 [WORKER] [INFO] Size: 7768 bytes | SHA-256 match: True
+2026-08-12 08:39:48,965 [WORKER] [INFO] Upload started
+2026-08-12 08:39:50,694 [WORKER] [INFO] Upload successful
+2026-08-12 08:39:50,695 [WORKER] [SUCCESS] Job completed: 40
+2026-08-12 08:39:57,514 [WORKER] [INFO] Job claimed: 21
+2026-08-12 08:39:57,514 [WORKER] [INFO] MT5 ID: 3571592 | Expiry: 2026-09-07 | Plan: Infinity Trader EA - Lifetime
+2026-08-12 08:39:57,514 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 3571592
+[INFO] Plan                : Infinity Trader EA - Lifetime
+[INFO] Expiry (raw)        : '2026-09-07'
+[INFO] Expiry (normalized) : 2026-09-07
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_3571592_2026-09-07.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_3571592_2026-09-07.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_3571592_2026-09-07.ex5
+[INFO] EX5 size      : 7264 bytes
+2026-08-12 08:39:59,399 [WORKER] [INFO] Compilation successful
+2026-08-12 08:39:59,399 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_3571592_2026-09-07.ex5 (7264 bytes)
+2026-08-12 08:39:59,399 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-12 08:39:59,399 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-12 08:39:59,399 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-12 08:39:59,399 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_3571592_2026-09-07.ex5
+2026-08-12 08:39:59,400 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_3571592_2026-09-07.ex5
+[INFO] Source size      : 7264 bytes
+2026-08-12 08:39:59,400 Source size      : 7264 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-12 08:39:59,400 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-12 08:39:59,400 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-12 08:39:59,401 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-12 08:39:59,401 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-12 08:39:59,402 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-12 08:39:59,402 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-12 08:39:59,402 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-12 08:39:59,402 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_3571592_2026-09-07.ex5
+2026-08-12 08:39:59,403 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_3571592_2026-09-07.ex5
+[INFO] Calculating source SHA-256...
+2026-08-12 08:39:59,403 Calculating source SHA-256...
+[INFO] Source SHA-256   : 627c01dd0a9113e2b31672979d08e22efcfa10875368b7a87dba8b029f6cfac3
+2026-08-12 08:39:59,403 Source SHA-256   : 627c01dd0a9113e2b31672979d08e22efcfa10875368b7a87dba8b029f6cfac3
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-12 08:39:59,403 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 7264 bytes
+2026-08-12 08:39:59,405 Destination size : 7264 bytes
+[INFO] File sizes match [OK]
+2026-08-12 08:39:59,405 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-12 08:39:59,405 Calculating destination SHA-256...
+[INFO] Destination SHA-256: 627c01dd0a9113e2b31672979d08e22efcfa10875368b7a87dba8b029f6cfac3
+2026-08-12 08:39:59,415 Destination SHA-256: 627c01dd0a9113e2b31672979d08e22efcfa10875368b7a87dba8b029f6cfac3
+[INFO] SHA-256 hashes match [OK]
+2026-08-12 08:39:59,415 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-12 08:39:59,415 EX5 deployment completed
+[INFO] ============================================================
+2026-08-12 08:39:59,415 ============================================================
+2026-08-12 08:39:59,415 [WORKER] [INFO] MT5 deployment successful
+2026-08-12 08:39:59,415 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_3571592_2026-09-07.ex5
+2026-08-12 08:39:59,415 [WORKER] [INFO] Size: 7264 bytes | SHA-256 match: True
+2026-08-12 08:39:59,415 [WORKER] [INFO] Upload started
+2026-08-12 08:40:01,306 [WORKER] [INFO] Upload successful
+2026-08-12 08:40:01,306 [WORKER] [SUCCESS] Job completed: 21
+2026-08-12 08:40:07,665 [WORKER] [INFO] Job claimed: 33
+2026-08-12 08:40:07,665 [WORKER] [INFO] MT5 ID: 357896 | Expiry: 2026-09-08 | Plan: Infinity Trader EA - 3 Months
+2026-08-12 08:40:07,665 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 357896
+[INFO] Plan                : Infinity Trader EA - 3 Months
+[INFO] Expiry (raw)        : '2026-09-08'
+[INFO] Expiry (normalized) : 2026-09-08
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_357896_2026-09-08.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_357896_2026-09-08.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_357896_2026-09-08.ex5
+[INFO] EX5 size      : 7306 bytes
+2026-08-12 08:40:08,473 [WORKER] [INFO] Compilation successful
+2026-08-12 08:40:08,473 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_357896_2026-09-08.ex5 (7306 bytes)
+2026-08-12 08:40:08,474 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-12 08:40:08,474 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-12 08:40:08,474 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-12 08:40:08,474 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_357896_2026-09-08.ex5
+2026-08-12 08:40:08,474 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_357896_2026-09-08.ex5
+[INFO] Source size      : 7306 bytes
+2026-08-12 08:40:08,474 Source size      : 7306 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-12 08:40:08,474 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-12 08:40:08,474 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-12 08:40:08,476 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-12 08:40:08,476 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-12 08:40:08,477 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-12 08:40:08,477 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-12 08:40:08,477 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-12 08:40:08,477 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_357896_2026-09-08.ex5
+2026-08-12 08:40:08,477 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_357896_2026-09-08.ex5
+[INFO] Destination file already exists — will overwrite safely
+2026-08-12 08:40:08,477 Destination file already exists — will overwrite safely
+[INFO] Calculating source SHA-256...
+2026-08-12 08:40:08,478 Calculating source SHA-256...
+[INFO] Source SHA-256   : 583f8dfe2780eb1a5bb3a2e9478a98e6c5dfaa83e8657a464db1647a3503ea7f
+2026-08-12 08:40:08,478 Source SHA-256   : 583f8dfe2780eb1a5bb3a2e9478a98e6c5dfaa83e8657a464db1647a3503ea7f
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-12 08:40:08,478 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 7306 bytes
+2026-08-12 08:40:08,479 Destination size : 7306 bytes
+[INFO] File sizes match [OK]
+2026-08-12 08:40:08,479 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-12 08:40:08,479 Calculating destination SHA-256...
+[INFO] Destination SHA-256: 583f8dfe2780eb1a5bb3a2e9478a98e6c5dfaa83e8657a464db1647a3503ea7f
+2026-08-12 08:40:08,486 Destination SHA-256: 583f8dfe2780eb1a5bb3a2e9478a98e6c5dfaa83e8657a464db1647a3503ea7f
+[INFO] SHA-256 hashes match [OK]
+2026-08-12 08:40:08,486 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-12 08:40:08,486 EX5 deployment completed
+[INFO] ============================================================
+2026-08-12 08:40:08,486 ============================================================
+2026-08-12 08:40:08,486 [WORKER] [INFO] MT5 deployment successful
+2026-08-12 08:40:08,486 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_357896_2026-09-08.ex5
+2026-08-12 08:40:08,487 [WORKER] [INFO] Size: 7306 bytes | SHA-256 match: True
+2026-08-12 08:40:08,487 [WORKER] [INFO] Upload started
+2026-08-12 08:40:10,534 [WORKER] [INFO] Upload successful
+2026-08-12 08:40:10,535 [WORKER] [SUCCESS] Job completed: 33
+2026-08-12 08:40:16,494 [WORKER] [INFO] Job claimed: 22
+2026-08-12 08:40:16,494 [WORKER] [INFO] MT5 ID: 123548 | Expiry: 2026-09-07 | Plan: Infinity Trader EA - Lifetime
+2026-08-12 08:40:16,494 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 123548
+[INFO] Plan                : Infinity Trader EA - Lifetime
+[INFO] Expiry (raw)        : '2026-09-07'
+[INFO] Expiry (normalized) : 2026-09-07
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_123548_2026-09-07.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_123548_2026-09-07.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_123548_2026-09-07.ex5
+[INFO] EX5 size      : 6796 bytes
+2026-08-12 08:40:17,348 [WORKER] [INFO] Compilation successful
+2026-08-12 08:40:17,348 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_123548_2026-09-07.ex5 (6796 bytes)
+2026-08-12 08:40:17,349 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-12 08:40:17,349 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-12 08:40:17,349 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-12 08:40:17,349 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_123548_2026-09-07.ex5
+2026-08-12 08:40:17,349 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_123548_2026-09-07.ex5
+[INFO] Source size      : 6796 bytes
+2026-08-12 08:40:17,349 Source size      : 6796 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-12 08:40:17,349 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-12 08:40:17,349 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-12 08:40:17,351 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-12 08:40:17,351 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-12 08:40:17,351 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-12 08:40:17,351 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-12 08:40:17,351 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-12 08:40:17,351 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_123548_2026-09-07.ex5
+2026-08-12 08:40:17,352 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_123548_2026-09-07.ex5
+[INFO] Destination file already exists — will overwrite safely
+2026-08-12 08:40:17,352 Destination file already exists — will overwrite safely
+[INFO] Calculating source SHA-256...
+2026-08-12 08:40:17,352 Calculating source SHA-256...
+[INFO] Source SHA-256   : f48c23a678b551149f1fd5244237303e3228f0ddd4c373df85ff244ad3d3fc9d
+2026-08-12 08:40:17,352 Source SHA-256   : f48c23a678b551149f1fd5244237303e3228f0ddd4c373df85ff244ad3d3fc9d
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-12 08:40:17,352 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 6796 bytes
+2026-08-12 08:40:17,353 Destination size : 6796 bytes
+[INFO] File sizes match [OK]
+2026-08-12 08:40:17,353 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-12 08:40:17,353 Calculating destination SHA-256...
+[INFO] Destination SHA-256: f48c23a678b551149f1fd5244237303e3228f0ddd4c373df85ff244ad3d3fc9d
+2026-08-12 08:40:17,360 Destination SHA-256: f48c23a678b551149f1fd5244237303e3228f0ddd4c373df85ff244ad3d3fc9d
+[INFO] SHA-256 hashes match [OK]
+2026-08-12 08:40:17,360 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-12 08:40:17,361 EX5 deployment completed
+[INFO] ============================================================
+2026-08-12 08:40:17,361 ============================================================
+2026-08-12 08:40:17,361 [WORKER] [INFO] MT5 deployment successful
+2026-08-12 08:40:17,361 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_123548_2026-09-07.ex5
+2026-08-12 08:40:17,361 [WORKER] [INFO] Size: 6796 bytes | SHA-256 match: True
+2026-08-12 08:40:17,361 [WORKER] [INFO] Upload started
+2026-08-12 08:40:19,248 [WORKER] [INFO] Upload successful
+2026-08-12 08:40:19,249 [WORKER] [SUCCESS] Job completed: 22
+2026-08-12 08:40:25,242 [WORKER] [INFO] Job claimed: 37
+2026-08-12 08:40:25,242 [WORKER] [INFO] MT5 ID: 25836914 | Expiry: 2026-09-09 | Plan: Infinity Trader EA - Lifetime
+2026-08-12 08:40:25,242 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 25836914
+[INFO] Plan                : Infinity Trader EA - Lifetime
+[INFO] Expiry (raw)        : '2026-09-09'
+[INFO] Expiry (normalized) : 2026-09-09
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_25836914_2026-09-09.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_25836914_2026-09-09.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_25836914_2026-09-09.ex5
+[INFO] EX5 size      : 7064 bytes
+2026-08-12 08:40:26,574 [WORKER] [INFO] Compilation successful
+2026-08-12 08:40:26,574 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_25836914_2026-09-09.ex5 (7064 bytes)
+2026-08-12 08:40:26,574 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-12 08:40:26,574 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-12 08:40:26,574 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-12 08:40:26,574 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_25836914_2026-09-09.ex5
+2026-08-12 08:40:26,574 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_25836914_2026-09-09.ex5
+[INFO] Source size      : 7064 bytes
+2026-08-12 08:40:26,574 Source size      : 7064 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-12 08:40:26,574 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-12 08:40:26,574 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-12 08:40:26,576 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-12 08:40:26,576 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-12 08:40:26,577 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-12 08:40:26,577 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-12 08:40:26,577 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-12 08:40:26,577 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_25836914_2026-09-09.ex5
+2026-08-12 08:40:26,579 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_25836914_2026-09-09.ex5
+[INFO] Destination file already exists — will overwrite safely
+2026-08-12 08:40:26,579 Destination file already exists — will overwrite safely
+[INFO] Calculating source SHA-256...
+2026-08-12 08:40:26,579 Calculating source SHA-256...
+[INFO] Source SHA-256   : ed72815de277ac02af666926c22fc814cceec76c3dc3351628a7571f573c717e
+2026-08-12 08:40:26,579 Source SHA-256   : ed72815de277ac02af666926c22fc814cceec76c3dc3351628a7571f573c717e
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-12 08:40:26,579 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 7064 bytes
+2026-08-12 08:40:26,580 Destination size : 7064 bytes
+[INFO] File sizes match [OK]
+2026-08-12 08:40:26,580 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-12 08:40:26,580 Calculating destination SHA-256...
+[INFO] Destination SHA-256: ed72815de277ac02af666926c22fc814cceec76c3dc3351628a7571f573c717e
+2026-08-12 08:40:26,588 Destination SHA-256: ed72815de277ac02af666926c22fc814cceec76c3dc3351628a7571f573c717e
+[INFO] SHA-256 hashes match [OK]
+2026-08-12 08:40:26,588 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-12 08:40:26,588 EX5 deployment completed
+[INFO] ============================================================
+2026-08-12 08:40:26,588 ============================================================
+2026-08-12 08:40:26,588 [WORKER] [INFO] MT5 deployment successful
+2026-08-12 08:40:26,588 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_25836914_2026-09-09.ex5
+2026-08-12 08:40:26,588 [WORKER] [INFO] Size: 7064 bytes | SHA-256 match: True
+2026-08-12 08:40:26,588 [WORKER] [INFO] Upload started
+2026-08-12 08:40:29,150 [WORKER] [INFO] Upload successful
+2026-08-12 08:40:29,150 [WORKER] [SUCCESS] Job completed: 37
+2026-08-12 08:40:35,149 [WORKER] [ERROR] Job 84 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:40:36,163 [WORKER] [INFO] Failure reported to API for job 84
+2026-08-12 08:40:42,274 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 67, 'license_id': 63, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'Infinity Trader EA - Lifetime'}
+2026-08-12 08:40:48,200 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 68, 'license_id': 64, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'Infinity Trader EA - Lifetime'}
+2026-08-12 08:40:53,956 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 69, 'license_id': 65, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'Infinity Trader EA - Lifetime'}
+2026-08-12 08:41:00,168 [WORKER] [ERROR] Job 73 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:01,132 [WORKER] [INFO] Failure reported to API for job 73
+2026-08-12 08:41:07,092 [WORKER] [ERROR] Job 74 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:08,058 [WORKER] [INFO] Failure reported to API for job 74
+2026-08-12 08:41:14,428 [WORKER] [ERROR] Job 72 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:15,501 [WORKER] [INFO] Failure reported to API for job 72
+2026-08-12 08:41:21,457 [WORKER] [ERROR] Job 75 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:22,517 [WORKER] [INFO] Failure reported to API for job 75
+2026-08-12 08:41:28,425 [WORKER] [ERROR] Job 76 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:29,554 [WORKER] [INFO] Failure reported to API for job 76
+2026-08-12 08:41:35,464 [WORKER] [ERROR] Job 78 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:36,417 [WORKER] [INFO] Failure reported to API for job 78
+2026-08-12 08:41:42,325 [WORKER] [ERROR] Job 79 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:43,433 [WORKER] [INFO] Failure reported to API for job 79
+2026-08-12 08:41:49,455 [WORKER] [ERROR] Job 81 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:50,401 [WORKER] [INFO] Failure reported to API for job 81
+2026-08-12 08:41:56,910 [WORKER] [ERROR] Job 82 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:41:57,950 [WORKER] [INFO] Failure reported to API for job 82
+2026-08-12 08:42:03,923 [WORKER] [ERROR] Job 83 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:05,506 [WORKER] [INFO] Failure reported to API for job 83
+2026-08-12 08:42:17,145 [WORKER] [ERROR] Job 73 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:18,075 [WORKER] [INFO] Failure reported to API for job 73
+2026-08-12 08:42:24,061 [WORKER] [ERROR] Job 81 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:25,068 [WORKER] [INFO] Failure reported to API for job 81
+2026-08-12 08:42:31,004 [WORKER] [ERROR] Job 74 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:31,952 [WORKER] [INFO] Failure reported to API for job 74
+2026-08-12 08:42:37,952 [WORKER] [ERROR] Job 72 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:38,958 [WORKER] [INFO] Failure reported to API for job 72
+2026-08-12 08:42:45,132 [WORKER] [ERROR] Job 82 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:46,250 [WORKER] [INFO] Failure reported to API for job 82
+2026-08-12 08:42:52,184 [WORKER] [ERROR] Job 75 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:53,094 [WORKER] [INFO] Failure reported to API for job 75
+2026-08-12 08:42:58,839 [WORKER] [ERROR] Job 83 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:42:59,857 [WORKER] [INFO] Failure reported to API for job 83
+2026-08-12 08:43:05,815 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 67, 'license_id': 63, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'Infinity Trader EA - Lifetime'}
+2026-08-12 08:43:11,727 [WORKER] [ERROR] Malformed job payload (missing job_id or mt5_id): {'job_id': 69, 'license_id': 65, 'mt5_id': '', 'expiry_date': '2026-09-12', 'plan': 'Infinity Trader EA - Lifetime'}
+2026-08-12 08:43:17,642 [WORKER] [ERROR] Job 78 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:43:18,559 [WORKER] [INFO] Failure reported to API for job 78
+2026-08-12 08:43:24,470 [WORKER] [ERROR] Job 79 has no expiry_date — cannot compile. Reporting failure.
+2026-08-12 08:43:25,535 [WORKER] [INFO] Failure reported to API for job 79
+2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 5 6   [ W O R K E R ]   [ I N F O ]   S t a r t i n g  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 5 7   [ W O R K E R ]   [ I N F O ]   W o r k e r   I D             :   w i n d o w s - w o r k e r - 0 1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 5 7   [ W O R K E R ]   [ I N F O ]   A P I   b a s e   U R L       :   h t t p s : / / i n f i n i t y - t r a d e r - a p i . o n r e n d e r . c o m / a p i / v 1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 5 7   [ W O R K E R ]   [ I N F O ]   C o m p i l e r   d i r       :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 5 7   [ W O R K E R ]   [ I N F O ]   M e t a E d i t o r           :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5 \ m e t a e d i t o r 6 4 . e x e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 5 7   [ W O R K E R ]   [ I N F O ]   P o l l   i n t e r v a l     :   5 s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 1   [ W O R K E R ]   [ I N F O ]   c o m p i l e _ e a   i m p o r t e d   s u c c e s s f u l l y  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 1   [ W O R K E R ]   [ I N F O ]   d e p l o y _ e x 5   i m p o r t e d   s u c c e s s f u l l y  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 1   [ W O R K E R ]   [ I N F O ]   M e t a E d i t o r   f o u n d :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5 \ m e t a e d i t o r 6 4 . e x e  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 1   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ [ I N F O ]   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 8   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ [ I N F O ]   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 8   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ [ I N F O ]   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 8   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ [ I N F O ]   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 8   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ [ I N F O ]   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 9   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ [ I N F O ]   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 9   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 9   [ W O R K E R ]   [ I N F O ]   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 7 9   [ W O R K E R ]   [ I N F O ]   E x p e r t s   f o l d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 6 , 5 8 0   [ W O R K E R ]   [ I N F O ]   A l l   p r e r e q u i s i t e s   v e r i f i e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 7 , 6 7 4   [ W O R K E R ]   [ I N F O ]   A P I   c o n n e c t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 0 7 , 6 7 4   [ W O R K E R ]   [ I N F O ]   P o l l i n g   f o r   j o b s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 0 , 8 4 9   [ W O R K E R ]   [ I N F O ]   J o b   7 2 :   e x p i r y _ d a t e   i s   N o n e   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 0 , 8 4 9   [ W O R K E R ]   [ I N F O ]   J o b   c l a i m e d :   7 2  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 0 , 8 4 9   [ W O R K E R ]   [ I N F O ]   M T 5   I D :   1 2 3 4 5 6 7 8 2   |   E x p i r y :   l i f e t i m e   |   P l a n :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 0 , 8 4 9   [ W O R K E R ]   [ I N F O ]   J o b   7 2 :   e x p i r y _ d a t e   i s   N o n e / e m p t y   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 0 , 8 4 9   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s t a r t e d  
+ [ I N F O ]   S t a r t i n g   c o m p i l a t i o n  
+ [ I N F O ]   S o u r c e   M Q 5   t e m p l a t e   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ t e m p l a t e s \ b o t . m q 5  
+ [ I N F O ]   M T 5   I D                             :   1 2 3 4 5 6 7 8 2  
+ [ I N F O ]   P l a n                                 :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ [ I N F O ]   E x p i r y   ( r a w )                 :   ' l i f e t i m e '  
+ [ I N F O ]   E x p i r y   i s   L I F E T I M E   ù   n o   e x p i r y   d a t e   w i l l   b e   e m b e d d e d  
+ [ I N F O ]   E x p i r y   ( n o r m a l i z e d )   :   l i f e t i m e  
+ [ I N F O ]   O u t p u t   M Q 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . m q 5  
+ [ I N F O ]   O u t p u t   E X 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ [ I N F O ]   E X 5   g e n e r a t e d   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ [ I N F O ]   E X 5   s i z e             :   7 1 4 6   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 5   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 6   [ W O R K E R ]   [ I N F O ]   E X 5   g e n e r a t e d :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5   ( 7 1 4 6   b y t e s )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 6   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s t a r t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 6   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S t a r t i n g   E X 5   d e p l o y m e n t  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 6   S t a r t i n g   E X 5   d e p l o y m e n t  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 6   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 6   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ [ I N F O ]   S o u r c e   s i z e             :   7 1 4 6   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 7   S o u r c e   s i z e             :   7 1 4 6   b y t e s  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 7   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 7   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ [ I N F O ]   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 8   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ [ I N F O ]   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 8   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ [ I N F O ]   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 9   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ [ I N F O ]   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 9   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ [ I N F O ]   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 9   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ [ I N F O ]   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 3 9   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ [ I N F O ]   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 0   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 0   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ [ I N F O ]   S o u r c e   S H A - 2 5 6       :   f 7 7 3 4 3 2 c 6 2 6 1 1 9 3 b 8 f a d d 8 0 9 9 5 3 8 5 6 3 1 3 9 c 2 7 a d 4 5 f c 8 b d 4 7 a 6 e 8 e 3 9 4 9 6 5 8 7 0 b 6  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 1   S o u r c e   S H A - 2 5 6       :   f 7 7 3 4 3 2 c 6 2 6 1 1 9 3 b 8 f a d d 8 0 9 9 5 3 8 5 6 3 1 3 9 c 2 7 a d 4 5 f c 8 b d 4 7 a 6 e 8 e 3 9 4 9 6 5 8 7 0 b 6  
+ [ I N F O ]   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 1   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ [ I N F O ]   D e s t i n a t i o n   s i z e   :   7 1 4 6   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 4   D e s t i n a t i o n   s i z e   :   7 1 4 6   b y t e s  
+ [ I N F O ]   F i l e   s i z e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 4   F i l e   s i z e s   m a t c h   [ O K ]  
+ [ I N F O ]   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 4 4   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ [ I N F O ]   D e s t i n a t i o n   S H A - 2 5 6 :   f 7 7 3 4 3 2 c 6 2 6 1 1 9 3 b 8 f a d d 8 0 9 9 5 3 8 5 6 3 1 3 9 c 2 7 a d 4 5 f c 8 b d 4 7 a 6 e 8 e 3 9 4 9 6 5 8 7 0 b 6  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   D e s t i n a t i o n   S H A - 2 5 6 :   f 7 7 3 4 3 2 c 6 2 6 1 1 9 3 b 8 f a d d 8 0 9 9 5 3 8 5 6 3 1 3 9 c 2 7 a d 4 5 f c 8 b d 4 7 a 6 e 8 e 3 9 4 9 6 5 8 7 0 b 6  
+ [ I N F O ]   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ [ S U C C E S S ]   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   [ W O R K E R ]   [ I N F O ]   D e p l o y e d   t o :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 7 8 2 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   [ W O R K E R ]   [ I N F O ]   S i z e :   7 1 4 6   b y t e s   |   S H A - 2 5 6   m a t c h :   T r u e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 2 , 6 5 3   [ W O R K E R ]   [ I N F O ]   U p l o a d   s t a r t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 6 , 6 8 8   [ W O R K E R ]   [ I N F O ]   U p l o a d   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 2 6 , 6 8 8   [ W O R K E R ]   [ S U C C E S S ]   J o b   c o m p l e t e d :   7 2  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 2 , 7 0 2   [ W O R K E R ]   [ I N F O ]   J o b   7 8 :   e x p i r y _ d a t e   i s   N o n e   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 2 , 7 0 2   [ W O R K E R ]   [ I N F O ]   J o b   c l a i m e d :   7 8  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 2 , 7 0 2   [ W O R K E R ]   [ I N F O ]   M T 5   I D :   1 2 3 4 5 6 8 7 4   |   E x p i r y :   l i f e t i m e   |   P l a n :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 2 , 7 0 2   [ W O R K E R ]   [ I N F O ]   J o b   7 8 :   e x p i r y _ d a t e   i s   N o n e / e m p t y   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 2 , 7 0 2   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s t a r t e d  
+ [ I N F O ]   S t a r t i n g   c o m p i l a t i o n  
+ [ I N F O ]   S o u r c e   M Q 5   t e m p l a t e   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ t e m p l a t e s \ b o t . m q 5  
+ [ I N F O ]   M T 5   I D                             :   1 2 3 4 5 6 8 7 4  
+ [ I N F O ]   P l a n                                 :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ [ I N F O ]   E x p i r y   ( r a w )                 :   ' l i f e t i m e '  
+ [ I N F O ]   E x p i r y   i s   L I F E T I M E   ù   n o   e x p i r y   d a t e   w i l l   b e   e m b e d d e d  
+ [ I N F O ]   E x p i r y   ( n o r m a l i z e d )   :   l i f e t i m e  
+ [ I N F O ]   O u t p u t   M Q 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . m q 5  
+ [ I N F O ]   O u t p u t   E X 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ [ I N F O ]   E X 5   g e n e r a t e d   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   E X 5   s i z e             :   6 9 8 0   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 7   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 7   [ W O R K E R ]   [ I N F O ]   E X 5   g e n e r a t e d :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5   ( 6 9 8 0   b y t e s )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 7   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s t a r t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 8   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S t a r t i n g   E X 5   d e p l o y m e n t  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 8   S t a r t i n g   E X 5   d e p l o y m e n t  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 8   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 8   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   S o u r c e   s i z e             :   6 9 8 0   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 8   S o u r c e   s i z e             :   6 9 8 0   b y t e s  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 8   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 5 9   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ [ I N F O ]   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 0   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ [ I N F O ]   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 0   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ [ I N F O ]   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 1   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ [ I N F O ]   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 1   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ [ I N F O ]   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 1   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ [ I N F O ]   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 1   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ [ I N F O ]   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 2   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 2   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ [ I N F O ]   S o u r c e   S H A - 2 5 6       :   7 7 f 8 c b b a a 9 d 9 a 4 a 3 8 b a 4 7 e b 2 6 b 5 7 0 7 d 5 9 6 9 e b e 8 3 6 1 9 d e e d 4 c 8 a d 8 c 2 a a a 2 b 3 d 8 6  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 2   S o u r c e   S H A - 2 5 6       :   7 7 f 8 c b b a a 9 d 9 a 4 a 3 8 b a 4 7 e b 2 6 b 5 7 0 7 d 5 9 6 9 e b e 8 3 6 1 9 d e e d 4 c 8 a d 8 c 2 a a a 2 b 3 d 8 6  
+ [ I N F O ]   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 2   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ [ I N F O ]   D e s t i n a t i o n   s i z e   :   6 9 8 0   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 3   D e s t i n a t i o n   s i z e   :   6 9 8 0   b y t e s  
+ [ I N F O ]   F i l e   s i z e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 4   F i l e   s i z e s   m a t c h   [ O K ]  
+ [ I N F O ]   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 6 4   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ [ I N F O ]   D e s t i n a t i o n   S H A - 2 5 6 :   7 7 f 8 c b b a a 9 d 9 a 4 a 3 8 b a 4 7 e b 2 6 b 5 7 0 7 d 5 9 6 9 e b e 8 3 6 1 9 d e e d 4 c 8 a d 8 c 2 a a a 2 b 3 d 8 6  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   D e s t i n a t i o n   S H A - 2 5 6 :   7 7 f 8 c b b a a 9 d 9 a 4 a 3 8 b a 4 7 e b 2 6 b 5 7 0 7 d 5 9 6 9 e b e 8 3 6 1 9 d e e d 4 c 8 a d 8 c 2 a a a 2 b 3 d 8 6  
+ [ I N F O ]   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ [ S U C C E S S ]   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   [ W O R K E R ]   [ I N F O ]   D e p l o y e d   t o :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 2   [ W O R K E R ]   [ I N F O ]   S i z e :   6 9 8 0   b y t e s   |   S H A - 2 5 6   m a t c h :   T r u e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 3 , 8 7 3   [ W O R K E R ]   [ I N F O ]   U p l o a d   s t a r t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 6 , 2 7 5   [ W O R K E R ]   [ I N F O ]   U p l o a d   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 3 6 , 2 7 5   [ W O R K E R ]   [ S U C C E S S ]   J o b   c o m p l e t e d :   7 8  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 2 , 2 1 4   [ W O R K E R ]   [ I N F O ]   J o b   8 2 :   e x p i r y _ d a t e   i s   N o n e   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 2 , 2 1 5   [ W O R K E R ]   [ I N F O ]   J o b   c l a i m e d :   8 2  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 2 , 2 1 5   [ W O R K E R ]   [ I N F O ]   M T 5   I D :   5 6 9 8 7 4 1 2 5 6   |   E x p i r y :   l i f e t i m e   |   P l a n :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 2 , 2 1 5   [ W O R K E R ]   [ I N F O ]   J o b   8 2 :   e x p i r y _ d a t e   i s   N o n e / e m p t y   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 2 , 2 1 5   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s t a r t e d  
+ [ I N F O ]   S t a r t i n g   c o m p i l a t i o n  
+ [ I N F O ]   S o u r c e   M Q 5   t e m p l a t e   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ t e m p l a t e s \ b o t . m q 5  
+ [ I N F O ]   M T 5   I D                             :   5 6 9 8 7 4 1 2 5 6  
+ [ I N F O ]   P l a n                                 :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ [ I N F O ]   E x p i r y   ( r a w )                 :   ' l i f e t i m e '  
+ [ I N F O ]   E x p i r y   i s   L I F E T I M E   ù   n o   e x p i r y   d a t e   w i l l   b e   e m b e d d e d  
+ [ I N F O ]   E x p i r y   ( n o r m a l i z e d )   :   l i f e t i m e  
+ [ I N F O ]   O u t p u t   M Q 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . m q 5  
+ [ I N F O ]   O u t p u t   E X 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ [ I N F O ]   E X 5   g e n e r a t e d   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ [ I N F O ]   E X 5   s i z e             :   6 2 7 2   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 6   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 6   [ W O R K E R ]   [ I N F O ]   E X 5   g e n e r a t e d :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5   ( 6 2 7 2   b y t e s )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 6   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s t a r t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 6   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S t a r t i n g   E X 5   d e p l o y m e n t  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 6   S t a r t i n g   E X 5   d e p l o y m e n t  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 6   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 7   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ [ I N F O ]   S o u r c e   s i z e             :   6 2 7 2   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 7   S o u r c e   s i z e             :   6 2 7 2   b y t e s  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 7   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 7   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ [ I N F O ]   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 8   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ [ I N F O ]   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 9   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ [ I N F O ]   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 9   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ [ I N F O ]   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 9   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ [ I N F O ]   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 9   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ [ I N F O ]   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 4 9   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ [ I N F O ]   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 0   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 0   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ [ I N F O ]   S o u r c e   S H A - 2 5 6       :   b f 6 e 5 f 5 6 a 3 5 9 e e 5 5 1 3 3 6 2 3 2 9 a c 0 8 e 2 4 d a f 6 2 1 a c d 9 d 7 5 2 8 2 7 e a d 4 f a d 6 8 d c b a 3 e e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 0   S o u r c e   S H A - 2 5 6       :   b f 6 e 5 f 5 6 a 3 5 9 e e 5 5 1 3 3 6 2 3 2 9 a c 0 8 e 2 4 d a f 6 2 1 a c d 9 d 7 5 2 8 2 7 e a d 4 f a d 6 8 d c b a 3 e e  
+ [ I N F O ]   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 0   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ [ I N F O ]   D e s t i n a t i o n   s i z e   :   6 2 7 2   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 5   D e s t i n a t i o n   s i z e   :   6 2 7 2   b y t e s  
+ [ I N F O ]   F i l e   s i z e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 5   F i l e   s i z e s   m a t c h   [ O K ]  
+ [ I N F O ]   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 5 5   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ [ I N F O ]   D e s t i n a t i o n   S H A - 2 5 6 :   b f 6 e 5 f 5 6 a 3 5 9 e e 5 5 1 3 3 6 2 3 2 9 a c 0 8 e 2 4 d a f 6 2 1 a c d 9 d 7 5 2 8 2 7 e a d 4 f a d 6 8 d c b a 3 e e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   D e s t i n a t i o n   S H A - 2 5 6 :   b f 6 e 5 f 5 6 a 3 5 9 e e 5 5 1 3 3 6 2 3 2 9 a c 0 8 e 2 4 d a f 6 2 1 a c d 9 d 7 5 2 8 2 7 e a d 4 f a d 6 8 d c b a 3 e e  
+ [ I N F O ]   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ [ S U C C E S S ]   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   [ W O R K E R ]   [ I N F O ]   D e p l o y e d   t o :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 5 6 9 8 7 4 1 2 5 6 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   [ W O R K E R ]   [ I N F O ]   S i z e :   6 2 7 2   b y t e s   |   S H A - 2 5 6   m a t c h :   T r u e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 3 , 2 6 5   [ W O R K E R ]   [ I N F O ]   U p l o a d   s t a r t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 5 , 2 0 0   [ W O R K E R ]   [ I N F O ]   U p l o a d   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 4 5 , 2 0 1   [ W O R K E R ]   [ S U C C E S S ]   J o b   c o m p l e t e d :   8 2  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 1 , 1 2 7   [ W O R K E R ]   [ I N F O ]   J o b   7 9 :   e x p i r y _ d a t e   i s   N o n e   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 1 , 1 2 8   [ W O R K E R ]   [ I N F O ]   J o b   c l a i m e d :   7 9  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 1 , 1 2 8   [ W O R K E R ]   [ I N F O ]   M T 5   I D :   1 2 3 4 5 6 8 7 4   |   E x p i r y :   l i f e t i m e   |   P l a n :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 1 , 1 2 8   [ W O R K E R ]   [ I N F O ]   J o b   7 9 :   e x p i r y _ d a t e   i s   N o n e / e m p t y   ù   t r e a t i n g   a s   L I F E T I M E   l i c e n s e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 1 , 1 2 8   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s t a r t e d  
+ [ I N F O ]   S t a r t i n g   c o m p i l a t i o n  
+ [ I N F O ]   S o u r c e   M Q 5   t e m p l a t e   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ t e m p l a t e s \ b o t . m q 5  
+ [ I N F O ]   M T 5   I D                             :   1 2 3 4 5 6 8 7 4  
+ [ I N F O ]   P l a n                                 :   I n f i n i t y   T r a d e r   E A   -   L i f e t i m e  
+ [ I N F O ]   E x p i r y   ( r a w )                 :   ' l i f e t i m e '  
+ [ I N F O ]   E x p i r y   i s   L I F E T I M E   ù   n o   e x p i r y   d a t e   w i l l   b e   e m b e d d e d  
+ [ I N F O ]   E x p i r y   ( n o r m a l i z e d )   :   l i f e t i m e  
+ [ I N F O ]   O u t p u t   M Q 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . m q 5  
+ [ I N F O ]   O u t p u t   E X 5   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ [ I N F O ]   E X 5   g e n e r a t e d   :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   E X 5   s i z e             :   7 2 4 8   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   [ W O R K E R ]   [ I N F O ]   C o m p i l a t i o n   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   [ W O R K E R ]   [ I N F O ]   E X 5   g e n e r a t e d :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5   ( 7 2 4 8   b y t e s )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s t a r t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S t a r t i n g   E X 5   d e p l o y m e n t  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   S t a r t i n g   E X 5   d e p l o y m e n t  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ [ I N F O ]   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 4   S o u r c e   E X 5               :   C : \ m t 5 - l i c e n s e - s y s t e m \ c o m p i l e r \ o u t p u t \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   S o u r c e   s i z e             :   7 2 4 8   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 5   S o u r c e   s i z e             :   7 2 4 8   b y t e s  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 5   D i s c o v e r i n g   M T 5   d a t a   f o l d e r . . .  
+ [ I N F O ]   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 5   D i s c o v e r i n g   M T 5   d a t a   f o l d e r   u n d e r :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l  
+ [ I N F O ]   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 7   E x a m i n e d   f o l d e r s :   [ ' C o m m o n ' ,   ' C o m m u n i t y ' ,   ' D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 ' ]  
+ [ I N F O ]   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 7   V a l i d   M T 5   i n s t a n c e s   f o u n d :   1  
+ [ I N F O ]   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 7   S e l e c t e d   M T 5   i n s t a n c e :   D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5     ( s c o r e = 5 5 )  
+ [ I N F O ]   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 7   M T 5   d a t a   f o l d e r     :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5  
+ [ I N F O ]   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 7   E x p e r t s   f o l d e r       :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s  
+ [ I N F O ]   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 7   o r i g i n . t x t   p o i n t s   t o   M T 5   i n s t a l l :   C : \ P r o g r a m   F i l e s \ M e t a T r a d e r   5  
+ [ I N F O ]   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 8   D e s t i n a t i o n   p a t h   :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ [ I N F O ]   D e s t i n a t i o n   f i l e   a l r e a d y   e x i s t s   ù   w i l l   o v e r w r i t e   s a f e l y  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 8   D e s t i n a t i o n   f i l e   a l r e a d y   e x i s t s   ù   w i l l   o v e r w r i t e   s a f e l y  
+ [ I N F O ]   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 8   C a l c u l a t i n g   s o u r c e   S H A - 2 5 6 . . .  
+ [ I N F O ]   S o u r c e   S H A - 2 5 6       :   b d 1 4 0 a 6 4 2 7 c 3 7 f c 2 7 d 2 c 2 7 5 0 8 e e b 5 9 a 5 d 0 4 5 e d 7 7 3 7 f 8 1 1 5 c 4 a 0 d 4 6 b 4 e a 0 7 b 3 d 3  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 8   S o u r c e   S H A - 2 5 6       :   b d 1 4 0 a 6 4 2 7 c 3 7 f c 2 7 d 2 c 2 7 5 0 8 e e b 5 9 a 5 d 0 4 5 e d 7 7 3 7 f 8 1 1 5 c 4 a 0 d 4 6 b 4 e a 0 7 b 3 d 3  
+ [ I N F O ]   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 8   C o p y i n g   E X 5   w i t h   s h u t i l . c o p y 2 ( ) . . .  
+ [ I N F O ]   D e s t i n a t i o n   s i z e   :   7 2 4 8   b y t e s  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 9   D e s t i n a t i o n   s i z e   :   7 2 4 8   b y t e s  
+ [ I N F O ]   F i l e   s i z e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 0 9   F i l e   s i z e s   m a t c h   [ O K ]  
+ [ I N F O ]   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 1 0   C a l c u l a t i n g   d e s t i n a t i o n   S H A - 2 5 6 . . .  
+ [ I N F O ]   D e s t i n a t i o n   S H A - 2 5 6 :   b d 1 4 0 a 6 4 2 7 c 3 7 f c 2 7 d 2 c 2 7 5 0 8 e e b 5 9 a 5 d 0 4 5 e d 7 7 3 7 f 8 1 1 5 c 4 a 0 d 4 6 b 4 e a 0 7 b 3 d 3  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 8   D e s t i n a t i o n   S H A - 2 5 6 :   b d 1 4 0 a 6 4 2 7 c 3 7 f c 2 7 d 2 c 2 7 5 0 8 e e b 5 9 a 5 d 0 4 5 e d 7 7 3 7 f 8 1 1 5 c 4 a 0 d 4 6 b 4 e a 0 7 b 3 d 3  
+ [ I N F O ]   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 8   S H A - 2 5 6   h a s h e s   m a t c h   [ O K ]  
+ [ S U C C E S S ]   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 9   E X 5   d e p l o y m e n t   c o m p l e t e d  
+ [ I N F O ]   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 9   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 9   [ W O R K E R ]   [ I N F O ]   M T 5   d e p l o y m e n t   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 9   [ W O R K E R ]   [ I N F O ]   D e p l o y e d   t o :   C : \ U s e r s \ i n f i n i t y a d m i n \ A p p D a t a \ R o a m i n g \ M e t a Q u o t e s \ T e r m i n a l \ D 0 E 8 2 0 9 F 7 7 C 8 C F 3 7 A D 8 B F 5 5 0 E 5 1 F F 0 7 5 \ M Q L 5 \ E x p e r t s \ I n f i n i t y T r a d e r _ 1 2 3 4 5 6 8 7 4 _ l i f e t i m e . e x 5  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 9   [ W O R K E R ]   [ I N F O ]   S i z e :   7 2 4 8   b y t e s   |   S H A - 2 5 6   m a t c h :   T r u e  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 2 , 2 2 9   [ W O R K E R ]   [ I N F O ]   U p l o a d   s t a r t e d  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 4 , 4 0 5   [ W O R K E R ]   [ I N F O ]   U p l o a d   s u c c e s s f u l  
+ 2 0 2 6 - 0 8 - 1 2   0 8 : 4 7 : 5 4 , 4 0 5   [ W O R K E R ]   [ S U C C E S S ]   J o b   c o m p l e t e d :   7 9  
+ 
