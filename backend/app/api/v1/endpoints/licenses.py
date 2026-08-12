@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
+from typing import List, Optional
 
 from app.db.database import get_db
 from app.models import License, Order, Product, CompileJob
 from pydantic import BaseModel
 from datetime import datetime
+from app.core.azure_vm import start_azure_vm_if_needed
 
 class LicenseResponse(BaseModel):
     id: int
