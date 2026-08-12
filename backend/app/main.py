@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import products, users, licenses, orders, admin, jobs, trials
+from app.api.v1.endpoints import products, users, licenses, orders, admin, jobs, trials, settings
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -35,6 +35,7 @@ app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
 app.include_router(trials.router, prefix="/api/v1/trials", tags=["trials"])
+app.include_router(settings.router, prefix="/api/v1/settings", tags=["settings"])
 
 @app.get("/")
 def read_root():

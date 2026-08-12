@@ -192,3 +192,23 @@ async def reject_broker_change(request_id):
         except Exception as e:
             logging.error(f"Error rejecting broker change: {e}")
             return {"error": str(e)}
+
+async def get_settings():
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(f"{BASE_URL}/settings/")
+            if response.status_code == 200:
+                return response.json()
+            return {}
+        except Exception:
+            return {}
+
+async def update_setting(key, value):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.put(f"{BASE_URL}/settings/{key}", json={"setting_value": str(value)})
+            if response.status_code == 200:
+                return True
+            return False
+        except Exception:
+            return False

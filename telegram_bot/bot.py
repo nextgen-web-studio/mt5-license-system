@@ -52,7 +52,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = query.data
     
     if data.startswith("approve_") or data.startswith("reject_"):
-        admin_id = os.getenv("ADMIN_TELEGRAM_ID")
+        admin_id = os.getenv("ADMIN_CHAT_ID")
         if str(update.effective_user.id) != str(admin_id):
             await query.answer("You are not authorized to perform this action.", show_alert=True)
             return
@@ -65,30 +65,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if action == "approve":
             resp = await approve_order(order_id)
             if "error" not in resp:
-                await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.")
-                # Notify User
-                try:
-                    telegram_id = resp.get("telegram_id")
-                    if telegram_id:
-                        msg = (
-                            f"✅ *Your order has been approved.*\n\n"
-                            f"Order ID: #ORD-{order_id}\n\n"
-                            f"Please enter your **MT5 ID** to continue:"
-                        )
-                        # We need to tell the user's state to wait for mt5_id
-                        # This requires setting user_data for that user. In python-telegram-bot,
-                        # accessing another user's user_data can be done via context.application.user_data[user_id]
-                        # but we need the internal user id. For now we will just instruct them to enter it
-                        # wait, the handle_text currently expects `awaiting_mt5_id_post_approval` to be true.
-                        # Let's fetch the bot application's user_data dict for that telegram_id
-                        user_data = context.application.user_data.get(int(telegram_id))
-                        if user_data is not None:
-                            user_data['awaiting_mt5_id_post_approval'] = True
-                            user_data['approved_order_id'] = order_id
-                            
-                        await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
-                except Exception as e:
-                    logging.error(f"Failed to notify user: {e}")
+                await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nPlease enter the customer's MT5 ID:")
+                
+                # Tell the admin's state to wait for mt5_id
+                context.user_data['awaiting_admin_mt5_id'] = True
+                context.user_data['pending_order_id'] = order_id
+                context.user_data['pending_telegram_id'] = resp.get("telegram_id")
             else:
                 await query.answer(f"Failed: {resp['error']}", show_alert=True)
                 
@@ -100,9 +82,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     telegram_id = resp.get("telegram_id")
                     if telegram_id:
                         msg = (
-                            f"❌ *Your order has been rejected.*\n\n"
-                            f"Order ID: #ORD-{order_id}\n\n"
-                            f"Please contact the admin if you need more information."
+                            f"❌ *Order Not Approved*\n\n"
+                            f"Order ID: ORD-{order_id}\n\n"
+                            f"Please contact the administrator for more information."
                         )
                         await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
                 except:
@@ -111,32 +93,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
-    if data == "confirm_mt5_id":
-        mt5_id = context.user_data.get('pending_mt5_id')
-        order_id = context.user_data.get('approved_order_id')
-        
-        await query.edit_message_text("Generating your Lifetime License and queueing compilation. Please wait...")
-        from utils.api_client import generate_license
-        resp = await generate_license(order_id, mt5_id)
-        
-        if "error" in resp:
-            await query.edit_message_text(f"❌ *Error:*\n{resp['error']}", parse_mode="Markdown")
-            return
-            
-        await query.edit_message_text(
-            f"✅ *License Generated!*\n\n"
-            f"Your Lifetime EA is now compiling. We will send you the file automatically once it's ready.\n"
-            f"You can also check the 'Downloads' section.",
-            parse_mode="Markdown"
-        )
-        context.user_data['pending_mt5_id'] = None
-        context.user_data['approved_order_id'] = None
-        return
-        
-    if data == "change_mt5_id":
-        context.user_data['awaiting_mt5_id_post_approval'] = True
-        await query.edit_message_text("Please enter your correct **MT5 ID**:")
-        return
+
 
     if data == "broker_change":
         user_id = context.user_data.get('db_user_id')
@@ -160,7 +117,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if data.startswith("approve_change_") or data.startswith("reject_change_"):
-        admin_id = os.getenv("ADMIN_TELEGRAM_ID")
+        admin_id = os.getenv("ADMIN_CHAT_ID")
         if str(update.effective_user.id) != str(admin_id):
             await query.answer("You are not authorized to perform this action.", show_alert=True)
             return
@@ -206,6 +163,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     pass
             else:
                 await query.answer(f"Failed: {resp['error']}", show_alert=True)
+        return
+
+    if data.startswith("admin_edit_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("Unauthorized.", show_alert=True)
+            return
+            
+        setting_key = data.replace("admin_edit_", "")
+        context.user_data['awaiting_admin_setting_key'] = setting_key
+        await query.edit_message_text(f"Please enter the new value for `{setting_key}`:", parse_mode="Markdown")
         return
 
     if data == "buy_ea":
@@ -348,17 +316,17 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     else:
         await update.callback_query.edit_message_text(summary, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
         
-    admin_chat_id = os.getenv("ADMIN_TELEGRAM_ID")
+    admin_chat_id = os.getenv("ADMIN_CHAT_ID")
     if admin_chat_id:
         admin_msg = (
-            f"🔔 *NEW EA ORDER*\n\n"
-            f"Order ID: #ORD-{order['id']}\n"
-            f"👤 Customer: {context.user_data.get('db_user_name', 'Unknown')}\n"
-            f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-            f"💬 Telegram: @{update.effective_user.username or update.effective_user.id}\n"
-            f"📦 Plan: {product['name'] if product else 'Unknown'}\n"
-            f"💰 Price: ₹{product['price'] if product else '0'}\n\n"
-            f"Status: ⏳ PENDING ADMIN APPROVAL"
+            f"🆕 *NEW EA ORDER*\n\n"
+            f"Order ID: ORD-{order['id']}\n"
+            f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+            f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+            f"Telegram ID: `{update.effective_user.id}`\n"
+            f"Plan: {product['name'] if product else 'Unknown'}\n"
+            f"Price: ₹{product['price'] if product else '0'}\n"
+            f"Status: Pending Admin Approval"
         )
         admin_kb = [
             [
@@ -419,26 +387,51 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
         return
 
-    if context.user_data.get('awaiting_mt5_id_post_approval'):
-        context.user_data['awaiting_mt5_id_post_approval'] = False
+    if context.user_data.get('awaiting_admin_mt5_id'):
+        context.user_data['awaiting_admin_mt5_id'] = False
         mt5_id = text.strip()
-        order_id = context.user_data.get('approved_order_id')
+        order_id = context.user_data.get('pending_order_id')
+        telegram_id = context.user_data.get('pending_telegram_id')
         
-        context.user_data['pending_mt5_id'] = mt5_id
+        await update.message.reply_text("Generating the Lifetime License and queueing compilation...")
+        from utils.api_client import generate_license
+        resp = await generate_license(order_id, mt5_id)
         
-        confirm_msg = (
-            f"Please confirm your MT5 ID:\n\n"
-            f"**MT5 ID:** `{mt5_id}`\n\n"
-            f"This EA will be permanently associated with this MT5 account.\n"
-            f"If you later change broker and receive a different MT5 ID, you will need to submit a Broker Change request."
-        )
+        if "error" in resp:
+            await update.message.reply_text(f"❌ *Error:*\n{resp['error']}", parse_mode="Markdown")
+            return
+            
+        await update.message.reply_text(f"✅ EA successfully compiled and dispatched to customer.")
         
-        keyboard = [
-            [InlineKeyboardButton("✅ Confirm MT5 ID", callback_data=f"confirm_mt5_id")],
-            [InlineKeyboardButton("✏️ Change MT5 ID", callback_data=f"change_mt5_id")]
-        ]
+        # Send confirmation to the customer
+        if telegram_id:
+            try:
+                cust_msg = (
+                    f"✅ *Order Approved!*\n\n"
+                    f"Your EA has been generated successfully.\n\n"
+                    f"MT5 ID: `{mt5_id}`\n"
+                    f"License: Lifetime\n"
+                    f"Status: Active\n\n"
+                    f"Your EA file is attached below (once compilation finishes)."
+                )
+                await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
+            except Exception as e:
+                logging.error(f"Failed to notify customer: {e}")
+                
+        context.user_data['pending_telegram_id'] = None
+        return
         
-        await update.message.reply_text(confirm_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+    setting_key = context.user_data.get('awaiting_admin_setting_key')
+    if setting_key:
+        context.user_data['awaiting_admin_setting_key'] = None
+        new_val = text.strip()
+        
+        from utils.api_client import update_setting
+        success = await update_setting(setting_key, new_val)
+        if success:
+            await update.message.reply_text(f"✅ Setting `{setting_key}` updated to `{new_val}`.", parse_mode="Markdown")
+        else:
+            await update.message.reply_text(f"❌ Failed to update `{setting_key}`.")
         return
 
     if context.user_data.get('awaiting_new_mt5_id'):
@@ -491,7 +484,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(summary, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
                 
                 # Notify Admin
-                admin_chat_id = os.getenv("ADMIN_TELEGRAM_ID")
+                admin_chat_id = os.getenv("ADMIN_CHAT_ID")
                 if admin_chat_id:
                     admin_msg = (
                         f"🔄 *BROKER CHANGE REQUEST*\n\n"
@@ -756,6 +749,42 @@ async def post_init(application):
     ]
     await application.bot.set_my_commands(commands)
 
+async def myid_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(f"Your Telegram Chat ID is: `{update.effective_user.id}`", parse_mode="Markdown")
+
+async def admintest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    admin_id = os.getenv("ADMIN_CHAT_ID")
+    if str(update.effective_user.id) != str(admin_id):
+        return
+    await update.message.reply_text("✅ Admin notification test successful")
+
+async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    admin_id = os.getenv("ADMIN_CHAT_ID")
+    if str(update.effective_user.id) != str(admin_id):
+        return
+        
+    from utils.api_client import get_settings
+    settings = await get_settings()
+    
+    msg = (
+        "⚙️ *Admin Configuration Panel*\n\n"
+        f"Lifetime Price: `{settings.get('lifetime_price', 'Not Set')}`\n"
+        f"Free Trial Enabled: `{settings.get('free_trial_enabled', 'Not Set')}`\n"
+        f"Trial Duration (Days): `{settings.get('trial_duration', 'Not Set')}`\n"
+        f"Max Trials / Month: `{settings.get('max_trials', 'Not Set')}`\n"
+        f"Broker Change Fee: `{settings.get('broker_change_fee', 'Not Set')}`\n"
+        f"Support Username: `{settings.get('support_username', 'Not Set')}`\n\n"
+        "Click a button below to change a setting:"
+    )
+    
+    kb = [
+        [InlineKeyboardButton("Edit Price", callback_data="admin_edit_lifetime_price"), InlineKeyboardButton("Edit Trial Status", callback_data="admin_edit_free_trial_enabled")],
+        [InlineKeyboardButton("Edit Trial Duration", callback_data="admin_edit_trial_duration"), InlineKeyboardButton("Edit Max Trials", callback_data="admin_edit_max_trials")],
+        [InlineKeyboardButton("Edit Change Fee", callback_data="admin_edit_broker_change_fee"), InlineKeyboardButton("Edit Support Username", callback_data="admin_edit_support_username")]
+    ]
+    
+    await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+
 def main():
     start_dummy_server()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -764,6 +793,9 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("licenses", licenses_command))
     application.add_handler(CommandHandler("downloads", downloads_command))
+    application.add_handler(CommandHandler("myid", myid_command))
+    application.add_handler(CommandHandler("admintest", admintest_command))
+    application.add_handler(CommandHandler("admin", admin_command))
     application.add_handler(CommandHandler("mock_webhook", mock_webhook))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
@@ -773,3 +805,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
