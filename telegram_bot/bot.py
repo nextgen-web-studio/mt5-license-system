@@ -63,7 +63,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         resp = await approve_order(order_id)
         if "error" not in resp:
-            await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nThe customer has been asked to provide their MT5 ID.")
+            kb = [[InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]]
+            await query.edit_message_text(f"✅ Order #{order_id} has been APPROVED.\n\nThe customer has been asked to provide their MT5 ID.", reply_markup=InlineKeyboardMarkup(kb))
             
             # Notify Customer
             try:
@@ -113,6 +114,76 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
+    if data.startswith("create_installment_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("You are not authorized to perform this action.", show_alert=True)
+            return
+            
+        order_id = int(data.split("_")[2])
+        context.user_data['install_order_id'] = order_id
+        context.user_data['install_step'] = 'total_amount'
+        
+        await query.edit_message_text(f"💳 *Create Installment Arrangement for Order #{order_id}*\n\nPlease enter the **Total agreed amount** (e.g. 20000):", parse_mode="Markdown")
+        return
+
+    if data.startswith("manage_installment_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("You are not authorized to perform this action.", show_alert=True)
+            return
+            
+        order_id = int(data.split("_")[2])
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            resp = await client.get(f"{base_url}/installments/admin/{order_id}")
+            if resp.status_code == 200:
+                data_json = resp.json()
+                msg = (
+                    f"💳 *INSTALLMENT*\n\n"
+                    f"Order: ORD-{order_id}\n\n"
+                    f"MT5 ID: `{data_json['mt5_id']}`\n\n"
+                    f"Total: ₹{data_json['total_amount']:,.0f}\n"
+                    f"Installment: ₹{data_json['installment_amount']:,.0f}\n\n"
+                    f"Paid: ₹{data_json['amount_paid']:,.0f}\n"
+                    f"Remaining: ₹{data_json['amount_remaining']:,.0f}\n\n"
+                    f"Progress:\n{data_json['installments_paid']}/{data_json['installment_count']}\n\n"
+                    f"License:\n{data_json['license_status'].title()}\n\n"
+                    f"Expires:\n{data_json['license_expiry'].split('T')[0] if data_json['license_expiry'] else 'Never'}"
+                )
+                kb = [
+                    [InlineKeyboardButton("Mark Payment Received", callback_data=f"mark_install_paid_{order_id}")],
+                    [InlineKeyboardButton("Payment History", callback_data=f"install_history_{order_id}")],
+                    [InlineKeyboardButton("Disable Arrangement", callback_data=f"disable_install_{order_id}")]
+                ]
+                await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+            else:
+                await query.answer("Installment arrangement not found.", show_alert=True)
+        return
+
+    if data.startswith("mark_install_paid_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("You are not authorized to perform this action.", show_alert=True)
+            return
+            
+        order_id = int(data.split("_")[3])
+        # In a real app we'd confirm, but for now we'll just process it
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=False) as client:
+            # First fetch installment_amount
+            resp = await client.get(f"{base_url}/installments/admin/{order_id}")
+            if resp.status_code == 200:
+                amount = resp.json()['installment_amount']
+                pay_resp = await client.post(f"{base_url}/installments/pay", json={"order_id": order_id, "amount": amount})
+                if pay_resp.status_code == 200:
+                    await query.edit_message_text(f"✅ Payment of ₹{amount:,.0f} recorded for Order #{order_id}.\n\nLicense extended and compilation queued.")
+                else:
+                    await query.answer("Failed to record payment.", show_alert=True)
+        return
+
     if data == "license_details":
         await render_licenses(update, context)
         return
@@ -134,14 +205,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     ltype = "Trial" if lic.get('license_type') == 'trial' else "Lifetime"
                     
                     text = (
-                        f"🔐 *LICENSE DETAILS*\n\n"
-                        f"MT5 ID: `{lic['mt5_id']}`\n"
-                        f"License Type: {ltype}\n"
-                        f"Status: {status_icon} {lic['status'].title()}\n"
-                        f"Activated: {activated}\n"
-                        f"Expires: {expiry}"
+                        f"📋 *LICENSE DETAILS*\n\n"
+                        f"MT5 ID: `{lic['mt5_id']}`\n\n"
+                        f"Type:\n{ltype}\n\n"
+                        f"Status:\n{status_icon} {lic['status'].title()}\n\n"
+                        f"Expiry:\n{expiry}"
                     )
-                    kb = [[InlineKeyboardButton("⬅️ Back to Licenses", callback_data="license_details")]]
+                    
+                    kb = []
+                    if ltype == "Lifetime":
+                        kb.append([InlineKeyboardButton("🔄 Broker Change", callback_data="broker_change")])
+                    kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
+                    
                     await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
                     return
         await query.edit_message_text("❌ License not found.")
@@ -550,6 +625,52 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     
+    install_step = context.user_data.get('install_step')
+    if install_step:
+        order_id = context.user_data.get('install_order_id')
+        if install_step == 'total_amount':
+            context.user_data['install_total_amount'] = float(text)
+            context.user_data['install_step'] = 'installment_amount'
+            await update.message.reply_text("Please enter the **Installment amount** (e.g. 5000):", parse_mode="Markdown")
+            return
+        elif install_step == 'installment_amount':
+            context.user_data['install_amount'] = float(text)
+            context.user_data['install_step'] = 'installments'
+            await update.message.reply_text("Please enter the **Number of installments** (e.g. 4):", parse_mode="Markdown")
+            return
+        elif install_step == 'installments':
+            context.user_data['install_count'] = int(text)
+            context.user_data['install_step'] = 'first_payment'
+            await update.message.reply_text("Please enter the **First payment amount** (e.g. 5000):", parse_mode="Markdown")
+            return
+        elif install_step == 'first_payment':
+            context.user_data['install_first_payment'] = float(text)
+            context.user_data['install_step'] = 'license_duration'
+            await update.message.reply_text("Please enter the **License duration per payment in days** (e.g. 35):", parse_mode="Markdown")
+            return
+        elif install_step == 'license_duration':
+            duration = int(text)
+            context.user_data['install_step'] = None
+            
+            payload = {
+                "order_id": order_id,
+                "total_amount": context.user_data['install_total_amount'],
+                "installment_amount": context.user_data['install_amount'],
+                "installment_count": context.user_data['install_count'],
+                "first_payment_amount": context.user_data['install_first_payment'],
+                "license_period_days": duration
+            }
+            
+            base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+            import httpx
+            async with httpx.AsyncClient(verify=False) as client:
+                resp = await client.post(f"{base_url}/installments/create", json=payload)
+                if resp.status_code == 200:
+                    await update.message.reply_text("✅ Installment arrangement created and first payment recorded!")
+                else:
+                    await update.message.reply_text(f"❌ Error creating arrangement: {resp.text}")
+            return
+
     if context.user_data.get('awaiting_name'):
         context.user_data['awaiting_name'] = False
         tid = context.user_data.get('temp_telegram_id')
@@ -671,7 +792,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['awaiting_trial_mt5_id'] = False
         mt5_id = text.strip()
         user_id = context.user_data.get('db_user_id')
-        tid = update.effective_user.id
+        tid = str(update.effective_user.id)
         
         from utils.api_client import request_free_trial
         
@@ -680,15 +801,29 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await request_free_trial(tid, mt5_id)
         
         if "error" in resp:
-            err_text = str(resp['error'])[:2000]
-            await update.message.reply_text(f"❌ *Trial Request Failed:*\n\n{err_text}", parse_mode="Markdown")
+            if resp['error'] == "ALREADY_CLAIMED":
+                import datetime
+                month_name = datetime.datetime.now().strftime("%B %Y")
+                err_msg = (
+                    f"⚠️ *FREE TRIAL ALREADY USED*\n\n"
+                    f"You have already used your free trial for this month.\n\n"
+                    f"Free Trial:\n3 Days\n\n"
+                    f"Trial Used:\n{month_name}\n\n"
+                    f"You can request another free trial next month."
+                )
+                kb = [[InlineKeyboardButton("🏠 Home", callback_data="home")]]
+                await update.message.reply_text(err_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+            else:
+                err_text = str(resp['error'])[:2000]
+                await update.message.reply_text(f"❌ *Trial Request Failed:*\n\n{err_text}", parse_mode="Markdown")
             return
             
         success_msg = (
-            f"✅ *{resp.get('message', 'Trial Approved!')}*\n\n"
-            f"MT5 ID: `{mt5_id}`\n"
-            f"Duration: {resp.get('duration_days', 2)} Days\n"
-            f"Expires: {resp.get('expiry_date', 'Unknown')}\n\n"
+            f"🎁 *FREE TRIAL ACTIVATED*\n\n"
+            f"MT5 ID: `{mt5_id}`\n\n"
+            f"Trial Duration: 3 Days\n\n"
+            f"Expires:\n{resp.get('expiry_date', 'Unknown')}\n\n"
+            f"You may use the trial once this calendar month.\n\n"
             "⚙️ Please wait 1-2 minutes while we compile your trial EA. We will send the file here automatically."
         )
         await update.message.reply_text(success_msg, parse_mode="Markdown")
@@ -776,14 +911,14 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
                 
             # Multiple licenses
-            text = "🔐 *Select a license:*\n\n"
+            text = "📋 *Your Licenses:*\n\nPlease select a license below to view details or manage it."
             kb = []
             for idx, l in enumerate(licenses, 1):
                 status_icon = "🟢" if l['status'] == 'active' else "🔴" if l['status'] == 'expired' else "⚫"
                 ltype = "Trial" if l.get('license_type') == 'trial' else "Lifetime"
-                text += f"{idx}️⃣ MT5 ID: {l['mt5_id']}\n   {ltype}\n   {status_icon} {l['status'].title()}\n\n"
+                button_text = f"MT5 {l['mt5_id']} — {ltype} — {status_icon} {l['status'].title()}"
                 
-                kb.append([InlineKeyboardButton(f"MT5 {l['mt5_id']}", callback_data=f"view_license_{l['id']}")])
+                kb.append([InlineKeyboardButton(button_text, callback_data=f"view_license_{l['id']}")])
                 
             kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
@@ -1020,6 +1155,61 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
 
+async def installment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tid = str(update.effective_user.id)
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    
+    import httpx
+    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        resp = await client.get(f"{base_url}/installments/customer/{tid}")
+        if resp.status_code == 404:
+            await update.message.reply_text("❌ You don't have an active installment arrangement.")
+            return
+        elif resp.status_code != 200:
+            await update.message.reply_text("❌ Unable to fetch installment info.")
+            return
+            
+        data = resp.json()
+        
+        status_icon = "🟢" if data['license_status'] == 'active' else "🔴" if data['license_status'] == 'expired' else "⚫"
+        expiry_str = data['license_expiry'].split('T')[0] if data['license_expiry'] else "Never"
+        next_due_str = data['next_due_date'].split('T')[0] if data['next_due_date'] else "Completed"
+        
+        # Calculate days to next due date to show warning
+        payment_warning = ""
+        if data['installment_status'] != 'completed' and data['next_due_date']:
+            from datetime import datetime, timezone
+            try:
+                next_due = datetime.strptime(data['next_due_date'].split('T')[0], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                now = datetime.now(timezone.utc)
+                days_left = (next_due - now).days
+                if days_left <= 5:
+                    payment_warning = "\nStatus:\n⚠️ Payment Due Soon"
+                else:
+                    payment_warning = "\nStatus:\n✅ Active"
+            except:
+                pass
+                
+        msg = (
+            "💳 *YOUR INSTALLMENT PLAN*\n\n"
+            f"Plan: {data['product_name']}\n\n"
+            f"MT5 ID: `{data['mt5_id']}`\n\n"
+            f"Total Amount: ₹{data['total_amount']:,.0f}\n"
+            f"Installment: ₹{data['installment_amount']:,.0f}\n\n"
+            f"Paid: ₹{data['amount_paid']:,.0f}\n"
+            f"Remaining: ₹{data['amount_remaining']:,.0f}\n\n"
+            f"Payment:\n{data['installments_paid']}/{data['installment_count']}\n\n"
+            f"License:\n{status_icon} {data['license_status'].title()}\n\n"
+            f"Expires:\n{expiry_str}\n\n"
+            f"Next Payment:\n₹{data['installment_amount']:,.0f} (Due: {next_due_str}){payment_warning}"
+        )
+        
+        kb = [
+            [InlineKeyboardButton("Contact Admin", url="https://t.me/InfinityTraderSupport"), InlineKeyboardButton("🏠 Home", callback_data="home")]
+        ]
+        
+        await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+
 def main():
     start_dummy_server()
     token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -1028,6 +1218,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("licenses", licenses_command))
     application.add_handler(CommandHandler("downloads", downloads_command))
+    application.add_handler(CommandHandler("installment", installment_command))
     application.add_handler(CommandHandler("myid", myid_command))
     application.add_handler(CommandHandler("admintest", admintest_command))
     application.add_handler(CommandHandler("admin", admin_command))
@@ -1039,5 +1230,4 @@ def main():
     application.run_polling()
 
 if __name__ == '__main__':
-    main()
 

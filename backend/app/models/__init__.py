@@ -34,7 +34,31 @@ class Order(Base):
     mt5_id = Column(String, nullable=True) # captured before payment
     # pending, paid, compiling, ready, delivered, expired, cancelled
     status = Column(String, default="pending")
+    
+    # Installment fields
+    installment_enabled = Column(Boolean, default=False)
+    installment_total_amount = Column(Float, nullable=True)
+    installment_amount = Column(Float, nullable=True)
+    installment_count = Column(Integer, nullable=True)
+    installments_paid = Column(Integer, default=0)
+    amount_paid = Column(Float, default=0.0)
+    amount_remaining = Column(Float, nullable=True)
+    next_due_date = Column(DateTime(timezone=True), nullable=True)
+    license_period_days = Column(Integer, nullable=True)
+    grace_days = Column(Integer, default=5)
+    installment_status = Column(String, default="active") # active, completed, defaulted
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class InstallmentPayment(Base):
+    __tablename__ = "installment_payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"))
+    amount = Column(Float)
+    payment_number = Column(Integer)
+    payment_date = Column(DateTime(timezone=True), server_default=func.now())
+    status = Column(String, default="confirmed")
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -125,6 +149,16 @@ class TrialActivation(Base):
     month_key = Column(String, index=True) # e.g. "2026-08"
     status = Column(String, default="active") # active, expired, revoked
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class TrialClaim(Base):
+    __tablename__ = "trial_claims"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    telegram_id = Column(String, index=True)
+    claim_month = Column(String, index=True) # "YYYY-MM"
+    license_id = Column(Integer, ForeignKey("licenses.id"))
+    mt5_id = Column(String)
+    claimed_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class LicenseMt5History(Base):
     __tablename__ = "license_mt5_history"

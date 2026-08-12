@@ -94,51 +94,75 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
         if existing_paid.scalars().first():
             raise HTTPException(status_code=400, detail="This MT5 ID already has an active license.")
 
-    # 3. Check Monthly limits
-    current_time = datetime.datetime.now()
+    # 3. Check Monthly limits (STRICT 1 PER CALENDAR MONTH RULE)
+    import datetime as dt
+    current_time = datetime.datetime.now(dt.timezone.utc)
     month_key = current_time.strftime("%Y-%m")
     
-    # Count trials for this telegram ID this month
-    tg_trials = await db.execute(
-        select(TrialActivation).filter(
-            TrialActivation.telegram_user_id == req.telegram_user_id,
-            TrialActivation.month_key == month_key
+    from app.models import TrialClaim
+    
+    # Check if a TrialClaim already exists for this telegram ID in this month
+    claim_res = await db.execute(
+        select(TrialClaim).filter(
+            TrialClaim.telegram_id == req.telegram_user_id,
+            TrialClaim.claim_month == month_key
         )
     )
-    tg_count = len(tg_trials.scalars().all())
-    if tg_count >= max_trials:
-        raise HTTPException(status_code=400, detail=f"You have already used your {max_trials} free trials this month.")
+    if claim_res.scalars().first():
+        raise HTTPException(status_code=400, detail="ALREADY_CLAIMED")
 
-    # Count trials for this MT5 ID this month (to prevent abuse with multiple TG accounts)
-    mt5_trials = await db.execute(
-        select(TrialActivation).filter(
-            TrialActivation.mt5_id == req.mt5_id,
-            TrialActivation.month_key == month_key
-        )
-    )
-    mt5_count = len(mt5_trials.scalars().all())
-    if mt5_count >= max_trials:
-        raise HTTPException(status_code=400, detail=f"This MT5 ID has already reached the maximum of {max_trials} free trials this month.")
-
-    # 4. Create License and Activation
+    # The new rule strictly enforces 3 days for free trials
+    duration_days = 3
+    
+    # Calculate exact expiry
     expiry = current_time + relativedelta(days=duration_days)
     
-    db_license = License(
-        user_id=1, # Assign to admin or standard system user since trials aren't full users
-        mt5_id=req.mt5_id,
-        expiry_date=expiry,
-        status="generating",
-        license_type="trial"
+    # 4. Invalidate any previous trials for this MT5 ID
+    prev_trials = await db.execute(
+        select(License).filter(
+            License.mt5_id == req.mt5_id,
+            License.license_type == "trial",
+            License.status == "active"
+        )
     )
-    db.add(db_license)
-    await db.commit()
-    await db.refresh(db_license)
-
+    for t in prev_trials.scalars().all():
+        t.status = "expired"
+        
+    # 5. Create License
+    import uuid
+    lic = License(
+        user_id=None, # Trial user might not be in DB yet fully if they bypassed, but we track by TG ID
+        mt5_id=req.mt5_id,
+        license_type="trial",
+        status="generating",
+        expiry_date=expiry,
+        license_uuid=str(uuid.uuid4())
+    )
+    
+    # To link correctly to a user, fetch user by telegram_id
+    from app.models import User
+    user_res = await db.execute(select(User).filter(User.telegram_id == req.telegram_user_id))
+    user = user_res.scalar_one_or_none()
+    if user:
+        lic.user_id = user.id
+        
+    db.add(lic)
+    await db.flush() # Need license ID
+    
+    # Create TrialClaim record
+    claim = TrialClaim(
+        telegram_id=req.telegram_user_id,
+        claim_month=month_key,
+        license_id=lic.id,
+        mt5_id=req.mt5_id
+    )
+    db.add(claim)
+    
+    # Create TrialActivation (legacy compatibility)
     activation = TrialActivation(
         telegram_user_id=req.telegram_user_id,
         mt5_id=req.mt5_id,
-        license_id=db_license.id,
-        started_at=current_time,
+        license_id=lic.id,
         expires_at=expiry,
         month_key=month_key,
         status="active"
@@ -147,7 +171,7 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     await db.commit()
 
     # 5. Enqueue compile job
-    job = CompileJob(license_id=db_license.id, status="pending")
+    job = CompileJob(license_id=lic.id, status="pending")
     db.add(job)
     await db.commit()
 

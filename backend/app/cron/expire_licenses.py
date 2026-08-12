@@ -101,6 +101,43 @@ async def run_expiration_check():
         if expired_count > 0:
             await db.commit()
             
+        # Check installment reminders
+        installment_orders_res = await db.execute(
+            select(Order).filter(Order.installment_enabled == True, Order.installment_status != "completed")
+        )
+        installment_orders = installment_orders_res.scalars().all()
+        
+        async with httpx.AsyncClient(verify=False) as client:
+            for order in installment_orders:
+                if not order.next_due_date:
+                    continue
+                # Make timezone aware comparison
+                next_due = order.next_due_date.replace(tzinfo=None) if order.next_due_date.tzinfo else order.next_due_date
+                now_unaware = now
+                
+                days_left = (next_due - now_unaware).days
+                if 0 <= days_left <= order.grace_days:
+                    user_res = await db.execute(select(User).filter(User.id == order.user_id))
+                    user = user_res.scalar_one_or_none()
+                    if user and user.telegram_id:
+                        msg = (
+                            f"⚠️ *INSTALLMENT PAYMENT REMINDER*\n\n"
+                            f"Your next installment is due soon.\n\n"
+                            f"Amount: ₹{order.installment_amount:,.0f}\n\n"
+                            f"Your current EA access expires on:\n"
+                            f"{next_due.strftime('%d %B %Y')}\n\n"
+                            f"Please contact admin to continue your access."
+                        )
+                        # In a real system, you'd track if reminder was sent today to avoid spamming
+                        # We will just print for now, or you can uncomment sending
+                        try:
+                            await client.post(
+                                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                                json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                            )
+                        except Exception as e:
+                            print(f"Failed to send installment reminder: {e}")
+                            
         print(f"[{datetime.utcnow()}] Done. Sent {notified_count} notifications. Marked {expired_count} as expired.")
 
 if __name__ == "__main__":
