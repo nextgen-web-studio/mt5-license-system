@@ -595,28 +595,31 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         products = await get_products(product_type=p_type)
         if not products:
             try:
-                await query.edit_message_text(f"No {p_type} products available.", reply_markup=get_main_menu_keyboard())
+                await query.edit_message_text(f"No EA products available at this time.", reply_markup=get_main_menu_keyboard())
             except Exception:
                 pass
             return
             
-        product = products[0]
-        product_id = product['id']
-        
         user_id = context.user_data.get('db_user_id')
         if not user_id:
             await query.edit_message_text("Session expired. Please send /start again.")
             return
-            
-        context.user_data['pending_product_id'] = product_id
-        context.user_data['pending_p_type'] = p_type
         
-        if not context.user_data.get('db_user_phone'):
-            await query.edit_message_text("Please enter your **Mobile Number** to continue with the order:", parse_mode="Markdown")
-            context.user_data['awaiting_phone'] = True
-            return
-            
-        await proceed_to_order_summary(update, context)
+        # Show plan selection
+        keyboard = []
+        for p in products:
+            duration_label = "Lifetime" if p.get('duration', 0) == 0 else f"{p['duration']} Month{'s' if p['duration'] > 1 else ''}"
+            keyboard.append([InlineKeyboardButton(
+                f"📦 {p['name']} — ₹{p['price']:,.0f}",
+                callback_data=f"buy_product_{p['id']}_{p_type}"
+            )])
+        keyboard.append([InlineKeyboardButton("« Back", callback_data="main_menu")])
+        
+        await query.edit_message_text(
+            "🛒 *Select Your EA Plan*\n\nChoose a plan to continue:",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
         
     elif data == "buy_vps":
         p_type = "VPS"
