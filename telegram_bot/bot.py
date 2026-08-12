@@ -302,8 +302,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         f"Order ID: #ORD-{order['id']}\n"
         f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
         f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-        f"📦 Plan: {product['name'] if product else 'Unknown'}\n"
-        f"💰 Price: ₹{product['price'] if product else '0'}\n\n"
+        f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
         f"Status: ⏳ Pending Admin Approval\n\n"
         f"Please contact the admin to discuss and confirm your order.\n"
         f"Your EA will only be generated after admin approval."
@@ -325,7 +324,6 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
             f"Telegram ID: `{update.effective_user.id}`\n"
             f"Plan: {product['name'] if product else 'Unknown'}\n"
-            f"Price: ₹{product['price'] if product else '0'}\n"
             f"Status: Pending Admin Approval"
         )
         admin_kb = [
@@ -761,6 +759,7 @@ async def admintest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_id = os.getenv("ADMIN_CHAT_ID")
     if str(update.effective_user.id) != str(admin_id):
+        await update.message.reply_text(f"Unauthorized. Your Telegram ID is: {update.effective_user.id}. (Configured Admin ID: {admin_id})")
         return
         
     from utils.api_client import get_settings
@@ -768,7 +767,6 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     msg = (
         "⚙️ *Admin Configuration Panel*\n\n"
-        f"Lifetime Price: `{settings.get('lifetime_price', 'Not Set')}`\n"
         f"Free Trial Enabled: `{settings.get('free_trial_enabled', 'Not Set')}`\n"
         f"Trial Duration (Days): `{settings.get('trial_duration', 'Not Set')}`\n"
         f"Max Trials / Month: `{settings.get('max_trials', 'Not Set')}`\n"
@@ -778,9 +776,9 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     
     kb = [
-        [InlineKeyboardButton("Edit Price", callback_data="admin_edit_lifetime_price"), InlineKeyboardButton("Edit Trial Status", callback_data="admin_edit_free_trial_enabled")],
-        [InlineKeyboardButton("Edit Trial Duration", callback_data="admin_edit_trial_duration"), InlineKeyboardButton("Edit Max Trials", callback_data="admin_edit_max_trials")],
-        [InlineKeyboardButton("Edit Change Fee", callback_data="admin_edit_broker_change_fee"), InlineKeyboardButton("Edit Support Username", callback_data="admin_edit_support_username")]
+        [InlineKeyboardButton("Edit Trial Status", callback_data="admin_edit_free_trial_enabled"), InlineKeyboardButton("Edit Trial Duration", callback_data="admin_edit_trial_duration")],
+        [InlineKeyboardButton("Edit Max Trials", callback_data="admin_edit_max_trials"), InlineKeyboardButton("Edit Change Fee", callback_data="admin_edit_broker_change_fee")],
+        [InlineKeyboardButton("Edit Support Username", callback_data="admin_edit_support_username")]
     ]
     
     await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
