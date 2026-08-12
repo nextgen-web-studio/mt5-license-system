@@ -44,6 +44,42 @@ async def get_pending_jobs(db: AsyncSession = Depends(get_db), api_key: str = De
             
     return response_jobs
 
+@router.post("/reset-stuck")
+async def reset_stuck_jobs(db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
+    """
+    Reset all 'processing' or 'failed' jobs back to 'pending' so the worker can retry them.
+    Use this when the worker crashed mid-job or was never running.
+    """
+    from sqlalchemy import update as sql_update
+    
+    # Reset processing jobs (worker crashed without uploading)
+    stmt1 = (
+        sql_update(CompileJob)
+        .where(CompileJob.status.in_(["processing", "failed"]))
+        .values(status="pending", worker_id=None, started_at=None, attempt_count=0)
+    )
+    result1 = await db.execute(stmt1)
+    
+    await db.commit()
+    return {
+        "status": "success",
+        "reset_count": result1.rowcount,
+        "message": f"Reset {result1.rowcount} stuck jobs back to pending"
+    }
+
+@router.get("/status")
+async def get_jobs_status(db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
+    """
+    Get count of jobs in each state for monitoring.
+    """
+    from sqlalchemy import func
+    result = await db.execute(
+        select(CompileJob.status, func.count(CompileJob.id).label("count"))
+        .group_by(CompileJob.status)
+    )
+    rows = result.all()
+    return {row[0]: row[1] for row in rows}
+
 from pydantic import BaseModel
 class ClaimRequest(BaseModel):
     worker_id: str

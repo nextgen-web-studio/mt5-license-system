@@ -84,6 +84,13 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
     
     if not order or not order.installment_enabled:
         raise HTTPException(status_code=404, detail="Order not found or not installment enabled")
+    
+    # Guard: block overpayment
+    if order.installment_status == "completed":
+        raise HTTPException(status_code=400, detail="All installments for this order are already paid. No further payments needed.")
+    
+    if order.installments_paid >= order.installment_count:
+        raise HTTPException(status_code=400, detail=f"All {order.installment_count} installments are already recorded. Cannot add more.")
         
     # Update order stats
     order.installments_paid += 1
