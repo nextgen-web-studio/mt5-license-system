@@ -1471,3 +1471,76 @@ operable program or batch file.
 2026-08-11 05:58:42,255 [WORKER] [WARNING] Request timed out while polling. Sleeping 5s.
 2026-08-11 05:59:09,074 [WORKER] [WARNING] Request timed out while polling. Sleeping 5s.
 2026-08-11 05:59:41,923 [WORKER] [WARNING] Request timed out while polling. Sleeping 5s.
+2026-08-11 14:42:33,673 [WORKER] [INFO] Job claimed: 57
+2026-08-11 14:42:33,696 [WORKER] [INFO] MT5 ID: 88888888 | Expiry: 2026-08-13 | Plan: standard
+2026-08-11 14:42:33,697 [WORKER] [INFO] Compilation started
+[INFO] Starting compilation
+[INFO] Source MQ5 template : C:\mt5-license-system\compiler\templates\bot.mq5
+[INFO] MT5 ID              : 88888888
+[INFO] Plan                : standard
+[INFO] Expiry (raw)        : '2026-08-13'
+[INFO] Expiry (normalized) : 2026-08-13
+[INFO] Output MQ5 : C:\mt5-license-system\compiler\output\InfinityTrader_88888888_2026-08-13.mq5
+[INFO] Output EX5 : C:\mt5-license-system\compiler\output\InfinityTrader_88888888_2026-08-13.ex5
+[INFO] Compilation successful
+[INFO] EX5 generated : C:\mt5-license-system\compiler\output\InfinityTrader_88888888_2026-08-13.ex5
+[INFO] EX5 size      : 6904 bytes
+2026-08-11 14:42:35,262 [WORKER] [INFO] Compilation successful
+2026-08-11 14:42:35,263 [WORKER] [INFO] EX5 generated: C:\mt5-license-system\compiler\output\InfinityTrader_88888888_2026-08-13.ex5 (6904 bytes)
+2026-08-11 14:42:35,263 [WORKER] [INFO] MT5 deployment started
+[INFO] ============================================================
+2026-08-11 14:42:35,263 ============================================================
+[INFO] Starting EX5 deployment
+2026-08-11 14:42:35,263 Starting EX5 deployment
+[INFO] ============================================================
+2026-08-11 14:42:35,263 ============================================================
+[INFO] Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_88888888_2026-08-13.ex5
+2026-08-11 14:42:35,263 Source EX5       : C:\mt5-license-system\compiler\output\InfinityTrader_88888888_2026-08-13.ex5
+[INFO] Source size      : 6904 bytes
+2026-08-11 14:42:35,263 Source size      : 6904 bytes
+[INFO] Discovering MT5 data folder...
+2026-08-11 14:42:35,263 Discovering MT5 data folder...
+[INFO] Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+2026-08-11 14:42:35,264 Discovering MT5 data folder under: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal
+[INFO] Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+2026-08-11 14:42:35,269 Examined folders: ['Common', 'Community', 'D0E8209F77C8CF37AD8BF550E51FF075']
+[INFO] Valid MT5 instances found: 1
+2026-08-11 14:42:35,269 Valid MT5 instances found: 1
+[INFO] Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+2026-08-11 14:42:35,270 Selected MT5 instance: D0E8209F77C8CF37AD8BF550E51FF075  (score=55)
+[INFO] MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+2026-08-11 14:42:35,270 MT5 data folder  : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075
+[INFO] Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+2026-08-11 14:42:35,270 Experts folder   : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts
+[INFO] origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+2026-08-11 14:42:35,270 origin.txt points to MT5 install: C:\Program Files\MetaTrader 5
+[INFO] Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_88888888_2026-08-13.ex5
+2026-08-11 14:42:35,271 Destination path : C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_88888888_2026-08-13.ex5
+[INFO] Calculating source SHA-256...
+2026-08-11 14:42:35,271 Calculating source SHA-256...
+[INFO] Source SHA-256   : be97b8227ecbc34124cc48726f9ee5fac63925c021da191090501183b52b4c97
+2026-08-11 14:42:35,273 Source SHA-256   : be97b8227ecbc34124cc48726f9ee5fac63925c021da191090501183b52b4c97
+[INFO] Copying EX5 with shutil.copy2()...
+2026-08-11 14:42:35,273 Copying EX5 with shutil.copy2()...
+[INFO] Destination size : 6904 bytes
+2026-08-11 14:42:35,277 Destination size : 6904 bytes
+[INFO] File sizes match [OK]
+2026-08-11 14:42:35,277 File sizes match [OK]
+[INFO] Calculating destination SHA-256...
+2026-08-11 14:42:35,277 Calculating destination SHA-256...
+[INFO] Destination SHA-256: be97b8227ecbc34124cc48726f9ee5fac63925c021da191090501183b52b4c97
+2026-08-11 14:42:35,291 Destination SHA-256: be97b8227ecbc34124cc48726f9ee5fac63925c021da191090501183b52b4c97
+[INFO] SHA-256 hashes match [OK]
+2026-08-11 14:42:35,291 SHA-256 hashes match [OK]
+[SUCCESS] EX5 deployment completed
+2026-08-11 14:42:35,291 EX5 deployment completed
+[INFO] ============================================================
+2026-08-11 14:42:35,291 ============================================================
+2026-08-11 14:42:35,291 [WORKER] [INFO] MT5 deployment successful
+2026-08-11 14:42:35,291 [WORKER] [INFO] Deployed to: C:\Users\infinityadmin\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\MQL5\Experts\InfinityTrader_88888888_2026-08-13.ex5
+2026-08-11 14:42:35,291 [WORKER] [INFO] Size: 6904 bytes | SHA-256 match: True
+2026-08-11 14:42:35,291 [WORKER] [INFO] Upload started
+2026-08-11 14:42:39,578 [WORKER] [INFO] Upload successful
+2026-08-11 14:42:39,579 [WORKER] [SUCCESS] Job completed: 57
+2026-08-12 03:45:08,636 [WORKER] [WARNING] Connection error while polling (network/Render cold start): HTTPSConnectionPool(host='infinity-trader-api.onrender.com', port=443): Max retries exceeded with url: /api/v1/jobs/claim (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)'))). Sleeping 5s.
+2026-08-12 03:45:31,105 [WORKER] [WARNING] Connection error while polling (network/Render cold start): HTTPSConnectionPool(host='infinity-trader-api.onrender.com', port=443): Max retries exceeded with url: /api/v1/jobs/claim (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)'))). Sleeping 5s.

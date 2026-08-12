@@ -108,6 +108,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except:
                     pass
             else:
+                await query.answer(f"Failed: {resp['error']}", show_alert=True)
+        return
+
     if data == "confirm_mt5_id":
         mt5_id = context.user_data.get('pending_mt5_id')
         order_id = context.user_data.get('approved_order_id')
