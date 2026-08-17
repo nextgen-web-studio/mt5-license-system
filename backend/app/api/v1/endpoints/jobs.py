@@ -175,7 +175,7 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
 
 async def notify_telegram_bot(license_id: int):
     # Force the production URL, ignoring any potentially broken env vars on Render
-    bot_webhook_url = "https://infinity-trader-telegram-bot.onrender.com/internal/delivery"
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/delivery")
     try:
         import httpx
         async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
