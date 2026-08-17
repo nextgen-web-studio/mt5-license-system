@@ -94,7 +94,20 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         else:
             expiry = datetime.now(timezone.utc) + relativedelta(months=product.duration)
         
-        # 3. Create or Update License
+        # 3. Check for Duplicate MT5 ID
+        from sqlalchemy import and_
+        dup_stmt = select(License).filter(
+            and_(
+                License.mt5_id == license_in.mt5_id,
+                License.order_id != order.id,
+                License.status.in_(["active", "generating", "pending", "compiling"])
+            )
+        )
+        dup_res = await db.execute(dup_stmt)
+        if dup_res.first():
+            raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
+
+        # 4. Create or Update License
         lic_result = await db.execute(select(License).filter(License.order_id == order.id))
         db_license = lic_result.scalar_one_or_none()
         
@@ -344,6 +357,18 @@ async def request_broker_change(license_id: int, payload: BrokerChangePayload, d
             
         if not payload.new_mt5_id:
             raise HTTPException(status_code=400, detail="New MT5 ID cannot be empty")
+            
+        # Check if the new MT5 ID is already registered elsewhere
+        from sqlalchemy import and_
+        dup_stmt = select(License).filter(
+            and_(
+                License.mt5_id == payload.new_mt5_id,
+                License.status.in_(["active", "generating", "pending", "compiling"])
+            )
+        )
+        dup_res = await db.execute(dup_stmt)
+        if dup_res.first():
+            raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
             
         # Check for duplicate pending requests
         existing_req_result = await db.execute(
