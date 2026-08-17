@@ -19,6 +19,19 @@ router = APIRouter()
 @router.post("/", response_model=OrderResponse)
 async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
     try:
+        if order.mt5_id:
+            from sqlalchemy import and_
+            from app.models import License
+            dup_stmt = select(License).filter(
+                and_(
+                    License.mt5_id == order.mt5_id,
+                    License.status.in_(["active", "generating", "pending", "compiling"])
+                )
+            )
+            dup_res = await db.execute(dup_stmt)
+            if dup_res.first():
+                raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
+                
         db_order = Order(
             user_id=order.user_id,
             product_id=order.product_id,
