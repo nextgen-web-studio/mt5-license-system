@@ -82,17 +82,17 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     if not enabled:
         raise HTTPException(status_code=400, detail="Free Trial is currently unavailable. Please check again later.")
 
-    # 2. Check if MT5 ID has an active paid license
-    if not allow_existing:
-        existing_paid = await db.execute(
-            select(License).filter(
-                License.mt5_id == req.mt5_id,
-                License.license_type == "paid",
-                License.status == "active"
-            )
+    # 2. Check for Duplicate MT5 ID
+    from sqlalchemy import and_
+    dup_stmt = select(License).filter(
+        and_(
+            License.mt5_id == req.mt5_id,
+            License.status.in_(["active", "generating", "pending", "compiling"])
         )
-        if existing_paid.scalars().first():
-            raise HTTPException(status_code=400, detail="This MT5 ID already has an active license.")
+    )
+    dup_res = await db.execute(dup_stmt)
+    if dup_res.first():
+        raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
 
     # 3. Check Monthly limits (STRICT 1 PER CALENDAR MONTH RULE)
     import datetime as dt
