@@ -34,7 +34,7 @@ const navigation = [
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const [countdown, setCountdown] = useState(5);
   const [utcTime, setUtcTime] = useState<string>('');
 
   // UTC live clock
@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCountdown(prev => {
-        if (prev <= 1) return 30;
+        if (prev <= 1) return 5;
         return prev - 1;
       });
     }, 1000);
