@@ -6,10 +6,16 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 
-from app.db.database import get_db
+from app.db.database import get_db, engine, Base
 from app.models import EaTemplate
 
 router = APIRouter()
+
+@router.get("/admin/setup-db")
+async def setup_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    return {"message": "Tables created successfully"}
 
 class EaTemplateSummary(BaseModel):
     id: int
