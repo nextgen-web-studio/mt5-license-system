@@ -11,8 +11,7 @@ export default function CompilerPage() {
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/compiler_jobs');
       return data;
-    },
-    refetchInterval: 5000 // Poll every 5s for job updates
+    }
   });
 
   if (isLoading) {
