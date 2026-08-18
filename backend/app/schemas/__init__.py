@@ -37,6 +37,7 @@ class OrderCreate(OrderBase):
 
 class OrderResponse(OrderBase):
     id: int
+    user_id: int
     status: str
     created_at: datetime
     
