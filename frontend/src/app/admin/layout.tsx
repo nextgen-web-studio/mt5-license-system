@@ -37,9 +37,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [countdown, setCountdown] = useState(5);
   const [utcTime, setUtcTime] = useState<string>('');
 
-  // UTC live clock
+  // IST live clock (UTC+5:30)
   useEffect(() => {
-    const tick = () => setUtcTime(new Date().toISOString().replace('T', ' ').substring(0, 19));
+    const tick = () => setUtcTime(
+      new Date().toLocaleString('en-GB', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      })
+    );
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
@@ -75,7 +82,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {utcTime && (
             <div className="flex items-center gap-1 text-neutral-400 text-xs font-mono">
               <Clock size={10} className="text-indigo-400" />
-              <span>{utcTime}</span>
+              <span>{utcTime} IST</span>
             </div>
           )}
           <button 
@@ -158,7 +165,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {utcTime && (
             <div className="flex items-center gap-1.5 bg-neutral-800/50 border border-neutral-700/50 px-2.5 py-1 rounded-md text-neutral-300 text-xs font-mono" title="UTC Time">
               <Clock size={11} className="text-indigo-400" />
-              <span>UTC: {utcTime}</span>
+              <span>IST: {utcTime}</span>
             </div>
           )}
         </div>
