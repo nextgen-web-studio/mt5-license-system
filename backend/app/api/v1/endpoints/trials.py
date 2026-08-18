@@ -178,7 +178,7 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     return {
         "status": "success",
         "message": "Trial Approved! Preparing EA...",
-        "license_id": db_license.id,
+        "license_id": lic.id,
         "expiry_date": expiry.strftime("%d %b %Y"),
         "duration_days": duration_days
     }
