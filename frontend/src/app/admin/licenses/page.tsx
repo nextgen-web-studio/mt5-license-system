@@ -86,6 +86,7 @@ export default function LicensesPage() {
         <div>
           <div className="flex items-center space-x-3">
           <h1 className="text-2xl font-bold text-white tracking-tight">Licenses</h1>
+          </div>
           <p className="text-neutral-400 mt-1">Manage active MT4/MT5 product licenses.</p>
         </div>
         <button
