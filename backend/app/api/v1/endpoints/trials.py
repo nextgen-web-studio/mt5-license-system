@@ -94,7 +94,7 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     if dup_res.first():
         raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
 
-    # 3. Check Monthly limits (STRICT 1 PER CALENDAR MONTH RULE)
+    # 3. Check Monthly limits
     import datetime as dt
     current_time = datetime.datetime.now(dt.timezone.utc)
     month_key = current_time.strftime("%Y-%m")
@@ -108,7 +108,8 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
             TrialClaim.claim_month == month_key
         )
     )
-    if claim_res.scalars().first():
+    existing_claims = claim_res.scalars().all()
+    if len(existing_claims) >= max_trials:
         raise HTTPException(status_code=400, detail="ALREADY_CLAIMED")
     
     # Calculate exact expiry

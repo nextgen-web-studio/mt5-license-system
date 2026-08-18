@@ -1472,9 +1472,6 @@ from telegram import BotCommand
 async def post_init(application):
     commands = [
         BotCommand("start", "Start the bot and see the main menu"),
-        BotCommand("licenses", "View your active MT5 licenses"),
-        BotCommand("downloads", "Download your compiled EA files"),
-        BotCommand("orders", "View your order history"),
         BotCommand("installment", "View your installment plan status")
     ]
     await application.bot.set_my_commands(commands)
