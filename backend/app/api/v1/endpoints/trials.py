@@ -110,9 +110,6 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     )
     if claim_res.scalars().first():
         raise HTTPException(status_code=400, detail="ALREADY_CLAIMED")
-
-    # The new rule strictly enforces 3 days for free trials
-    duration_days = 3
     
     # Calculate exact expiry
     expiry = current_time + relativedelta(days=duration_days)

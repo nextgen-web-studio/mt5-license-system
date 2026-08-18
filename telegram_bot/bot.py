@@ -1115,11 +1115,22 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if "error" in resp:
             if resp['error'] == "ALREADY_CLAIMED":
                 import datetime
+                import httpx
+                base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+                duration_days = 2
+                try:
+                    async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+                        settings_resp = await client.get(f"{base_url}/trials/settings")
+                        if settings_resp.status_code == 200:
+                            duration_days = settings_resp.json().get('duration_days', 2)
+                except Exception:
+                    pass
+
                 month_name = datetime.datetime.now().strftime("%B %Y")
                 err_msg = (
                     f"⚠️ *FREE TRIAL ALREADY USED*\n\n"
                     f"You have already used your free trial for this month.\n\n"
-                    f"Free Trial:\n3 Days\n\n"
+                    f"Free Trial:\n{duration_days} Days\n\n"
                     f"Trial Used:\n{month_name}\n\n"
                     f"You can request another free trial next month."
                 )
@@ -1131,9 +1142,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         success_msg = (
-            f"🎁 *FREE TRIAL ACTIVATED*\n\n"
+            f"✅ *FREE TRIAL ACTIVATED*\n\n"
             f"MT5 ID: `{mt5_id}`\n\n"
-            f"Trial Duration: 3 Days\n\n"
+            f"Trial Duration: {resp.get('duration_days', 2)} Days\n\n"
             f"Expires:\n{resp.get('expiry_date', 'Unknown')}\n\n"
             f"You may use the trial once this calendar month.\n\n"
             "⚙️ Please wait 1-2 minutes while we compile your trial EA. We will send the file here automatically."
