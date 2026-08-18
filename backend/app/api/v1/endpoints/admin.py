@@ -21,7 +21,8 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     # Total Revenue (sum of all paid payments)
     result = await db.execute(select(func.sum(Payment.amount)).filter(Payment.status == "paid"))
     total_revenue = result.scalar() or 0
-    total_revenue = total_revenue / 100 # Assuming stored in paise if Razorpay, wait no, my payment model uses float for amount. Wait, if it's stored in rupees, it's just total_revenue. I'll just use total_revenue.
+    # Assuming stored in rupees/standard unit (my payment model uses float for amount)
+    # The previous code had total_revenue = total_revenue / 100 which corrupted the dashboard.
 
     # Active Licenses
     result = await db.execute(select(func.count()).select_from(License).filter(License.status.in_(["active", "valid"])))

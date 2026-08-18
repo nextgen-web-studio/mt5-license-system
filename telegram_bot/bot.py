@@ -37,7 +37,12 @@ async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
     """Builds the main menu keyboard, showing the 'My Installment' button
     only for customers who actually have an eligible installment arrangement."""
     show_installment = await is_installment_eligible(str(telegram_id))
-    return get_main_menu_keyboard(show_installment=show_installment)
+    
+    from utils.api_client import get_settings
+    settings = await get_settings()
+    show_free_trial = str(settings.get('free_trial_enabled', 'true')).lower() == 'true'
+    
+    return get_main_menu_keyboard(show_installment=show_installment, show_free_trial=show_free_trial)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user

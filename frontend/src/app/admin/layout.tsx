@@ -41,9 +41,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <div className="h-screen bg-black text-white flex overflow-hidden">
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 z-40">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
-          Admin Panel
-        </h1>
+        <div className="flex items-center gap-3">
+          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain" />
+          <h1 className="text-xl font-bold text-white">
+            Admin Panel
+          </h1>
+        </div>
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
           className="text-neutral-400 hover:text-white"
@@ -67,9 +70,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-800">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
-            Admin Panel
-          </h1>
+          <div className="flex items-center gap-3">
+            <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain" />
+            <h1 className="text-xl font-bold text-white">
+              Admin Panel
+            </h1>
+          </div>
           <button 
             className="md:hidden text-neutral-400 hover:text-white"
             onClick={() => setIsMobileMenuOpen(false)}
