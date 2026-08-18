@@ -79,12 +79,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          {utcTime && (
-            <div className="flex items-center gap-1 text-neutral-400 text-xs font-mono">
-              <Clock size={10} className="text-indigo-400" />
-              <span>{utcTime} IST</span>
-            </div>
-          )}
+
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
             className="text-neutral-400 hover:text-white"
