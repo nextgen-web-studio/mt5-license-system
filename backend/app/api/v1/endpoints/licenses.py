@@ -38,6 +38,7 @@ class LicenseUpdate(BaseModel):
     purchase_date: Optional[datetime] = None
     download_count: Optional[int] = None
     renew_count: Optional[int] = None
+    broker: Optional[str] = None
 
 router = APIRouter()
 
@@ -61,6 +62,8 @@ async def update_license(license_id: int, update_data: LicenseUpdate, db: AsyncS
         license_obj.download_count = update_data.download_count
     if update_data.renew_count is not None:
         license_obj.renew_count = update_data.renew_count
+    if update_data.broker is not None:
+        license_obj.broker = update_data.broker
         
     await db.commit()
     await db.refresh(license_obj)
