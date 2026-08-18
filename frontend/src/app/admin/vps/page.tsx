@@ -13,6 +13,7 @@ export default function VpsOrdersPage() {
   const [password, setPassword] = useState('');
 
   const { data: vpsOrders = [], isLoading, error } = useQuery({
+    refetchInterval: 30000,
     queryKey: ['admin-vps-orders'],
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/vps-orders');

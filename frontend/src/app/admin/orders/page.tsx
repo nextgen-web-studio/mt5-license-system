@@ -11,6 +11,7 @@ export default function OrdersPage() {
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
   const { data: orders = [], isLoading, error } = useQuery({
+    refetchInterval: 30000,
     queryKey: ['admin-orders'],
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/all_orders');
