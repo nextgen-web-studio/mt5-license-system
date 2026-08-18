@@ -1,14 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X } from 'lucide-react';
+import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, Clock } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function LicensesPage() {
   const queryClient = useQueryClient();
   const [editingLicense, setEditingLicense] = useState<any>(null);
-  
+  const [serverTime, setServerTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    // Fetch initial accurate time from a reliable API
+    fetch('https://worldtimeapi.org/api/timezone/Etc/UTC')
+      .then(res => res.json())
+      .then(data => {
+        setServerTime(new Date(data.utc_datetime));
+      })
+      .catch(() => {
+        // Fallback to local machine UTC
+        setServerTime(new Date());
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!serverTime) return;
+    const interval = setInterval(() => {
+      setServerTime(prev => prev ? new Date(prev.getTime() + 1000) : null);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [serverTime]);
+
   const { data: licenses = [], isLoading, error } = useQuery({
     queryKey: ['admin-licenses'],
     queryFn: async () => {
@@ -21,6 +43,7 @@ export default function LicensesPage() {
     mutationFn: async (data: any) => {
       const response = await api.put(`/api/v1/licenses/${data.id}`, {
         mt5_id: data.mt5_id,
+        broker: data.broker,
         status: data.status,
         expiry_date: data.expiry_date ? new Date(data.expiry_date).toISOString() : null,
         purchase_date: data.purchase_date ? new Date(data.purchase_date).toISOString() : null,
@@ -79,7 +102,15 @@ export default function LicensesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Licenses</h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Licenses</h1>
+            {serverTime && (
+              <div className="flex items-center space-x-1.5 bg-neutral-800/50 border border-neutral-700/50 px-2.5 py-1 rounded-md text-neutral-300 text-xs font-mono" title="Global NTP Time (UTC)">
+                <Clock size={12} className="text-indigo-400" />
+                <span>UTC: {serverTime.toISOString().replace('T', ' ').substring(0, 19)}</span>
+              </div>
+            )}
+          </div>
           <p className="text-neutral-400 mt-1">Manage active MT4/MT5 product licenses.</p>
         </div>
         <button
@@ -215,6 +246,16 @@ export default function LicensesPage() {
                   required
                   value={editingLicense.mt5_id || ''}
                   onChange={(e) => setEditingLicense({...editingLicense, mt5_id: e.target.value})}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Broker Name</label>
+                <input
+                  type="text"
+                  value={editingLicense.broker || ''}
+                  onChange={(e) => setEditingLicense({...editingLicense, broker: e.target.value})}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
