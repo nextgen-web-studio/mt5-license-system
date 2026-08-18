@@ -36,17 +36,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 compiling_messages: dict = {}
 
 async def animate_compiling_message(token: str, chat_id: str, message_id: int, license_id_str: str):
-    """Edits the compiling message every 2s with animated spinner frames."""
-    spinner_frames = [
-        "⏳ *Compiling your EA* `[  ●○○○○  ]`",
-        "⏳ *Compiling your EA* `[  ○●○○○  ]`",
-        "⏳ *Compiling your EA* `[  ○○●○○  ]`",
-        "⏳ *Compiling your EA* `[  ○○○●○  ]`",
-        "⏳ *Compiling your EA* `[  ○○○○●  ]`",
-        "⏳ *Compiling your EA* `[  ○○○●○  ]`",
-        "⏳ *Compiling your EA* `[  ○○●○○  ]`",
-        "⏳ *Compiling your EA* `[  ○●○○○  ]`",
-    ]
+    """Edits the compiling message every 1.5s with a clock-face ring spinner around the gear icon."""
+    # Clock emoji forms a spinning ring (12 frames = smooth circle)
+    ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
     tail = "\n\nYour EA file is being built right now\\.\nThe file will be sent here automatically once ready\\.\n\n_Usually takes 2–5 minutes\\. Please wait\\._"
     i = 0
     import asyncio as _asyncio
@@ -54,8 +46,8 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
         info = compiling_messages.get(license_id_str)
         if not info or info.get("stop"):
             break
-        frame = spinner_frames[i % len(spinner_frames)]
-        text = frame + tail
+        ring = ring_frames[i % len(ring_frames)]
+        text = f"{ring}⚙️ *Compiling your EA\\.\\.\\.*" + tail
         try:
             async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                 await client.post(
@@ -70,7 +62,7 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
         except Exception:
             pass
         i += 1
-        await _asyncio.sleep(2)
+        await _asyncio.sleep(1.5)
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
     """Builds the main menu keyboard, showing the 'My Installment' button
@@ -224,12 +216,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if telegram_id:
                         # Send initial compiling message with spinner
                         initial_msg = (
-                            f"✅ *Your Order is Approved\\!*\n\n"
+                            f"✅ *Your Order is Approved\!*\n\n"
                             f"MT5 ID: `{mt5_id}`\n\n"
-                            f"⏳ *Compiling your EA* `[  ●○○○○  ]`\n\n"
-                            f"Your EA file is being built right now\\.\n"
-                            f"The file will be sent here automatically once ready\\.\n\n"
-                            f"_Usually takes 2–5 minutes\\. Please wait\\._"
+                            f"🕛⚙️ *Compiling your EA\.\.\.*\n\n"
+                            f"Your EA file is being built right now\.\n"
+                            f"The file will be sent here automatically once ready\.\n\n"
+                            f"_Usually takes 2–5 minutes\. Please wait\._"
                         )
                         try:
                             sent = await context.bot.send_message(
@@ -1213,10 +1205,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Send a separate animated compiling message that disappears when file arrives
         initial_compiling = (
-            f"⏳ *Compiling your Trial EA* `[  ●○○○○  ]`\n\n"
-            f"Your personalised trial EA is being built right now\\.\n"
-            f"The file will be sent here automatically once ready\\.\n\n"
-            f"_Usually takes 2–5 minutes\\. Please wait\\._"
+            f"🕛⚙️ *Compiling your Trial EA\.\.\.*\n\n"
+            f"Your personalised trial EA is being built right now\.\n"
+            f"The file will be sent here automatically once ready\.\n\n"
+            f"_Usually takes 2–5 minutes\. Please wait\._"
         )
         try:
             sent = await update.message.reply_text(initial_compiling, parse_mode="MarkdownV2")
