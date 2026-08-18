@@ -193,3 +193,16 @@ class AdminSettings(Base):
     setting_value = Column(String)
     description = Column(String, nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+class EaTemplate(Base):
+    __tablename__ = "ea_templates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    version_label = Column(String, nullable=True)
+    filename = Column(String, nullable=True)
+    file_size = Column(Integer, nullable=True)
+    source_code = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=False)
+    notes = Column(Text, nullable=True)
+    uploaded_by = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
