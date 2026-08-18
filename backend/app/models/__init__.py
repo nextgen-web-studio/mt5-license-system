@@ -195,7 +195,7 @@ class AdminSettings(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 class EaTemplate(Base):
-    __tablename__ = "ea_templates"
+    __tablename__ = "ea_versions"
 
     id = Column(Integer, primary_key=True, index=True)
     version_label = Column(String, nullable=True)
