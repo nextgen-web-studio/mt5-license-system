@@ -96,7 +96,7 @@ export default function CompilerPage() {
                       {job.logs || 'No logs available'}
                     </td>
                     <td className="px-6 py-4 text-right text-neutral-400">
-                      {new Date(job.created_at || Date.now()).toLocaleTimeString()}
+                      {new Date(job.created_at || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
                     </td>
                   </tr>
                 ))
