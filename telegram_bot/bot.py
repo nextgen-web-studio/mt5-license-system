@@ -420,7 +420,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")]
                         ])
                     )
-                    # Notify customer
+                    # Notify customer with animated compiling spinner
                     try:
                         order_resp = await client.get(f"{base_url}/orders/{order_id}")
                         if order_resp.status_code == 200:
@@ -431,22 +431,64 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 if telegram_id:
                                     # Re-fetch updated installment data after payment
                                     updated_resp = await client.get(
-                f"{base_url}/installments/admin/{order_id}",
-                headers={"X-Admin-Key": os.getenv("ADMIN_API_KEY", "")}
-            )
+                                        f"{base_url}/installments/admin/{order_id}",
+                                        headers={"X-Admin-Key": os.getenv("ADMIN_API_KEY", "")}
+                                    )
                                     updated_data = updated_resp.json() if updated_resp.status_code == 200 else inst_data
                                     next_due = updated_data.get("next_due_date", "")
                                     next_due_str = next_due.split("T")[0] if next_due else "N/A"
                                     remaining = updated_data.get("amount_remaining", 0)
-                                    cust_msg = (
+                                    is_final = remaining <= 0
+
+                                    # Send payment confirmation first (permanent)
+                                    confirm_msg = (
                                         f"✅ *INSTALLMENT PAYMENT CONFIRMED*\n\n"
-                                        f"Payment of ₹{amount:,.0f} has been confirmed.\n\n"
-                                        f"Your EA is being recompiled for the next {inst_data['installment_amount'] > 0 and inst_data.get('license_period_days') or 35}-day period.\n\n"
+                                        f"Payment of ₹{amount:,.0f} has been received\.\n\n"
                                         f"Remaining balance: ₹{remaining:,.0f}\n"
-                                        f"Next payment due: {next_due_str}\n\n"
-                                        f"Your updated EA file will be delivered here shortly."
+                                        f"Next payment due: {next_due_str}"
                                     )
-                                    await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
+                                    if is_final:
+                                        confirm_msg = (
+                                            f"🎉 *FINAL PAYMENT CONFIRMED\!*\n\n"
+                                            f"All payments complete\! Your lifetime EA is being compiled\.\n\n"
+                                            f"Remaining balance: ₹0"
+                                        )
+                                    await context.bot.send_message(
+                                        chat_id=telegram_id,
+                                        text=confirm_msg,
+                                        parse_mode="MarkdownV2"
+                                    )
+
+                                    # Send animated compiling spinner
+                                    spinner_msg = (
+                                        f"🕛⚙️ *Compiling your EA\.\.\.*\n\n"
+                                        f"Your updated EA file is being built right now\.\n"
+                                        f"The file will be sent here automatically once ready\.\n\n"
+                                        f"_Usually takes 2–5 minutes\. Please wait\._"
+                                    )
+                                    try:
+                                        sent = await context.bot.send_message(
+                                            chat_id=telegram_id,
+                                            text=spinner_msg,
+                                            parse_mode="MarkdownV2"
+                                        )
+                                        # Get license_id from pay response
+                                        pay_data = pay_resp.json()
+                                        license_id = pay_data.get("license_id") or pay_data.get("id")
+                                        if license_id:
+                                            lid_str = str(license_id)
+                                            bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                                            compiling_messages[lid_str] = {
+                                                "chat_id": telegram_id,
+                                                "message_id": sent.message_id,
+                                                "stop": False
+                                            }
+                                            import asyncio as _asyncio
+                                            _asyncio.create_task(
+                                                animate_compiling_message(bot_token, telegram_id, sent.message_id, lid_str)
+                                            )
+                                    except Exception as e:
+                                        logging.warning(f"Could not send installment compiling message: {e}")
                     except Exception as e:
                         logging.error(f"Failed to notify customer after payment: {e}")
                 else:
