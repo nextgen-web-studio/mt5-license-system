@@ -123,7 +123,7 @@ export default function InstallmentsPage() {
                     <td className="px-6 py-4 text-neutral-300">₹{inst.amount_paid} / ₹{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
                     <td className="px-6 py-4 text-neutral-300">₹{inst.amount_remaining}</td>
                     <td className="px-6 py-4 text-neutral-400">
-                      {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString() : 'N/A')}
+                      {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
                     <td className="px-6 py-4 text-right flex items-center justify-end gap-1">
                       {inst.installment_status === 'active' && (

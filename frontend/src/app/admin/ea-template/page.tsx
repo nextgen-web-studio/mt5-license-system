@@ -334,7 +334,7 @@ export default function EaTemplatePage() {
                     </td>
                     <td className="px-6 py-4 text-neutral-400 text-xs flex items-center gap-1">
                       <Clock size={12} />
-                      {v.created_at ? new Date(v.created_at).toLocaleString() : '—'}
+                      {v.created_at ? new Date(v.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">

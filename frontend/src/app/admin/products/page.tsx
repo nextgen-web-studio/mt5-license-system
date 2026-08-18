@@ -167,7 +167,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-neutral-400 capitalize">{product.type}</td>
-                    <td className="px-6 py-4 text-neutral-300">₹{product.price?.toLocaleString() || 0}</td>
+                    <td className="px-6 py-4 text-neutral-300">₹{product.price?.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) || 0}</td>
                     <td className="px-6 py-4 text-neutral-400">{product.duration} Months</td>
                     <td className="px-6 py-4">
                       {product.active ? (

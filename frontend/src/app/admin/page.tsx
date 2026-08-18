@@ -82,7 +82,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Revenue"
-          value={`₹${(displayStats.totalRevenue || 0).toLocaleString()}`}
+          value={`₹${(displayStats.totalRevenue || 0).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}`}
           icon={DollarSign}
           trend={{ value: "+12.5%", isPositive: true }}
         />
