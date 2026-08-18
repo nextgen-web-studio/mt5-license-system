@@ -11,6 +11,7 @@ import {
   Server, 
   Terminal,
   Gift,
+  FileCode2,
   LogOut,
   Menu,
   X
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Licenses', href: '/admin/licenses', icon: Key },
   { name: 'VPS', href: '/admin/vps', icon: Server },
   { name: 'Compiler', href: '/admin/compiler', icon: Terminal },
+  { name: 'EA Template', href: '/admin/ea-template', icon: FileCode2 },
   { name: 'Free Trial', href: '/admin/trial', icon: Gift },
 ];
 
