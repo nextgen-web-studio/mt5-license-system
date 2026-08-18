@@ -137,15 +137,15 @@ export default function ProductsPage() {
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4">Price (₹)</th>
-                <th className="px-6 py-4">Duration</th>
+                <th className="px-6 py-4 hidden md:table-cell">Type</th>
+                <th className="px-6 py-4 whitespace-nowrap">Price (₹)</th>
+                <th className="px-6 py-4 hidden md:table-cell">Duration</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -160,15 +160,15 @@ export default function ProductsPage() {
                   <tr key={product.id} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="h-8 w-8 rounded bg-neutral-800 flex items-center justify-center mr-3">
+                        <div className="h-8 w-8 rounded bg-neutral-800 flex items-center justify-center mr-3 shrink-0">
                           <Package size={16} className="text-neutral-400" />
                         </div>
                         <span className="font-medium text-white">{product.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 capitalize">{product.type}</td>
-                    <td className="px-6 py-4 text-neutral-300">₹{product.price?.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) || 0}</td>
-                    <td className="px-6 py-4 text-neutral-400">{product.duration} Months</td>
+                    <td className="px-6 py-4 text-neutral-400 capitalize hidden md:table-cell">{product.type}</td>
+                    <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">₹{product.price?.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) || 0}</td>
+                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{product.duration} Months</td>
                     <td className="px-6 py-4">
                       {product.active ? (
                         <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">

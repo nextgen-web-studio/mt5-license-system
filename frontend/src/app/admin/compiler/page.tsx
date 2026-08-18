@@ -48,14 +48,14 @@ export default function CompilerPage() {
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4">Job ID</th>
-                <th className="px-6 py-4">Order ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">Job ID</th>
+                <th className="px-6 py-4 hidden md:table-cell whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Logs</th>
-                <th className="px-6 py-4 text-right">Timestamp</th>
+                <th className="px-6 py-4 hidden md:table-cell">Logs</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Timestamp</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -68,11 +68,13 @@ export default function CompilerPage() {
               ) : (
                 compilerJobs.map((job: any) => (
                   <tr key={job.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs text-neutral-300 flex items-center space-x-2">
-                      <Terminal size={14} className="text-blue-400" />
-                      <span>{job.id}</span>
+                    <td className="px-6 py-4 font-mono text-xs text-neutral-300 whitespace-nowrap">
+                      <span className="inline-flex items-center space-x-2">
+                        <Terminal size={14} className="text-blue-400" />
+                        <span>{job.id}</span>
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400">#{job.order_id}</td>
+                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">#{job.order_id}</td>
                     <td className="px-6 py-4">
                       {job.status === 'completed' ? (
                         <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
@@ -91,10 +93,10 @@ export default function CompilerPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 text-xs max-w-xs truncate">
+                    <td className="px-6 py-4 text-neutral-400 text-xs max-w-xs truncate hidden md:table-cell">
                       {job.logs || 'No logs available'}
                     </td>
-                    <td className="px-6 py-4 text-right text-neutral-400">
+                    <td className="px-6 py-4 text-right text-neutral-400 whitespace-nowrap">
                       {new Date(job.created_at || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
                     </td>
                   </tr>

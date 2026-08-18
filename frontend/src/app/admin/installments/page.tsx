@@ -91,16 +91,16 @@ export default function InstallmentsPage() {
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4">Order ID</th>
-                <th className="px-6 py-4">MT5 ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">MT5 ID</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Paid / Total</th>
-                <th className="px-6 py-4">Remaining</th>
-                <th className="px-6 py-4">Next Due</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-6 py-4 hidden md:table-cell">Paid / Total</th>
+                <th className="px-6 py-4 hidden md:table-cell">Remaining</th>
+                <th className="px-6 py-4 hidden md:table-cell whitespace-nowrap">Next Due</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -113,21 +113,21 @@ export default function InstallmentsPage() {
               ) : (
                 installments.map((inst: any) => (
                   <tr key={inst.order_id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-neutral-300">#{inst.order_id}</td>
-                    <td className="px-6 py-4 text-white">{inst.mt5_id || 'N/A'}</td>
+                    <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{inst.order_id}</td>
+                    <td className="px-6 py-4 text-white whitespace-nowrap">{inst.mt5_id || 'N/A'}</td>
                     <td className="px-6 py-4">
                       {inst.installment_status === 'active' && <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-medium border border-blue-500/20">Active</span>}
                       {inst.installment_status === 'completed' && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Completed</span>}
                       {inst.installment_status === 'failed' && <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Disabled</span>}
                     </td>
-                    <td className="px-6 py-4 text-neutral-300">₹{inst.amount_paid} / ₹{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
-                    <td className="px-6 py-4 text-neutral-300">₹{inst.amount_remaining}</td>
-                    <td className="px-6 py-4 text-neutral-400">
+                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{inst.amount_paid} / ₹{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
+                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{inst.amount_remaining}</td>
+                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">
                       {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
-                    <td className="px-6 py-4 text-right flex items-center justify-end gap-1">
+                    <td className="px-6 py-4 text-right">
                       {inst.installment_status === 'active' && (
-                        <>
+                        <div className="flex items-center justify-end gap-1">
                           <button 
                             onClick={() => handlePayClick(inst)}
                             className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Record Payment">
@@ -138,7 +138,7 @@ export default function InstallmentsPage() {
                             className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Disable Arrangement">
                             <Ban size={16} />
                           </button>
-                        </>
+                        </div>
                       )}
                     </td>
                   </tr>
