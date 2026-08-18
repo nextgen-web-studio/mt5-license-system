@@ -39,7 +39,7 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
     """Edits the compiling message every 1.5s with a clock-face ring spinner around the gear icon."""
     # Clock emoji forms a spinning ring (12 frames = smooth circle)
     ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
-    tail = "\n\nYour EA file is being built right now\\.\nThe file will be sent here automatically once ready\\.\n\n_Usually takes 2–5 minutes\\. Please wait\\._"
+    tail = "\n\nYour EA file is being built right now\.\nThe file will be sent here automatically once ready\.\n\n_Usually takes 2\-5 minutes\. Please wait\._"
     i = 0
     import asyncio as _asyncio
     while True:
@@ -215,13 +215,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     telegram_id = user_resp.json().get("telegram_id")
                     if telegram_id:
                         # Send initial compiling message with spinner
+                        # Build initial message (plain Markdown - simpler and safer)
                         initial_msg = (
-                            f"✅ *Your Order is Approved\!*\n\n"
+                            f"✅ *Your Order is Approved!*\n\n"
                             f"MT5 ID: `{mt5_id}`\n\n"
-                            f"🕛⚙️ *Compiling your EA\.\.\.*\n\n"
+                            f"🕛⚙️ *Compiling your EA\.\.\.* \n\n"
                             f"Your EA file is being built right now\.\n"
                             f"The file will be sent here automatically once ready\.\n\n"
-                            f"_Usually takes 2–5 minutes\. Please wait\._"
+                            f"_Usually takes 2\-5 minutes\. Please wait\._"
                         )
                         try:
                             sent = await context.bot.send_message(
@@ -464,7 +465,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                         f"🕛⚙️ *Compiling your EA\.\.\.*\n\n"
                                         f"Your updated EA file is being built right now\.\n"
                                         f"The file will be sent here automatically once ready\.\n\n"
-                                        f"_Usually takes 2–5 minutes\. Please wait\._"
+                                        f"_Usually takes 2\-5 minutes\. Please wait\._"
                                     )
                                     try:
                                         sent = await context.bot.send_message(
@@ -1250,7 +1251,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🕛⚙️ *Compiling your Trial EA\.\.\.*\n\n"
             f"Your personalised trial EA is being built right now\.\n"
             f"The file will be sent here automatically once ready\.\n\n"
-            f"_Usually takes 2–5 minutes\. Please wait\._"
+            f"_Usually takes 2\-5 minutes\. Please wait\._"
         )
         try:
             sent = await update.message.reply_text(initial_compiling, parse_mode="MarkdownV2")
