@@ -14,7 +14,8 @@ import {
   FileCode2,
   LogOut,
   Menu,
-  X
+  X,
+  History
 } from 'lucide-react';
 
 const navigation = [
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Licenses', href: '/admin/licenses', icon: Key },
+  { name: 'Installments', href: '/admin/installments', icon: History },
   { name: 'VPS', href: '/admin/vps', icon: Server },
   { name: 'Compiler', href: '/admin/compiler', icon: Terminal },
   { name: 'EA Template', href: '/admin/ea-template', icon: FileCode2 },
