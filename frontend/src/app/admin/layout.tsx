@@ -15,7 +15,8 @@ import {
   LogOut,
   Menu,
   X,
-  History
+  History,
+  Clock
 } from 'lucide-react';
 
 const navigation = [
@@ -34,6 +35,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [countdown, setCountdown] = useState(30);
+  const [utcTime, setUtcTime] = useState<string>('');
+
+  // UTC live clock
+  useEffect(() => {
+    const tick = () => setUtcTime(new Date().toISOString().replace('T', ' ').substring(0, 19));
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -61,12 +71,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             Admin Panel
           </h1>
         </div>
-        <button 
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="text-neutral-400 hover:text-white"
-        >
-          <Menu size={24} />
-        </button>
+        <div className="flex items-center gap-3">
+          {utcTime && (
+            <div className="flex items-center gap-1 text-neutral-400 text-xs font-mono">
+              <Clock size={10} className="text-indigo-400" />
+              <span>{utcTime}</span>
+            </div>
+          )}
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="text-neutral-400 hover:text-white"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -135,7 +153,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 md:relative pt-16 md:pt-0 h-full overflow-hidden">
-        <main className="flex-1 overflow-y-auto h-full p-4 md:p-8">
+        {/* Desktop UTC bar */}
+        <div className="hidden md:flex items-center justify-end px-8 py-2 border-b border-neutral-800/50 bg-neutral-950/30">
+          {utcTime && (
+            <div className="flex items-center gap-1.5 bg-neutral-800/50 border border-neutral-700/50 px-2.5 py-1 rounded-md text-neutral-300 text-xs font-mono" title="UTC Time">
+              <Clock size={11} className="text-indigo-400" />
+              <span>UTC: {utcTime}</span>
+            </div>
+          )}
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="h-full">
             {children}
           </div>

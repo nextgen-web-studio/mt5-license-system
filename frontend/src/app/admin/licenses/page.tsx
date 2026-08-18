@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, Clock } from 'lucide-react';
+import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
@@ -12,29 +12,6 @@ export default function LicensesPage() {
 
   const queryClient = useQueryClient();
   const [editingLicense, setEditingLicense] = useState<any>(null);
-  const [serverTime, setServerTime] = useState<Date | null>(null);
-
-  useEffect(() => {
-    // Fetch initial accurate time from a reliable API
-    fetch('https://worldtimeapi.org/api/timezone/Etc/UTC')
-      .then(res => res.json())
-      .then(data => {
-        setServerTime(new Date(data.utc_datetime));
-      })
-      .catch(() => {
-        // Fallback to local machine UTC
-        setServerTime(new Date());
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!serverTime) return;
-    const interval = setInterval(() => {
-      setServerTime(prev => prev ? new Date(prev.getTime() + 1000) : null);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [serverTime]);
-
   const { data: licenses = [], isLoading, error } = useQuery({
     refetchInterval: 30000,
     queryKey: ['admin-licenses'],
@@ -108,14 +85,7 @@ export default function LicensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Licenses</h1>
-            {serverTime && (
-              <div className="flex items-center space-x-1.5 bg-neutral-800/50 border border-neutral-700/50 px-2.5 py-1 rounded-md text-neutral-300 text-xs font-mono" title="Global NTP Time (UTC)">
-                <Clock size={12} className="text-indigo-400" />
-                <span>UTC: {serverTime.toISOString().replace('T', ' ').substring(0, 19)}</span>
-              </div>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Licenses</h1>
           <p className="text-neutral-400 mt-1">Manage active MT4/MT5 product licenses.</p>
         </div>
         <button
