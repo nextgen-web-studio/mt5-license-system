@@ -4,6 +4,46 @@ import logging
 import os
 
 BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "")
+
+
+def _admin_headers():
+    """Header for admin-only backend routes. These routes enforce this
+    server-side (see app.core.security.verify_admin_key) - the bot's own
+    telegram-id check only controls what buttons a user sees, it is not a
+    substitute for backend auth."""
+    return {"X-Admin-Key": ADMIN_API_KEY}
+
+
+def _safe_error_message(response) -> str:
+    """Log the raw backend error and return a customer-safe message.
+
+    Spec section 30: customers must never see raw backend error text
+    (status codes, stack traces, HTML error pages, etc). A 4xx response
+    with a JSON "detail" field is an intentional, customer-facing message
+    written by our own API (e.g. "This MT5 ID already has an active
+    license.") and is safe to show as-is. Anything else - 5xx responses,
+    unparseable bodies - gets logged for us and replaced with a generic
+    message for the customer.
+    """
+    detail = None
+    try:
+        body = response.json()
+        if isinstance(body, dict):
+            detail = body.get("detail")
+    except Exception:
+        pass
+
+    logging.error(f"Backend error {response.status_code}: {response.text}")
+
+    if detail and response.status_code < 500:
+        return str(detail)
+    return "Something went wrong on our end. Please try again shortly or contact support."
+
+
+def _connection_error_message(e) -> str:
+    logging.error(f"Connection error: {e}")
+    return "Could not reach the server. Please try again in a moment."
 
 async def register_user(telegram_id, name, username, phone=None):
     async with httpx.AsyncClient() as client:
@@ -75,41 +115,35 @@ async def create_order(user_id, product_id, order_type, mt5_id=None):
                 json=payload
             )
             
-            if response.status_code == 400:
-                return {"error": response.json().get("detail", "Bad Request")}
-                
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
                 
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error creating order: {e}")
-            return {"error": f"Connection Error: {str(e)}"}
+            return {"error": _connection_error_message(e)}
 
 async def approve_order(order_id):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(f"{BASE_URL}/orders/{order_id}/approve")
+            response = await client.post(f"{BASE_URL}/orders/{order_id}/approve", headers=_admin_headers())
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error approving order: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
 
 async def reject_order(order_id):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(f"{BASE_URL}/orders/{order_id}/reject")
+            response = await client.post(f"{BASE_URL}/orders/{order_id}/reject", headers=_admin_headers())
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error rejecting order: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
 
 async def generate_license(order_id, mt5_id):
     async with httpx.AsyncClient() as client:
@@ -119,15 +153,65 @@ async def generate_license(order_id, mt5_id):
                 json={
                     "order_id": order_id,
                     "mt5_id": mt5_id
-                }
+                },
+                headers=_admin_headers()
             )
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error generating license: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
+
+async def create_installment_arrangement(payload: dict):
+    """Admin-only: sets up an installment arrangement for an approved order
+    that already has an MT5 ID. Installments are never a self-serve/public
+    plan - this is only ever called from the admin flow in bot.py."""
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{BASE_URL}/installments/create",
+                json=payload,
+                headers=_admin_headers()
+            )
+            if response.status_code >= 400:
+                return {"error": _safe_error_message(response)}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            return {"error": _connection_error_message(e)}
+
+async def pay_installment(order_id, amount):
+    """Admin-only: records that the customer has paid the admin directly
+    and the admin has confirmed it. There is no automated payment gateway
+    in this flow."""
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{BASE_URL}/installments/pay",
+                json={"order_id": order_id, "amount": amount},
+                headers=_admin_headers()
+            )
+            if response.status_code >= 400:
+                return {"error": _safe_error_message(response)}
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            return {"error": _connection_error_message(e)}
+
+async def get_admin_installment(order_id):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                f"{BASE_URL}/installments/admin/{order_id}",
+                headers=_admin_headers()
+            )
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception as e:
+            logging.error(f"Error fetching admin installment: {e}")
+            return None
 
 async def save_order_mt5_id(order_id, mt5_id):
     async with httpx.AsyncClient() as client:
@@ -139,12 +223,11 @@ async def save_order_mt5_id(order_id, mt5_id):
                 }
             )
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error saving MT5 ID: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
 
 async def request_free_trial(telegram_id, mt5_id):
     async with httpx.AsyncClient() as client:
@@ -158,18 +241,12 @@ async def request_free_trial(telegram_id, mt5_id):
             )
             
             if response.status_code >= 400:
-                err_detail = "Failed to request trial."
-                try:
-                    err_detail = response.json().get("detail", err_detail)
-                except:
-                    pass
-                return {"error": err_detail}
+                return {"error": _safe_error_message(response)}
                 
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error requesting free trial: {e}")
-            return {"error": f"Connection Error: {str(e)}"}
+            return {"error": _connection_error_message(e)}
 
 async def request_broker_change(license_id, new_mt5_id, new_broker, telegram_id):
     async with httpx.AsyncClient() as client:
@@ -179,36 +256,54 @@ async def request_broker_change(license_id, new_mt5_id, new_broker, telegram_id)
                 json={"new_mt5_id": new_mt5_id, "new_broker": new_broker, "telegram_id": str(telegram_id)}
             )
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error requesting broker change: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
 
 async def approve_broker_change(request_id):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(f"{BASE_URL}/licenses/broker-change/{request_id}/approve")
+            response = await client.post(f"{BASE_URL}/licenses/broker-change/{request_id}/approve", headers=_admin_headers())
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error approving broker change: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
 
 async def reject_broker_change(request_id):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(f"{BASE_URL}/licenses/broker-change/{request_id}/reject")
+            response = await client.post(f"{BASE_URL}/licenses/broker-change/{request_id}/reject", headers=_admin_headers())
             if response.status_code >= 400:
-                return {"error": f"API Error {response.status_code}: {response.text}"}
+                return {"error": _safe_error_message(response)}
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logging.error(f"Error rejecting broker change: {e}")
-            return {"error": str(e)}
+            return {"error": _connection_error_message(e)}
+
+async def get_installment_status(telegram_id):
+    """Fetch a customer's installment arrangement, if any. Returns None if the
+    customer has no installment arrangement (used both to render the status
+    screen and to decide whether the 'My Installment' menu button is shown)."""
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(f"{BASE_URL}/installments/customer/{telegram_id}")
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except Exception as e:
+            logging.error(f"Error fetching installment status: {e}")
+            return None
+
+
+async def is_installment_eligible(telegram_id):
+    """True only for customers with an active/eligible installment arrangement.
+    Normal customers must never see the installment menu option."""
+    return await get_installment_status(telegram_id) is not None
+
 
 async def get_settings():
     async with httpx.AsyncClient() as client:
