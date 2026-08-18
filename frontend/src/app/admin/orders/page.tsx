@@ -3,8 +3,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { Eye, Loader2, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useState } from 'react';
 
 export default function OrdersPage() {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
+
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['admin-orders'],
     queryFn: async () => {
@@ -86,14 +91,7 @@ export default function OrdersPage() {
                         <Eye size={16} />
                       </button>
                       <button 
-                        onClick={async () => {
-                          if(confirm('Are you sure you want to delete this order?')) {
-                            try {
-                              await api.delete(`/api/v1/orders/${order.id}`);
-                              window.location.reload();
-                            } catch(e) { alert('Failed to delete'); }
-                          }
-                        }}
+                        onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
                         className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">
                         <Trash2 size={16} />
                       </button>
@@ -105,6 +103,28 @@ export default function OrdersPage() {
           </table>
         </div>
       </div>
-    </div>
-  );
-}
+    
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete Order"
+        message="Are you sure you want to permanently delete this order? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          if(!deletingId) return;
+          try {
+            await api.delete(`/api/v1/orders/${deletingId}`);
+            window.location.reload();
+          } catch(e) {
+            alert('Failed to delete');
+          }
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+      />
+    
+</div>

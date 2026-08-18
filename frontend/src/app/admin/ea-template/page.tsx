@@ -12,6 +12,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import api from '@/lib/api';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useState } from 'react';
 
 interface EaTemplateSummary {
   id: number;
@@ -25,6 +27,9 @@ interface EaTemplateSummary {
 }
 
 export default function EaTemplatePage() {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
+
   const [versions, setVersions] = useState<EaTemplateSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -351,7 +356,7 @@ export default function EaTemplatePage() {
                         </button>
                         {!v.is_active && (
                           <button
-                            onClick={() => handleDelete(v.id)}
+                            onClick={() => { setDeletingId(v.id); setDeleteModalOpen(true); }}
                             className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                             title="Delete"
                           >
@@ -367,6 +372,28 @@ export default function EaTemplatePage() {
           </table>
         </div>
       </div>
-    </div>
-  );
-}
+    
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete EA Template"
+        message="Are you sure you want to delete this EA template? This cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          if(!deletingId) return;
+          try {
+            await api.delete(`/api/v1/ea-templates/admin/${deletingId}`);
+            window.location.reload();
+          } catch(e) {
+            // Ignore error
+          }
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+      />
+    
+</div>

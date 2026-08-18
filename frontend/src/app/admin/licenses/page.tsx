@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, Clock } from 'lucide-react';
 import api from '@/lib/api';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useState } from 'react';
 
 export default function LicensesPage() {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
+
   const queryClient = useQueryClient();
   const [editingLicense, setEditingLicense] = useState<any>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
@@ -197,11 +202,7 @@ export default function LicensesPage() {
                           <Edit2 size={16} />
                         </button>
                         <button 
-                          onClick={() => {
-                            if (confirm('Are you sure you want to delete this license?')) {
-                              deleteLicenseMutation.mutate(license.id);
-                            }
-                          }}
+                          onClick={() => { setDeletingId(license.id); setDeleteModalOpen(true); }}
                           className="p-2 rounded transition-colors text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
                           title="Delete License"
                         >
@@ -337,6 +338,28 @@ export default function LicensesPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
+    
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete License"
+        message="Are you sure you want to permanently delete this license? This will revoke access."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          if(!deletingId) return;
+          try {
+            await api.delete(`/api/v1/licenses/${deletingId}`);
+            window.location.reload();
+          } catch(e) {
+            // Ignore error
+          }
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+      />
+    
+</div>

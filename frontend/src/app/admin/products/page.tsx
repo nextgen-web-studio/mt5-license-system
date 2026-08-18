@@ -4,8 +4,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, Plus, Loader2, Edit, Trash2, X, Check } from 'lucide-react';
 import api from '@/lib/api';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useState } from 'react';
 
 export default function ProductsPage() {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
+
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
@@ -183,11 +188,7 @@ export default function ProductsPage() {
                         <Edit size={16} />
                       </button>
                       <button 
-                        onClick={() => {
-                          if (confirm('Are you sure you want to delete this product?')) {
-                            deleteProductMutation.mutate(product.id);
-                          }
-                        }}
+                        onClick={() => { setDeletingId(product.id); setDeleteModalOpen(true); }}
                         className="p-2 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors" title="Delete"
                       >
                         <Trash2 size={16} />
@@ -322,6 +323,28 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
+    
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? All active subscriptions will remain but it will hide the product from new customers."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={async () => {
+          if(!deletingId) return;
+          try {
+            await api.delete(`/api/v1/products/${deletingId}`);
+            window.location.reload();
+          } catch(e) {
+            // Ignore error
+          }
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeletingId(null);
+        }}
+      />
+    
+</div>
