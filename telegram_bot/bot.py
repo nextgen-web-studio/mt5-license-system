@@ -205,16 +205,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Notify customer with a compiling loading message
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
+        logging.info(f"[COMPILING MSG] Starting customer notification for order {order_id}")
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
+            logging.info(f"[COMPILING MSG] Order fetch status: {order_resp.status_code}")
             if order_resp.status_code == 200:
                 order_data = order_resp.json()
                 user_id = order_data.get("user_id")
+                logging.info(f"[COMPILING MSG] user_id={user_id}")
                 user_resp = await client.get(f"{base_url}/users/by-id/{user_id}")
+                logging.info(f"[COMPILING MSG] User fetch status: {user_resp.status_code}")
                 if user_resp.status_code == 200:
                     telegram_id = user_resp.json().get("telegram_id")
+                    logging.info(f"[COMPILING MSG] telegram_id={telegram_id}")
                     if telegram_id:
-                        # Send initial compiling message with spinner
                         initial_msg = (
                             f"✅ *Your Order is Approved!*\n\n"
                             f"MT5 ID: `{mt5_id}`\n\n"
@@ -224,13 +228,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             f"_Usually takes 2-5 minutes. Please wait._"
                         )
                         try:
+                            logging.info(f"[COMPILING MSG] Sending message to {telegram_id}")
                             sent = await context.bot.send_message(
                                 chat_id=telegram_id,
                                 text=initial_msg,
                                 parse_mode="Markdown"
                             )
+                            logging.info(f"[COMPILING MSG] Message sent! message_id={sent.message_id}")
                             # Store and start animation task
                             license_id = resp.get("id") or resp.get("license_id")
+                            logging.info(f"[COMPILING MSG] license_id from resp={license_id}, resp keys={list(resp.keys()) if isinstance(resp, dict) else 'not dict'}")
                             if license_id:
                                 lid_str = str(license_id)
                                 bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -243,8 +250,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 _asyncio.create_task(
                                     animate_compiling_message(bot_token, telegram_id, sent.message_id, lid_str)
                                 )
+                                logging.info(f"[COMPILING MSG] Animation task started for license {lid_str}")
                         except Exception as e:
-                            logging.warning(f"Could not send compiling message: {e}")
+                            logging.error(f"[COMPILING MSG] FAILED to send message: {e}", exc_info=True)
+                else:
+                    logging.warning(f"[COMPILING MSG] User fetch failed: {user_resp.text}")
+            else:
+                logging.warning(f"[COMPILING MSG] Order fetch failed: {order_resp.text}")
         return
 
     if data.startswith("resend_ea_"):
