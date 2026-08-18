@@ -1158,7 +1158,7 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     
-    msg_target = update.message if update.message else update.callback_query
+    msg_target = update.effective_message
     await msg_target.reply_text("Fetching your licenses...")
     
     async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
@@ -1210,7 +1210,7 @@ async def render_installment_status(update: Update, context: ContextTypes.DEFAUL
     from utils.api_client import get_installment_status, get_settings
 
     tid = str(update.effective_user.id)
-    msg_target = update.message if update.message else update.callback_query
+    msg_target = update.effective_message
     data = await get_installment_status(tid)
 
     home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
@@ -1269,7 +1269,7 @@ async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
     
-    msg_target = update.message if update.message else update.callback_query
+    msg_target = update.effective_message
     await msg_target.reply_text("Fetching your orders...")
     
     async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
@@ -1317,7 +1317,7 @@ async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    msg_target = update.message if update.message else update.callback_query
+    msg_target = update.effective_message
     await msg_target.reply_text("Fetching your downloads...")
     
     async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
