@@ -350,7 +350,7 @@ export default function LicensesPage() {
             await api.delete(`/api/v1/licenses/${deletingId}`);
             window.location.reload();
           } catch(e) {
-            // Ignore error
+            alert('Failed to delete. Make sure your API is fully deployed!');
           }
           setDeleteModalOpen(false);
           setDeletingId(null);

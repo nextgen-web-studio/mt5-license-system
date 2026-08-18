@@ -256,7 +256,7 @@ export default function TrialAdminPage() {
             await api.delete(`/api/v1/trials/admin/reset/${deletingId}`);
             window.location.reload();
           } catch(e) {
-            // Ignore error
+            alert('Failed to delete. Make sure your API is fully deployed!');
           }
           setDeleteModalOpen(false);
           setDeletingId(null);

@@ -116,7 +116,7 @@ export default function OrdersPage() {
             await api.delete(`/api/v1/orders/${deletingId}`);
             window.location.reload();
           } catch(e) {
-            alert('Failed to delete');
+            alert('Failed to delete. Make sure your API is fully deployed!');
           }
           setDeleteModalOpen(false);
           setDeletingId(null);
