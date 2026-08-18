@@ -72,7 +72,7 @@ export default function EaTemplatePage() {
       form.append('activate', String(activateOnUpload));
 
       await api.post('/api/v1/ea-templates/admin/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined }
       });
 
       setMsg('EA template uploaded successfully!');
