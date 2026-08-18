@@ -184,41 +184,6 @@ async def get_customer_installment(telegram_id: str, db: AsyncSession = Depends(
         payments=[InstallmentPaymentRecord.model_validate(p) for p in payments]
     )
 
-@router.get("/admin/{order_id}", response_model=InstallmentCustomerResponse)
-async def get_admin_installment(order_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Order).filter(Order.id == order_id))
-    order = result.scalar_one_or_none()
-    if not order or not order.installment_enabled:
-        raise HTTPException(status_code=404, detail="Installment arrangement not found")
-        
-    p_res = await db.execute(select(Product).filter(Product.id == order.product_id))
-    product = p_res.scalar_one_or_none()
-    
-    lic_res = await db.execute(select(License).filter(License.order_id == order.id))
-    lic = lic_res.scalar_one_or_none()
-    
-    pmt_res = await db.execute(select(InstallmentPayment).filter(InstallmentPayment.order_id == order.id).order_by(InstallmentPayment.payment_number.asc()))
-    payments = pmt_res.scalars().all()
-    
-    return InstallmentCustomerResponse(
-        order_id=order.id,
-        mt5_id=lic.mt5_id if lic else order.mt5_id,
-        product_name=product.name if product else "EA",
-        total_amount=order.installment_total_amount or 0,
-        installment_amount=order.installment_amount or 0,
-        amount_paid=order.amount_paid or 0,
-        amount_remaining=order.amount_remaining or 0,
-        installments_paid=order.installments_paid or 0,
-        installment_count=order.installment_count or 0,
-        license_status=lic.status if lic else "None",
-        license_expiry=lic.expiry_date if lic else None,
-        next_due_date=order.next_due_date,
-        installment_status=order.installment_status or "active",
-        license_period_days=order.license_period_days,
-        payments=[InstallmentPaymentRecord.model_validate(p) for p in payments]
-    )
-
-
 @router.get("/admin/all", response_model=List[InstallmentCustomerResponse])
 async def get_all_installments(db: AsyncSession = Depends(get_db)):
     # Fetch all orders with installment_enabled = True
@@ -280,3 +245,37 @@ async def disable_installment_arrangement(order_id: int, db: AsyncSession = Depe
         
     await db.commit()
     return {"status": "success", "message": "Installment arrangement disabled and license revoked"}
+
+@router.get("/admin/{order_id}", response_model=InstallmentCustomerResponse)
+async def get_admin_installment(order_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Order).filter(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order or not order.installment_enabled:
+        raise HTTPException(status_code=404, detail="Installment arrangement not found")
+        
+    p_res = await db.execute(select(Product).filter(Product.id == order.product_id))
+    product = p_res.scalar_one_or_none()
+    
+    lic_res = await db.execute(select(License).filter(License.order_id == order.id))
+    lic = lic_res.scalar_one_or_none()
+    
+    pmt_res = await db.execute(select(InstallmentPayment).filter(InstallmentPayment.order_id == order.id).order_by(InstallmentPayment.payment_number.asc()))
+    payments = pmt_res.scalars().all()
+    
+    return InstallmentCustomerResponse(
+        order_id=order.id,
+        mt5_id=lic.mt5_id if lic else order.mt5_id,
+        product_name=product.name if product else "EA",
+        total_amount=order.installment_total_amount or 0,
+        installment_amount=order.installment_amount or 0,
+        amount_paid=order.amount_paid or 0,
+        amount_remaining=order.amount_remaining or 0,
+        installments_paid=order.installments_paid or 0,
+        installment_count=order.installment_count or 0,
+        license_status=lic.status if lic else "None",
+        license_expiry=lic.expiry_date if lic else None,
+        next_due_date=order.next_due_date,
+        installment_status=order.installment_status or "active",
+        license_period_days=order.license_period_days,
+        payments=[InstallmentPaymentRecord.model_validate(p) for p in payments]
+    )
