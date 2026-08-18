@@ -278,14 +278,12 @@ async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):
     if not license_obj:
         raise HTTPException(status_code=404, detail="License not found")
         
-    if not license_obj.expiry_date:
-        raise HTTPException(status_code=400, detail="License has no expiry date")
-        
-    now = datetime.utcnow()
-    days_expired = (now - license_obj.expiry_date).days
-    
-    if days_expired < 5:
-        raise HTTPException(status_code=400, detail="License must be expired for at least 5 days before deletion")
+    from app.models import CompileJob, TrialActivation, TrialClaim, LicenseMt5History, BrokerChangeRequest
+    await db.execute(CompileJob.__table__.delete().where(CompileJob.license_id == license_id))
+    await db.execute(TrialActivation.__table__.delete().where(TrialActivation.license_id == license_id))
+    await db.execute(TrialClaim.__table__.delete().where(TrialClaim.license_id == license_id))
+    await db.execute(LicenseMt5History.__table__.delete().where(LicenseMt5History.license_id == license_id))
+    await db.execute(BrokerChangeRequest.__table__.delete().where(BrokerChangeRequest.license_id == license_id))
         
     await db.delete(license_obj)
     await db.commit()
