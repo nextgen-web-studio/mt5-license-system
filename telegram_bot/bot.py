@@ -1090,16 +1090,44 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             if user_resp.status_code == 200:
                                 telegram_id = user_resp.json().get("telegram_id")
                                 if telegram_id:
+                                    remaining = payload['total_amount'] - payload['first_payment_amount']
+                                    # Permanent confirmation message
                                     cust_msg = (
                                         f"✅ *INSTALLMENT ARRANGEMENT SET UP*\n\n"
-                                        f"Your installment plan has been created.\n\n"
-                                        f"First payment of ₹{payload['first_payment_amount']:,.0f} has been confirmed.\n"
-                                        f"Your EA is now being compiled and will be delivered here shortly.\n\n"
-                                        f"License will be active for {duration} days.\n"
-                                        f"Remaining balance: ₹{payload['total_amount'] - payload['first_payment_amount']:,.0f}\n\n"
-                                        f"Contact admin to confirm each subsequent payment and extend your license."
+                                        f"First payment of ₹{payload['first_payment_amount']:,.0f} confirmed.\n\n"
+                                        f"License active for {duration} days.\n"
+                                        f"Remaining balance: ₹{remaining:,.0f}"
                                     )
                                     await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
+
+                                    # Animated compiling spinner
+                                    spinner_msg = (
+                                        f"🕛⚙️ *Compiling your EA...*\n\n"
+                                        f"Your EA file is being built right now.\n"
+                                        f"The file will be sent here automatically once ready.\n\n"
+                                        f"_Usually takes 2-5 minutes. Please wait._"
+                                    )
+                                    try:
+                                        sent = await context.bot.send_message(chat_id=telegram_id, text=spinner_msg, parse_mode="Markdown")
+                                        # Fetch license_id for this order to register animation
+                                        lic_resp = await client.get(f"{base_url}/licenses/user/{user_id}")
+                                        if lic_resp.status_code == 200:
+                                            lics = lic_resp.json()
+                                            lic = next((l for l in lics if l.get("order_id") == order_id), None)
+                                            if lic:
+                                                lid_str = str(lic["id"])
+                                                bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                                                compiling_messages[lid_str] = {
+                                                    "chat_id": telegram_id,
+                                                    "message_id": sent.message_id,
+                                                    "stop": False
+                                                }
+                                                import asyncio as _asyncio
+                                                _asyncio.create_task(
+                                                    animate_compiling_message(bot_token, telegram_id, sent.message_id, lid_str)
+                                                )
+                                    except Exception as e:
+                                        logging.warning(f"Could not send installment setup compiling message: {e}")
                     except Exception as e:
                         logging.error(f"Failed to notify customer on arrangement: {e}")
                 else:
