@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import { useState } from 'react';
 
 interface EaTemplateSummary {
   id: number;

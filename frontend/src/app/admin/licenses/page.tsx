@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, Clock } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import { useState } from 'react';
 
 export default function LicensesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);

@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, Plus, Loader2, Edit, Trash2, X, Check } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import { useState } from 'react';
 
 export default function ProductsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
