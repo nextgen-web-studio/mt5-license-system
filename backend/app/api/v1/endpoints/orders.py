@@ -139,3 +139,13 @@ async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
     order.status = "rejected"
     await db.commit()
     return {"status": "success", "message": f"Order {order_id} rejected", "telegram_id": user.telegram_id}
+
+@router.delete("/{order_id}")
+async def delete_order(order_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Order).filter(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    await db.delete(order)
+    await db.commit()
+    return {"status": "success", "message": "Order deleted"}

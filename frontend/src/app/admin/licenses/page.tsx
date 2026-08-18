@@ -198,12 +198,11 @@ export default function LicensesPage() {
                         </button>
                         <button 
                           onClick={() => {
-                            if (confirm('Are you sure you want to delete this expired license?')) {
+                            if (confirm('Are you sure you want to delete this license?')) {
                               deleteLicenseMutation.mutate(license.id);
                             }
                           }}
-                          disabled={!canDelete}
-                          className={`p-2 rounded transition-colors ${canDelete ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer' : 'text-neutral-600 cursor-not-allowed'}`}
+                          className="p-2 rounded transition-colors text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
                           title="Delete License"
                         >
                           <Trash2 size={16} />

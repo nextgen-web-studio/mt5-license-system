@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Eye, Loader2 } from 'lucide-react';
+import { Eye, Loader2, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function OrdersPage() {
@@ -84,6 +84,18 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 text-right">
                       <button className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="View Details">
                         <Eye size={16} />
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          if(confirm('Are you sure you want to delete this order?')) {
+                            try {
+                              await api.delete(`/api/v1/orders/${order.id}`);
+                              window.location.reload();
+                            } catch(e) { alert('Failed to delete'); }
+                          }
+                        }}
+                        className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">
+                        <Trash2 size={16} />
                       </button>
                     </td>
                   </tr>

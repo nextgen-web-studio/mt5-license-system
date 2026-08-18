@@ -111,3 +111,13 @@ async def get_current_ea_template(db: AsyncSession = Depends(get_db)):
         "filename": template.filename,
         "source_code": template.source_code
     }
+
+@router.delete("/admin/{template_id}")
+async def delete_ea_template(template_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(EaTemplate).filter(EaTemplate.id == template_id))
+    t = result.scalar_one_or_none()
+    if not t:
+        raise HTTPException(status_code=404, detail="Template not found")
+    await db.delete(t)
+    await db.commit()
+    return {"status": "success", "message": "Template deleted"}

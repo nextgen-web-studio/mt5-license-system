@@ -200,6 +200,42 @@ export default function TrialAdminPage() {
             </button>
           </div>
         </div>
+
+        {/* Reset Trial Data Card */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 md:col-span-2">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+            <Users size={20} className="text-red-400" />
+            Reset Trial Limits
+          </h2>
+          <p className="text-neutral-400 text-sm mb-4">
+            If a user has exhausted their free trial limit (e.g. for testing purposes), you can completely wipe their trial history here so they can claim a trial again.
+          </p>
+          <div className="flex gap-3">
+            <input 
+              type="text" 
+              placeholder="Enter User's Telegram ID"
+              value={grantTg}
+              onChange={e => setGrantTg(e.target.value)}
+              className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500"
+            />
+            <button 
+              onClick={async () => {
+                if (!grantTg) return;
+                if (!confirm('Are you sure you want to permanently delete this user\'s trial history?')) return;
+                try {
+                  await api.delete(`/api/v1/trials/admin/reset/${grantTg}`);
+                  alert('Trial history successfully cleared!');
+                  setGrantTg('');
+                } catch (e) {
+                  alert('Failed to reset trial history. ' + e);
+                }
+              }}
+              className="bg-red-500/10 text-red-500 border border-red-500/50 px-6 py-2 rounded-lg font-medium hover:bg-red-500/20 transition-colors"
+            >
+              Reset History
+            </button>
+          </div>
+        </div>
       </div>
       
       {/* Stats/Logs section placeholder */}

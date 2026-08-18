@@ -184,3 +184,11 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
         "expiry_date": expiry.strftime("%d %b %Y"),
         "duration_days": duration_days
     }
+
+@router.delete("/admin/reset/{telegram_id}")
+async def reset_trial_history(telegram_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models import TrialClaim, TrialActivation
+    await db.execute(TrialClaim.__table__.delete().where(TrialClaim.telegram_id == telegram_id))
+    await db.execute(TrialActivation.__table__.delete().where(TrialActivation.telegram_user_id == telegram_id))
+    await db.commit()
+    return {"status": "success", "message": "Trial history cleared for user"}
