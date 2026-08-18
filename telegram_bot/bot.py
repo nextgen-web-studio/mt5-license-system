@@ -32,6 +32,9 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+# Tracks {license_id: {chat_id, message_id}} for the 'compiling...' loading messages
+compiling_messages: dict = {}
+
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
     """Builds the main menu keyboard, showing the 'My Installment' button
@@ -171,27 +174,42 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]])
         )
         
-        # Notify customer
+        # Notify customer with a compiling loading message
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
             if order_resp.status_code == 200:
-                user_id = order_resp.json().get("user_id")
+                order_data = order_resp.json()
+                user_id = order_data.get("user_id")
                 user_resp = await client.get(f"{base_url}/users/by-id/{user_id}")
                 if user_resp.status_code == 200:
                     telegram_id = user_resp.json().get("telegram_id")
                     if telegram_id:
-                        msg = (
+                        compiling_msg = (
                             f"✅ *Your Order is Approved!*\n\n"
                             f"MT5 ID: `{mt5_id}`\n\n"
-                            f"Your EA is currently compiling and will be delivered here shortly.\n"
-                            f"Please wait — this usually takes 2-5 minutes."
+                            f"⏳ *Compiling your EA...*\n"
+                            f"Your personalised EA file is being built right now.\n"
+                            f"The file will be sent here automatically once ready.\n\n"
+                            f"_This usually takes 2–5 minutes. Please wait._"
                         )
                         try:
-                            await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
-                        except:
-                            pass
+                            sent = await context.bot.send_message(
+                                chat_id=telegram_id,
+                                text=compiling_msg,
+                                parse_mode="Markdown"
+                            )
+                            # Store for deletion when file is delivered
+                            # Find license_id from resp
+                            license_id = resp.get("id") or resp.get("license_id")
+                            if license_id:
+                                compiling_messages[str(license_id)] = {
+                                    "chat_id": telegram_id,
+                                    "message_id": sent.message_id
+                                }
+                        except Exception as e:
+                            logging.warning(f"Could not send compiling message: {e}")
         return
 
     if data.startswith("resend_ea_"):
@@ -1146,10 +1164,28 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"MT5 ID: `{mt5_id}`\n\n"
             f"Trial Duration: {resp.get('duration_days', 2)} Days\n\n"
             f"Expires:\n{resp.get('expiry_date', 'Unknown')}\n\n"
-            f"You may use the trial once this calendar month.\n\n"
-            "⚙️ Please wait 1-2 minutes while we compile your trial EA. We will send the file here automatically."
+            f"You may use the trial once this calendar month."
         )
         await update.message.reply_text(success_msg, parse_mode="Markdown")
+
+        # Send a separate compiling loading message that will be deleted when file arrives
+        compiling_msg = (
+            f"⏳ *Compiling your Trial EA...*\n\n"
+            f"Your personalised trial EA is being built right now.\n"
+            f"The file will be sent here automatically once ready.\n\n"
+            f"_This usually takes 2–5 minutes. Please wait._"
+        )
+        try:
+            sent = await update.message.reply_text(compiling_msg, parse_mode="Markdown")
+            # Store by license_id for deletion on delivery
+            license_id = resp.get("license_id") or resp.get("id")
+            if license_id:
+                compiling_messages[str(license_id)] = {
+                    "chat_id": str(update.effective_user.id),
+                    "message_id": sent.message_id
+                }
+        except Exception as e:
+            logging.warning(f"Could not send trial compiling message: {e}")
         return
 
     await update.message.reply_text("Please use the /start menu to select an option.")
@@ -1408,13 +1444,17 @@ class DummyHandler(BaseHTTPRequestHandler):
                     download_url = info.get("download_url")
                     
                     if chat_id and download_url:
-                        # Notify customer EA is ready
-                        msg = f"✅ *Your EA is Ready!*\n\nYour EA for MT5 ID `{mt5_id}` has been compiled.\nDownloading and sending your file now..."
-                        await client.post(
-                            f"https://api.telegram.org/bot{token}/sendMessage",
-                            json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"}
-                        )
-                        
+                        # Delete the "compiling..." loading message if we stored one
+                        stored = compiling_messages.pop(str(license_id), None)
+                        if stored:
+                            try:
+                                del_resp = await client.post(
+                                    f"https://api.telegram.org/bot{token}/deleteMessage",
+                                    json={"chat_id": stored["chat_id"], "message_id": stored["message_id"]}
+                                )
+                            except Exception as e:
+                                logging.warning(f"Could not delete compiling message: {e}")
+
                         file_resp = await client.get(download_url)
                         admin_chat_id = os.getenv("ADMIN_CHAT_ID")
                         if file_resp.status_code == 200:
