@@ -164,15 +164,6 @@ async def delete_order(order_id: int, db: AsyncSession = Depends(get_db)):
 
     await db.delete(order)
     await db.commit()
-    from sqlalchemy import text
-    # Reset sqlite_sequence if table is empty
-    count_res = await db.execute(text("SELECT COUNT(*) FROM orders"))
-    if count_res.scalar() == 0:
-        await db.execute(text("DELETE FROM sqlite_sequence WHERE name='orders'"))
-    else:
-        max_res = await db.execute(text("SELECT MAX(id) FROM orders"))
-        max_id = max_res.scalar() or 0
-        await db.execute(text(f"UPDATE sqlite_sequence SET seq = {max_id} WHERE name='orders'"))
-    await db.commit()
+
 
     return {"status": "success", "message": "Order deleted"}

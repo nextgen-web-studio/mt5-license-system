@@ -287,16 +287,7 @@ async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):
         
     await db.delete(license_obj)
     await db.commit()
-    from sqlalchemy import text
-    # Reset sqlite_sequence if table is empty
-    count_res = await db.execute(text("SELECT COUNT(*) FROM licenses"))
-    if count_res.scalar() == 0:
-        await db.execute(text("DELETE FROM sqlite_sequence WHERE name='licenses'"))
-    else:
-        max_res = await db.execute(text("SELECT MAX(id) FROM licenses"))
-        max_id = max_res.scalar() or 0
-        await db.execute(text(f"UPDATE sqlite_sequence SET seq = {max_id} WHERE name='licenses'"))
-    await db.commit()
+
 
     return {"status": "success", "message": "License deleted"}
 
