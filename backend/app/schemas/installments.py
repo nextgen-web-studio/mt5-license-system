@@ -13,7 +13,7 @@ class InstallmentCreate(BaseModel):
 class InstallmentPaymentRecord(BaseModel):
     amount: float
     payment_number: int
-    payment_date: datetime
+    payment_date: Optional[datetime]
     status: str
 
     class Config:
