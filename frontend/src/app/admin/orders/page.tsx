@@ -85,7 +85,7 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 text-neutral-400">{order.customer || 'Guest'}</td>
                     <td className="px-6 py-4 text-neutral-300">₹{order.amount?.toLocaleString() || 0}</td>
                     <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
-                    <td className="px-6 py-4 text-neutral-400">{new Date(order.date || Date.now()).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-neutral-400">{new Date(order.date || Date.now()).toLocaleString()}</td>
                     <td className="px-6 py-4 text-right">
                       <button className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="View Details">
                         <Eye size={16} />

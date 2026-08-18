@@ -183,7 +183,7 @@ export default function LicensesPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-neutral-400">
-                        {expiryDate ? expiryDate.toLocaleDateString() : 'N/A'}
+                        {expiryDate ? expiryDate.toLocaleString() : 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
                         <button 

@@ -256,7 +256,7 @@ async def get_all_installments(db: AsyncSession = Depends(get_db)):
             "next_due_date": order.next_due_date,
             "installment_status": order.installment_status or "active",
             "license_period_days": order.license_period_days,
-            "payments": payments
+            "payments": [InstallmentPaymentRecord.model_validate(p) for p in payments]
         })
         
     return responses
