@@ -1,26 +1,43 @@
 import os
 import logging
 import threading
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from dotenv import load_dotenv
 
 import httpx
-# Monkey patch httpx to disable SSL verification due to local proxy/certificate issues
-_original_init = httpx.AsyncClient.__init__
-def _patched_init(self, *args, **kwargs):
-    kwargs['verify'] = False
-    _original_init(self, *args, **kwargs)
-httpx.AsyncClient.__init__ = _patched_init
+# SSL verification is disabled ONLY when explicitly opted into via env var
+# (e.g. for a local dev machine sitting behind a self-signed proxy/cert).
+# Previously this was force-disabled for every environment, including
+# production, which silently defeats TLS certificate validation on every
+# outgoing request (to Telegram's API, the backend, etc). Never disable
+# this in production.
+_DISABLE_SSL_VERIFY = os.getenv("DISABLE_SSL_VERIFY", "false").lower() in ("1", "true", "yes")
+HTTPX_VERIFY = not _DISABLE_SSL_VERIFY
+if _DISABLE_SSL_VERIFY:
+    logging.warning("DISABLE_SSL_VERIFY is set - httpx SSL certificate verification is disabled. Do NOT use this in production.")
+    _original_init = httpx.AsyncClient.__init__
+    def _patched_init(self, *args, **kwargs):
+        kwargs['verify'] = False
+        _original_init(self, *args, **kwargs)
+    httpx.AsyncClient.__init__ = _patched_init
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters, ConversationHandler
 
 from keyboards.menu import get_main_menu_keyboard
-from utils.api_client import register_user, get_products, create_order, get_user
+from utils.api_client import register_user, get_products, create_order, get_user, is_installment_eligible
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+
+async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
+    """Builds the main menu keyboard, showing the 'My Installment' button
+    only for customers who actually have an eligible installment arrangement."""
+    show_installment = await is_installment_eligible(str(telegram_id))
+    return get_main_menu_keyboard(show_installment=show_installment)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -32,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['db_user_name'] = db_user.get('name')
         await update.message.reply_text(
             f"Welcome back, {db_user['name']}!\n\nPlease select an option below:",
-            reply_markup=get_main_menu_keyboard()
+            reply_markup=await build_main_menu(user.id)
         )
         return ConversationHandler.END
         
@@ -134,7 +151,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await generate_license(order_id, mt5_id)
         
         if "error" in resp:
-            await query.edit_message_text(f"❌ *Error generating license:*\n{resp['error']}", parse_mode="Markdown")
+            await query.edit_message_text(f"❌ *Error generating license:*\n\n{resp['error']}", parse_mode="Markdown")
             return
             
         await query.edit_message_text(
@@ -152,7 +169,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Notify customer
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
             if order_resp.status_code == 200:
                 user_id = order_resp.json().get("user_id")
@@ -181,7 +198,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         order_id = int(data.split("_")[2])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             # Get license for this order
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
             if order_resp.status_code != 200:
@@ -259,7 +276,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Verify MT5 ID exists
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             resp = await client.get(f"{base_url}/orders/{order_id}")
             if resp.status_code == 200:
                 order_data = resp.json()
@@ -285,8 +302,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         order_id = int(data.split("_")[2])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False) as client:
-            resp = await client.get(f"{base_url}/installments/admin/{order_id}")
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+            resp = await client.get(
+                f"{base_url}/installments/admin/{order_id}",
+                headers={"X-Admin-Key": os.getenv("ADMIN_API_KEY", "")}
+            )
             if resp.status_code == 200:
                 data_json = resp.json()
                 is_final = data_json['installments_paid'] >= data_json['installment_count']
@@ -324,9 +344,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         order_id = int(data.split("_")[3])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             # Fetch installment info
-            resp = await client.get(f"{base_url}/installments/admin/{order_id}")
+            resp = await client.get(
+                f"{base_url}/installments/admin/{order_id}",
+                headers={"X-Admin-Key": os.getenv("ADMIN_API_KEY", "")}
+            )
             if resp.status_code == 200:
                 inst_data = resp.json()
                 amount = inst_data['installment_amount']
@@ -349,7 +372,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                 telegram_id = user_resp.json().get("telegram_id")
                                 if telegram_id:
                                     # Re-fetch updated installment data after payment
-                                    updated_resp = await client.get(f"{base_url}/installments/admin/{order_id}")
+                                    updated_resp = await client.get(
+                f"{base_url}/installments/admin/{order_id}",
+                headers={"X-Admin-Key": os.getenv("ADMIN_API_KEY", "")}
+            )
                                     updated_data = updated_resp.json() if updated_resp.status_code == 200 else inst_data
                                     next_due = updated_data.get("next_due_date", "")
                                     next_due_str = next_due.split("T")[0] if next_due else "N/A"
@@ -381,7 +407,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         order_id = int(data.split("_")[3])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
             if order_resp.status_code != 200:
                 await query.answer("Order not found.", show_alert=True)
@@ -413,49 +439,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
     if data == "my_installment":
-        tid = str(update.effective_user.id)
-        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
-        async with httpx.AsyncClient(verify=False) as client:
-            resp = await client.get(f"{base_url}/installments/customer/{tid}")
-            if resp.status_code == 200:
-                d = resp.json()
-                license_expiry = d.get("license_expiry", "")
-                expiry_str = license_expiry.split("T")[0] if license_expiry else "N/A"
-                next_due = d.get("next_due_date", "")
-                next_due_str = next_due.split("T")[0] if next_due else "N/A"
-                status_icon = "✅" if d.get("installment_status") == "active" else "⏳" if d.get("installment_status") == "unknown" else "🔴"
-                
-                msg = (
-                    f"💳 *MY INSTALLMENT STATUS*\n\n"
-                    f"Plan: {d.get('product_name', 'EA')}\n"
-                    f"MT5 ID: `{d.get('mt5_id', 'N/A')}`\n\n"
-                    f"Total: ₹{d.get('total_amount', 0):,.0f}\n"
-                    f"Per Installment: ₹{d.get('installment_amount', 0):,.0f}\n"
-                    f"Paid: ₹{d.get('amount_paid', 0):,.0f}\n"
-                    f"Remaining: ₹{d.get('amount_remaining', 0):,.0f}\n\n"
-                    f"Progress: {d.get('installments_paid', 0)}/{d.get('installment_count', 0)} payments\n\n"
-                    f"License: {d.get('license_status', 'N/A').title()}\n"
-                    f"Expires: {expiry_str}\n"
-                    f"Next payment due: {next_due_str}\n\n"
-                    f"To make your next payment, contact the admin."
-                )
-                from utils.api_client import get_settings
-                settings = await get_settings()
-                admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
-                if not admin_username.startswith("@"):
-                    admin_username = f"@{admin_username}"
-                kb = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")],
-                      [InlineKeyboardButton("🏠 Home", callback_data="home")]]
-                await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-            elif resp.status_code == 404:
-                await query.edit_message_text(
-                    "ℹ️ *No active installment arrangement found.*\n\nIf you have an installment plan, please contact the admin.",
-                    parse_mode="Markdown",
-                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
-                )
-            else:
-                await query.answer("Failed to fetch installment status.", show_alert=True)
+        await render_installment_status(update, context)
         return
 
     if data.startswith("view_license_"):
@@ -463,7 +447,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         tid = str(update.effective_user.id)
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         
-        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
             resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
             if resp.status_code == 200:
                 licenses = resp.json()
@@ -508,7 +492,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         await query.edit_message_text(f"⏳ Retrieving your EA file for MT5 ID {mt5_id}...")
         
-        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
             # We add a security check: ensure the license actually belongs to the user by querying their licenses first
             tid = str(update.effective_user.id)
             resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
@@ -542,7 +526,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Fetching your active licenses...")
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         import httpx
-        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
             resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
             
         if resp.status_code != 200:
@@ -574,21 +558,30 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "You have multiple active EA licenses.\n"
             "Please select the license for which you want to change the broker."
         )
+        # Keep only the license id in callback_data (Telegram caps it at 64
+        # bytes, and a broker name or MT5 ID containing "_" would break the
+        # old split-on-"_" parsing). Store the actual license details in
+        # user_data and look them up by id when the button is pressed.
+        context.user_data['bc_pending_licenses'] = {str(lic['id']): lic for lic in active_licenses}
         kb = []
         for lic in active_licenses:
             broker_name = lic.get('broker', 'Unknown')
-            kb.append([InlineKeyboardButton(f"🔄 MT5 {lic['mt5_id']} - {broker_name}", callback_data=f"bc_select_{lic['id']}_{lic['mt5_id']}_{broker_name}")])
+            kb.append([InlineKeyboardButton(f"🔄 MT5 {lic['mt5_id']} - {broker_name}", callback_data=f"bc_select_{lic['id']}")])
         kb.append([InlineKeyboardButton("⬅️ Back", callback_data="main_menu")])
         
         await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         return
         
     if data.startswith("bc_select_"):
-        parts = data.split("_")
-        lic_id = parts[2]
-        old_mt5 = parts[3]
-        old_broker = "_".join(parts[4:])
-        
+        lic_id = data[len("bc_select_"):]
+        lic = context.user_data.get('bc_pending_licenses', {}).get(lic_id)
+        if not lic:
+            await query.edit_message_text("Session expired. Please start the broker change again from the menu.")
+            return
+
+        old_mt5 = lic['mt5_id']
+        old_broker = lic.get('broker', 'Unknown')
+
         context.user_data['bc_license_id'] = lic_id
         context.user_data['bc_old_mt5_id'] = old_mt5
         context.user_data['bc_old_broker'] = old_broker
@@ -725,7 +718,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         products = await get_products(product_type=p_type)
         if not products:
             try:
-                await query.edit_message_text("No EA products available at this time.", reply_markup=get_main_menu_keyboard())
+                await query.edit_message_text("No EA products available at this time.", reply_markup=await build_main_menu(update.effective_user.id))
             except Exception:
                 pass
             return
@@ -777,7 +770,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         products = await get_products(product_type=p_type)
         if not products:
             try:
-                await query.edit_message_text(f"No {p_type} products available.", reply_markup=get_main_menu_keyboard())
+                await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
             except Exception:
                 pass
             return
@@ -834,7 +827,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
     elif data == "main_menu" or data == "home":
         try:
-            await query.edit_message_text("Please select an option below:", reply_markup=get_main_menu_keyboard())
+            await query.edit_message_text("Please select an option below:", reply_markup=await build_main_menu(update.effective_user.id))
         except Exception:
             pass
 
@@ -854,7 +847,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id)
     if not order or "error" in order:
         err = order.get("error", "Unknown") if order else "Failed to create order"
-        msg = f"❌ *Error:*\n```\n{err}\n```"
+        msg = f"❌ *Error:*\n\n{err}"
         if update.message:
             await update.message.reply_text(msg, parse_mode="Markdown")
         else:
@@ -961,7 +954,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
             import httpx
-            async with httpx.AsyncClient(verify=False) as client:
+            async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                 resp = await client.post(f"{base_url}/installments/create", json=payload)
                 if resp.status_code == 200:
                     kb = InlineKeyboardMarkup([[InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]])
@@ -1041,7 +1034,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Registration complete!\n\n"
             "Please select an option below:"
         )
-        await update.message.reply_text(welcome_text, reply_markup=get_main_menu_keyboard())
+        await update.message.reply_text(welcome_text, reply_markup=await build_main_menu(update.effective_user.id))
         return
 
     if context.user_data.get('awaiting_mt5_id'):
@@ -1145,51 +1138,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("Please use the /start menu to select an option.")
 
-async def mock_webhook(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # For testing only: mimics Razorpay webhook to activate license
-    if not context.args:
-        await update.message.reply_text("Usage: /mock_webhook <order_id>")
-        return
-        
-    order_id = context.args[0]
-    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    
-    await update.message.reply_text(f"Mocking payment for Order #{order_id}...")
-    
-    # 1. Update order status to paid
-    async with httpx.AsyncClient(verify=False) as client:
-        await client.get(f"{base_url}/orders/{order_id}/mock-pay")
-        
-    # 2. Get the order to get the mt5_id
-    async with httpx.AsyncClient(verify=False) as client:
-        # We need a quick way to get the order, but the webhook logic hits start-fulfillment directly.
-        # Let's hit the fulfillment directly with a dummy mt5_id (it will use the order's mt5_id internally in the new flow, actually we need to pass the MT5 ID in the request if the backend requires it).
-        pass
-        
-    # We can just construct a fake Razorpay webhook payload and POST it to /payments/webhook
-    payload = {
-        "event": "payment_link.paid",
-        "payload": {
-            "payment_link": {
-                "entity": {
-                    "reference_id": f"order_{order_id}"
-                }
-            },
-            "payment": {
-                "entity": {
-                    "id": "pay_mock123"
-                }
-            }
-        }
-    }
-    
-    async with httpx.AsyncClient(verify=False) as client:
-        resp = await client.post(f"{base_url}/payments/webhook", json=payload)
-        if resp.status_code == 200:
-            await update.message.reply_text("Webhook processed successfully! License should be compiling now.")
-        else:
-            await update.message.reply_text(f"Webhook error: {resp.text}")
-
 async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
@@ -1197,7 +1145,7 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_target = update.message if update.message else update.callback_query
     await msg_target.reply_text("Fetching your licenses...")
     
-    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+    async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
         resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
@@ -1239,6 +1187,68 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await msg_target.reply_text("❌ Unable to load your licenses right now.\nPlease try again or contact support.")
 
+async def render_installment_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Renders the customer's installment status. Shared by the /installment
+    command and the 'my_installment' menu button so this logic lives in one
+    place instead of being duplicated."""
+    from utils.api_client import get_installment_status, get_settings
+
+    tid = str(update.effective_user.id)
+    msg_target = update.message if update.message else update.callback_query
+    data = await get_installment_status(tid)
+
+    home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
+
+    if data is None:
+        await msg_target.reply_text(
+            "ℹ️ *No active installment arrangement found.*\n\nIf you have an installment plan, please contact the admin.",
+            parse_mode="Markdown",
+            reply_markup=home_kb
+        )
+        return
+
+    license_expiry = data.get("license_expiry", "")
+    expiry_str = license_expiry.split("T")[0] if license_expiry else "Never"
+    next_due = data.get("next_due_date", "")
+    next_due_str = next_due.split("T")[0] if next_due else "Completed"
+    status_icon = "🟢" if data.get("license_status") == "active" else "🔴" if data.get("license_status") == "expired" else "⚫"
+
+    payment_warning = ""
+    if data.get("installment_status") != "completed" and next_due:
+        try:
+            next_due_dt = datetime.strptime(next_due.split("T")[0], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            days_left = (next_due_dt - datetime.now(timezone.utc)).days
+            payment_warning = "\n⚠️ Payment Due Soon" if days_left <= 5 else "\n✅ Active"
+        except Exception:
+            pass
+
+    msg = (
+        "💳 *YOUR INSTALLMENT PLAN*\n\n"
+        f"Plan: {data.get('product_name', 'EA')}\n"
+        f"MT5 ID: `{data.get('mt5_id', 'N/A')}`\n\n"
+        f"Total Amount: ₹{data.get('total_amount', 0):,.0f}\n"
+        f"Installment: ₹{data.get('installment_amount', 0):,.0f}\n\n"
+        f"Paid: ₹{data.get('amount_paid', 0):,.0f}\n"
+        f"Remaining: ₹{data.get('amount_remaining', 0):,.0f}\n\n"
+        f"Progress: {data.get('installments_paid', 0)}/{data.get('installment_count', 0)} payments\n\n"
+        f"License: {status_icon} {str(data.get('license_status', 'N/A')).title()}\n"
+        f"Expires: {expiry_str}\n"
+        f"Next Payment: ₹{data.get('installment_amount', 0):,.0f} (Due: {next_due_str}){payment_warning}\n\n"
+        f"To make your next payment, contact the admin."
+    )
+
+    settings = await get_settings()
+    admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+    if not admin_username.startswith("@"):
+        admin_username = f"@{admin_username}"
+
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")],
+        [InlineKeyboardButton("🏠 Home", callback_data="home")]
+    ])
+    await msg_target.reply_text(msg, parse_mode="Markdown", reply_markup=kb)
+
+
 async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
@@ -1246,7 +1256,7 @@ async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_target = update.message if update.message else update.callback_query
     await msg_target.reply_text("Fetching your orders...")
     
-    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+    async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
         resp = await client.get(f"{base_url}/orders/telegram/{tid}")
         if resp.status_code == 200:
             orders = resp.json()
@@ -1294,7 +1304,7 @@ async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg_target = update.message if update.message else update.callback_query
     await msg_target.reply_text("Fetching your downloads...")
     
-    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+    async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
         resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
@@ -1373,7 +1383,7 @@ class DummyHandler(BaseHTTPRequestHandler):
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:
-            async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+            async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
                 resp = await client.get(f"{base_url}/licenses/{license_id}/delivery-info")
                 if resp.status_code == 200:
                     info = resp.json()
@@ -1447,7 +1457,9 @@ async def post_init(application):
     commands = [
         BotCommand("start", "Start the bot and see the main menu"),
         BotCommand("licenses", "View your active MT5 licenses"),
-        BotCommand("downloads", "Download your compiled EA files")
+        BotCommand("downloads", "Download your compiled EA files"),
+        BotCommand("orders", "View your order history"),
+        BotCommand("installment", "View your installment plan status")
     ]
     await application.bot.set_my_commands(commands)
 
@@ -1488,59 +1500,7 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
 
 async def installment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    tid = str(update.effective_user.id)
-    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    
-    import httpx
-    async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
-        resp = await client.get(f"{base_url}/installments/customer/{tid}")
-        if resp.status_code == 404:
-            await update.message.reply_text("❌ You don't have an active installment arrangement.")
-            return
-        elif resp.status_code != 200:
-            await update.message.reply_text("❌ Unable to fetch installment info.")
-            return
-            
-        data = resp.json()
-        
-        status_icon = "🟢" if data['license_status'] == 'active' else "🔴" if data['license_status'] == 'expired' else "⚫"
-        expiry_str = data['license_expiry'].split('T')[0] if data['license_expiry'] else "Never"
-        next_due_str = data['next_due_date'].split('T')[0] if data['next_due_date'] else "Completed"
-        
-        # Calculate days to next due date to show warning
-        payment_warning = ""
-        if data['installment_status'] != 'completed' and data['next_due_date']:
-            from datetime import datetime, timezone
-            try:
-                next_due = datetime.strptime(data['next_due_date'].split('T')[0], "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                now = datetime.now(timezone.utc)
-                days_left = (next_due - now).days
-                if days_left <= 5:
-                    payment_warning = "\nStatus:\n⚠️ Payment Due Soon"
-                else:
-                    payment_warning = "\nStatus:\n✅ Active"
-            except:
-                pass
-                
-        msg = (
-            "💳 *YOUR INSTALLMENT PLAN*\n\n"
-            f"Plan: {data['product_name']}\n\n"
-            f"MT5 ID: `{data['mt5_id']}`\n\n"
-            f"Total Amount: ₹{data['total_amount']:,.0f}\n"
-            f"Installment: ₹{data['installment_amount']:,.0f}\n\n"
-            f"Paid: ₹{data['amount_paid']:,.0f}\n"
-            f"Remaining: ₹{data['amount_remaining']:,.0f}\n\n"
-            f"Payment:\n{data['installments_paid']}/{data['installment_count']}\n\n"
-            f"License:\n{status_icon} {data['license_status'].title()}\n\n"
-            f"Expires:\n{expiry_str}\n\n"
-            f"Next Payment:\n₹{data['installment_amount']:,.0f} (Due: {next_due_str}){payment_warning}"
-        )
-        
-        kb = [
-            [InlineKeyboardButton("Contact Admin", url="https://t.me/InfinityTraderSupport"), InlineKeyboardButton("🏠 Home", callback_data="home")]
-        ]
-        
-        await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+    await render_installment_status(update, context)
 
 def main():
     start_dummy_server()
@@ -1550,11 +1510,11 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("licenses", licenses_command))
     application.add_handler(CommandHandler("downloads", downloads_command))
+    application.add_handler(CommandHandler("orders", orders_command))
     application.add_handler(CommandHandler("installment", installment_command))
     application.add_handler(CommandHandler("myid", myid_command))
     application.add_handler(CommandHandler("admintest", admintest_command))
     application.add_handler(CommandHandler("admin", admin_command))
-    application.add_handler(CommandHandler("mock_webhook", mock_webhook))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
