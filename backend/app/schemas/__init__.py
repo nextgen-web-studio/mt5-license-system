@@ -50,7 +50,6 @@ class PaymentCreate(BaseModel):
     
 class PaymentResponse(BaseModel):
     id: int
-    razorpay_order_id: str
     payment_id: Optional[str]
     amount: float
     status: str

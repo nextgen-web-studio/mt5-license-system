@@ -293,7 +293,7 @@ async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.get("/export/csv")
 async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
-    # Query: User.name, Order.product_id, License.mt5_id, Payment.razorpay_order_id (or payment_id)
+    # Query: User.name, Order.product_id, License.mt5_id, Payment.payment_id (or payment_id)
     # Join License -> User
     # Join License -> Order -> Payment
     
@@ -308,14 +308,14 @@ async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
     
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Customer Name", "Product ID", "License (MT5 ID)", "Razorpay ID"])
+    writer.writerow(["Customer Name", "Product ID", "License (MT5 ID)", "Payment ID"])
     
     for row in rows:
         name = row[0] or "Unknown"
         product_id = row[1]
         mt5_id = row[2]
-        razorpay_id = row[3] or "N/A"
-        writer.writerow([name, product_id, mt5_id, razorpay_id])
+        payment_id = row[3] or "N/A"
+        writer.writerow([name, product_id, mt5_id, payment_id])
         
     output.seek(0)
     return StreamingResponse(

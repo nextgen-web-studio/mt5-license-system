@@ -65,7 +65,6 @@ class Payment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"))
-    razorpay_order_id = Column(String, unique=True)
     payment_id = Column(String)
     amount = Column(Float)
     status = Column(String)
