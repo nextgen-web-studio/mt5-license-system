@@ -26,6 +26,7 @@ interface EaTemplateSummary {
 }
 
 export default function EaTemplatePage() {
+  const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 

@@ -333,8 +333,10 @@ export default function ProductsPage() {
         onConfirm={async () => {
           if(!deletingId) return;
           try {
+            // Optimistic UI update for instant response
+            queryClient.setQueryData(['admin-products'], (old: any) => old?.filter((item: any) => item.id !== deletingId));
             await api.delete(`/api/v1/products/${deletingId}`);
-            window.location.reload();
+            queryClient.invalidateQueries({ queryKey: ['admin-products'] });
           } catch(e) {
             alert('Failed to delete. Make sure your API is fully deployed!');
           }

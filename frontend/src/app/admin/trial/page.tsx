@@ -14,6 +14,7 @@ interface TrialSettings {
 }
 
 export default function TrialAdminPage() {
+  const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 

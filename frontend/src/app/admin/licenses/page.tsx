@@ -319,8 +319,10 @@ export default function LicensesPage() {
         onConfirm={async () => {
           if(!deletingId) return;
           try {
+            // Optimistic UI update for instant response
+            queryClient.setQueryData(['admin-licenses'], (old: any) => old?.filter((item: any) => item.id !== deletingId));
             await api.delete(`/api/v1/licenses/${deletingId}`);
-            window.location.reload();
+            queryClient.invalidateQueries({ queryKey: ['admin-licenses'] });
           } catch(e) {
             alert('Failed to delete. Make sure your API is fully deployed!');
           }

@@ -1,12 +1,13 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, Loader2, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useState } from 'react';
 
 export default function OrdersPage() {
+  const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
@@ -114,8 +115,10 @@ export default function OrdersPage() {
         onConfirm={async () => {
           if(!deletingId) return;
           try {
+            // Optimistic UI update for instant response
+            queryClient.setQueryData(['admin-orders'], (old: any) => old?.filter((item: any) => item.id !== deletingId));
             await api.delete(`/api/v1/orders/${deletingId}`);
-            window.location.reload();
+            queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
           } catch(e) {
             alert('Failed to delete. Make sure your API is fully deployed!');
           }
