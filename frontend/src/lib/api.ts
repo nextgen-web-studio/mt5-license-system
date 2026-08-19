@@ -12,10 +12,11 @@ api.interceptors.request.use((config) => {
   if (typeof document !== 'undefined') {
     const token = document.cookie.split('; ').find(row => row.startsWith('admin_token='))?.split('=')[1];
     if (token) {
-      config.headers.Authorization = \Bearer \ + token;
+      config.headers.Authorization = 'Bearer ' + token;
     }
   }
   return config;
 });
 
 export default api;
+
