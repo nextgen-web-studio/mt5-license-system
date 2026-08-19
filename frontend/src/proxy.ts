@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // If user is trying to access /admin or its subdirectories
   if (request.nextUrl.pathname.startsWith('/admin')) {
     // Check if they have the auth token cookie
@@ -27,3 +27,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/admin/:path*', '/login'],
 };
+
