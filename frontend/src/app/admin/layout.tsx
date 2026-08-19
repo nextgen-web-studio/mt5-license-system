@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -16,7 +16,7 @@ import {
   Menu,
   X,
   History,
-  Clock
+  Clock, Settings
 } from 'lucide-react';
 
 const navigation = [
@@ -29,6 +29,7 @@ const navigation = [
   { name: 'Compiler', href: '/admin/compiler', icon: Terminal },
   { name: 'EA Template', href: '/admin/ea-template', icon: FileCode2 },
   { name: 'Free Trial', href: '/admin/trial', icon: Gift },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -146,7 +147,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </span>
             <span className="text-xs text-emerald-400 font-medium">Live · refreshes in {countdown}s</span>
           </div>
-          <button className="flex items-center space-x-3 px-3 py-2.5 w-full rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors">
+          <button 
+            onClick={() => {
+              document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+              window.location.href = '/login';
+            }}
+            className="flex items-center space-x-3 px-3 py-2.5 w-full rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800/50 transition-colors"
+          >
             <LogOut size={20} />
             <span className="font-medium">Logout</span>
           </button>
@@ -176,5 +183,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
 
 
