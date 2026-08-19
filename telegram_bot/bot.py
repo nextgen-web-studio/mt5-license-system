@@ -36,31 +36,33 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 compiling_messages: dict = {}
 
 async def animate_compiling_message(token: str, chat_id: str, message_id: int, license_id_str: str):
-    """Edits the compiling message caption every 1s with blinking dots."""
-    dots = [".", "..", "..."]
+    """Edits the compiling message every 1.5s with a clock-face ring spinner around the gear icon."""
+    # Clock emoji forms a spinning ring (12 frames = smooth circle)
+    ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
+    tail = "\n\nYour EA file is being built right now.\nThe file will be sent here automatically once ready.\n\n_Usually takes 2-5 minutes. Please wait._"
     i = 0
     import asyncio as _asyncio
     while True:
         info = compiling_messages.get(license_id_str)
         if not info or info.get("stop"):
             break
-        dot = dots[i % len(dots)]
-        text = f"⚙️ *Compiling your EA{dot}*"
+        ring = ring_frames[i % len(ring_frames)]
+        text = f"{ring}⚙️ *Compiling your EA...*" + tail
         try:
             async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                 await client.post(
-                    f"https://api.telegram.org/bot{token}/editMessageCaption",
+                    f"https://api.telegram.org/bot{token}/editMessageText",
                     json={
                         "chat_id": chat_id,
                         "message_id": message_id,
-                        "caption": text,
+                        "text": text,
                         "parse_mode": "Markdown"
                     }
                 )
-        except Exception as e:
+        except Exception:
             pass
         i += 1
-        await _asyncio.sleep(1.0)
+        await _asyncio.sleep(1.5)
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
     """Builds the main menu keyboard, showing the 'My Installment' button
@@ -219,19 +221,17 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     if telegram_id:
                         initial_msg = (
                             f"✅ *Your Order is Approved!*\n\n"
-                            f"MT5 ID: `{mt5_id}`"
+                            f"MT5 ID: `{mt5_id}`\n\n"
+                            f"🕛⚙️ *Compiling your EA...*\n\n"
+                            f"Your EA file is being built right now.\n"
+                            f"The file will be sent here automatically once ready.\n\n"
+                            f"_Usually takes 2-5 minutes. Please wait._"
                         )
                         try:
                             logging.info(f"[COMPILING MSG] Sending message to {telegram_id}")
-                            await context.bot.send_message(
+                            sent = await context.bot.send_message(
                                 chat_id=telegram_id,
                                 text=initial_msg,
-                                parse_mode="Markdown"
-                            )
-                            sent = await context.bot.send_animation(
-                                chat_id=telegram_id,
-                                animation="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif",
-                                caption="⚙️ *Compiling your EA...*",
                                 parse_mode="Markdown"
                             )
                             logging.info(f"[COMPILING MSG] Message sent! message_id={sent.message_id}")
@@ -472,12 +472,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     )
 
                                     # Send animated compiling spinner
-                                    spinner_caption = "⚙️ *Compiling your EA...*"
+                                    spinner_msg = (
+                                        f"🕛⚙️ *Compiling your EA...*\n\n"
+                                        f"Your updated EA file is being built right now.\n"
+                                        f"The file will be sent here automatically once ready.\n\n"
+                                        f"_Usually takes 2-5 minutes. Please wait._"
+                                    )
                                     try:
-                                        sent = await context.bot.send_animation(
+                                        sent = await context.bot.send_message(
                                             chat_id=telegram_id,
-                                            animation="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif",
-                                            caption=spinner_caption,
+                                            text=spinner_msg,
                                             parse_mode="Markdown"
                                         )
                                         # Get license_id from pay response
@@ -1097,14 +1101,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
 
                                     # Animated compiling spinner
-                                    spinner_caption = "⚙️ *Compiling your EA...*"
+                                    spinner_msg = (
+                                        f"🕛⚙️ *Compiling your EA...*\n\n"
+                                        f"Your EA file is being built right now.\n"
+                                        f"The file will be sent here automatically once ready.\n\n"
+                                        f"_Usually takes 2-5 minutes. Please wait._"
+                                    )
                                     try:
-                                        sent = await context.bot.send_animation(
-                                            chat_id=telegram_id,
-                                            animation="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif",
-                                            caption=spinner_caption,
-                                            parse_mode="Markdown"
-                                        )
+                                        sent = await context.bot.send_message(chat_id=telegram_id, text=spinner_msg, parse_mode="Markdown")
                                         # Fetch license_id for this order to register animation
                                         lic_resp = await client.get(f"{base_url}/licenses/user/{user_id}")
                                         if lic_resp.status_code == 200:
@@ -1282,12 +1286,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(success_msg, parse_mode="Markdown")
 
         # Send a separate animated compiling message that disappears when file arrives
+        initial_compiling = (
+            f"🕛⚙️ *Compiling your Trial EA...*\n\n"
+            f"Your personalised trial EA is being built right now.\n"
+            f"The file will be sent here automatically once ready.\n\n"
+            f"_Usually takes 2-5 minutes. Please wait._"
+        )
         try:
-            sent = await update.message.reply_animation(
-                animation="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif",
-                caption="⚙️ *Compiling your Trial EA...*",
-                parse_mode="Markdown"
-            )
+            sent = await update.message.reply_text(initial_compiling, parse_mode="Markdown")
             # Store and start animation task
             license_id = resp.get("license_id") or resp.get("id")
             if license_id:
