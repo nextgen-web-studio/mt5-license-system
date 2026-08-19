@@ -156,7 +156,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 md:relative pt-16 md:pt-0 h-full overflow-hidden">
         {/* Desktop Floating Clock Pill */}
-        <div className="hidden md:flex absolute top-6 right-8 z-10 pointer-events-none">
+        <div className="hidden md:flex justify-end pt-6 pr-8 pb-0 pointer-events-none">
           {utcTime && (
             <div className="flex items-center gap-2 bg-neutral-900/60 backdrop-blur-xl border border-neutral-700/50 shadow-2xl px-3 py-1.5 rounded-full text-neutral-300 text-xs font-medium font-mono ring-1 ring-white/5">
               <Clock size={13} className="text-blue-400 animate-pulse" />
@@ -167,7 +167,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </div>
           )}
         </div>
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:px-8 md:pb-8 md:pt-4">
           <div className="h-full">
             {children}
           </div>
@@ -176,4 +176,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
 
