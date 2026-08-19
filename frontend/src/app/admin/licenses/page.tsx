@@ -91,7 +91,7 @@ export default function LicensesPage() {
         </div>
         <button
           onClick={handleDownloadCsv}
-          className="flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors"
+          className="w-full md:w-auto justify-center flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors"
         >
           <Download size={18} className="mr-2" />
           Download CSV
@@ -99,7 +99,7 @@ export default function LicensesPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
