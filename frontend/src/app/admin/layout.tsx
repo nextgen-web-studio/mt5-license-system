@@ -155,12 +155,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 md:relative pt-16 md:pt-0 h-full overflow-hidden">
-        {/* Desktop UTC bar */}
-        <div className="hidden md:flex items-center justify-end px-8 py-2 border-b border-neutral-800/50 bg-neutral-950/30">
+        {/* Desktop Floating Clock Pill */}
+        <div className="hidden md:flex absolute top-6 right-8 z-10 pointer-events-none">
           {utcTime && (
-            <div className="flex items-center gap-1.5 bg-neutral-800/50 border border-neutral-700/50 px-2.5 py-1 rounded-md text-neutral-300 text-xs font-mono" title="UTC Time">
-              <Clock size={11} className="text-indigo-400" />
-              <span>IST: {utcTime}</span>
+            <div className="flex items-center gap-2 bg-neutral-900/60 backdrop-blur-xl border border-neutral-700/50 shadow-2xl px-3 py-1.5 rounded-full text-neutral-300 text-xs font-medium font-mono ring-1 ring-white/5">
+              <Clock size={13} className="text-blue-400 animate-pulse" />
+              <span className="tracking-wide text-neutral-200">
+                <span className="text-neutral-500 mr-1">IST</span>
+                {utcTime}
+              </span>
             </div>
           )}
         </div>
@@ -173,3 +176,4 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
