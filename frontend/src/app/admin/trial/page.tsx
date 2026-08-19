@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { Gift, Save, ShieldAlert, CheckCircle2, Clock, Users } from 'lucide-react';
 import api from '@/lib/api';
