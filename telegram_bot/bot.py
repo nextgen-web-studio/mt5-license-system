@@ -1325,9 +1325,8 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
         if resp.status_code == 200:
             licenses = resp.json()
-            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
             if not licenses:
-                await msg_target.reply_text("❌ *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown", reply_markup=home_kb)
+                await msg_target.reply_text("❌ *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown")
                 return
                 
             if len(licenses) == 1:
@@ -1345,7 +1344,7 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     f"Activated: {activated}\n"
                     f"Expires: {expiry}"
                 )
-                await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=home_kb)
+                await msg_target.reply_text(text, parse_mode="Markdown")
                 return
                 
             # Multiple licenses
@@ -1358,7 +1357,6 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"view_license_{l['id']}")])
                 
-            kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
             await msg_target.reply_text("❌ Unable to load your licenses right now.\nPlease try again or contact support.")
@@ -1701,4 +1699,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
