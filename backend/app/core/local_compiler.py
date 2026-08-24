@@ -73,7 +73,9 @@ async def local_wine_compiler(job_id: int):
 
         # 4. Check if EX5 exists and upload it internally to trigger delivery
         if build_ex5.exists():
-            api_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1").rstrip("/")
+            # Always call ourselves on localhost - the compiler runs on the same server as the API
+            port = os.getenv("PORT", "8000")
+            api_url = f"http://localhost:{port}/api/v1"
             worker_key = os.getenv("INFINITY_WORKER_API_KEY", "")
             
             with open(build_ex5, 'rb') as f:
