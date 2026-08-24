@@ -236,7 +236,7 @@ async def upload_compiled_file(
         ext = ".zip" if file.filename.endswith('.zip') else ".ex5"
         file_path = f"{job.license_id}/{job.id}/bot{ext}"
         
-        res = supabase.storage.from_(bucket_name).upload(file_path, content)
+        res = supabase.storage.from_(bucket_name).upload(file_path, content, file_options={"upsert": "true"})
         
         # supabase-py sometimes returns an error dict instead of throwing an exception
         if isinstance(res, dict) and res.get('error'):
@@ -297,3 +297,4 @@ async def fail_job(job_id: int, req: FailRequest, db: AsyncSession = Depends(get
     
     await db.commit()
     return {"status": "success"}
+
