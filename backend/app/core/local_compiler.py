@@ -78,7 +78,7 @@ async def local_wine_compiler(job_id: int):
             
             with open(build_ex5, 'rb') as f:
                 files = {'file': (f"InfinityTrader_{mt5_id}.ex5", f, 'application/octet-stream')}
-                headers = {'x-api-key': worker_key}
+                headers = {'infinity-worker-api-key': worker_key}
                 async with httpx.AsyncClient(verify=False) as client:
                     await client.post(f"{api_url}/jobs/{job_id}/upload", headers=headers, files=files, timeout=300.0)
             
@@ -97,5 +97,6 @@ async def local_wine_compiler(job_id: int):
 
     except Exception as e:
         print(f"Local compile error: {e}")
+
 
 
