@@ -7,7 +7,7 @@ from app.db.database import get_db
 from app.models import License, Order, Product, CompileJob
 from pydantic import BaseModel
 from datetime import datetime
-from app.core.azure_vm import start_azure_vm_if_needed
+from app.core.local_compiler import local_wine_compiler
 
 class LicenseResponse(BaseModel):
     id: int
@@ -139,7 +139,7 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         await db.commit()
         await db.refresh(db_license)
         
-        background_tasks.add_task(start_azure_vm_if_needed)
+        background_tasks.add_task(local_wine_compiler, job.id)
         
         return db_license
     except HTTPException:
@@ -405,7 +405,7 @@ async def request_broker_change(license_id: int, payload: BrokerChangePayload, d
 @router.post("/broker-change/{request_id}/approve")
 async def approve_broker_change(request_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     from app.models import BrokerChangeRequest, LicenseMt5History, User
-    from app.core.azure_vm import start_azure_vm_if_needed
+    from app.core.local_compiler import local_wine_compiler
     
     # 1. Fetch request and user
     result = await db.execute(select(BrokerChangeRequest).filter(BrokerChangeRequest.id == request_id))
@@ -447,7 +447,7 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     db.add(job)
     
     await db.commit()
-    background_tasks.add_task(start_azure_vm_if_needed)
+    background_tasks.add_task(local_wine_compiler, job.id)
     
     return {"status": "success", "telegram_id": user.telegram_id if user else None}
 
@@ -467,6 +467,7 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
     user = user_result.scalar_one_or_none()
     
     return {"status": "success", "telegram_id": user.telegram_id if user else None}
+
 
 
 

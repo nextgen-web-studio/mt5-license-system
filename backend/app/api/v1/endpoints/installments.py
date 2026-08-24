@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from app.db.database import get_db
 from app.models import Order, InstallmentPayment, License, Product, User, CompileJob
 from app.schemas.installments import InstallmentCreate, InstallmentCustomerResponse, InstallmentPaymentRecord, InstallmentPayRequest
-from app.core.azure_vm import start_azure_vm_if_needed
+from app.core.local_compiler import local_wine_compiler
 
 router = APIRouter()
 
@@ -73,7 +73,7 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
     order.status = "compiling"
     
     await db.commit()
-    background_tasks.add_task(start_azure_vm_if_needed)
+    background_tasks.add_task(local_wine_compiler, job.id)
     
     return {"status": "success", "message": "Installment arrangement created and first payment recorded"}
 
@@ -133,7 +133,7 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
         db.add(job)
         
     await db.commit()
-    background_tasks.add_task(start_azure_vm_if_needed)
+    background_tasks.add_task(local_wine_compiler, job.id)
     
     return {"status": "success", "message": "Payment recorded"}
 
@@ -279,3 +279,4 @@ async def get_admin_installment(order_id: int, db: AsyncSession = Depends(get_db
         license_period_days=order.license_period_days,
         payments=[InstallmentPaymentRecord.model_validate(p) for p in payments]
     )
+
