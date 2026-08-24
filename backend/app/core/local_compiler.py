@@ -73,9 +73,11 @@ async def local_wine_compiler(job_id: int):
 
         # 4. Check if EX5 exists and upload it internally to trigger delivery
         if build_ex5.exists():
-            # Always call ourselves on localhost - the compiler runs on the same server as the API
+            # Use Render's own external URL (auto-set by Render) so the compiler can call its own API
+            # Falls back to localhost with the correct PORT if not on Render
+            render_url = os.getenv("RENDER_EXTERNAL_URL", "").rstrip("/")
             port = os.getenv("PORT", "8000")
-            api_url = f"http://localhost:{port}/api/v1"
+            api_url = f"{render_url}/api/v1" if render_url else f"http://localhost:{port}/api/v1"
             worker_key = os.getenv("INFINITY_WORKER_API_KEY", "")
             
             with open(build_ex5, 'rb') as f:
