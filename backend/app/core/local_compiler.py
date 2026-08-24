@@ -65,7 +65,7 @@ async def local_wine_compiler(job_id: int):
         
         # Add a 60 second timeout so it never hangs forever again
         try:
-            await asyncio.wait_for(process.communicate(), timeout=60.0)
+            await asyncio.wait_for(process.communicate(), timeout=300.0)
         except asyncio.TimeoutError:
             process.kill()
             await process.communicate()
@@ -80,7 +80,7 @@ async def local_wine_compiler(job_id: int):
                 files = {'file': (f"InfinityTrader_{mt5_id}.ex5", f, 'application/octet-stream')}
                 headers = {'x-api-key': worker_key}
                 async with httpx.AsyncClient(verify=False) as client:
-                    await client.post(f"{api_url}/jobs/{job_id}/upload", headers=headers, files=files, timeout=60.0)
+                    await client.post(f"{api_url}/jobs/{job_id}/upload", headers=headers, files=files, timeout=300.0)
             
             # Cleanup
             build_mq5.unlink(missing_ok=True)
@@ -97,4 +97,5 @@ async def local_wine_compiler(job_id: int):
 
     except Exception as e:
         print(f"Local compile error: {e}")
+
 
