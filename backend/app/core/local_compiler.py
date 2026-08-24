@@ -48,14 +48,28 @@ async def local_wine_compiler(job_id: int):
 
         # 3. Compile with WINE and Xvfb
         metaeditor = base_dir / "metaeditor64.exe"
+        
+        # Suppress Mono/Gecko installation popups and WINE debug logs
+        env = os.environ.copy()
+        env["WINEDLLOVERRIDES"] = "mscoree,mshtml="
+        env["WINEDEBUG"] = "-all"
+
         cmd = f'xvfb-run -a wine "{metaeditor}" /compile:"{build_mq5}" /log:"{log_file}"'
         
         process = await asyncio.create_subprocess_shell(
             cmd,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
+            env=env
         )
-        await process.communicate()
+        
+        # Add a 60 second timeout so it never hangs forever again
+        try:
+            await asyncio.wait_for(process.communicate(), timeout=60.0)
+        except asyncio.TimeoutError:
+            process.kill()
+            await process.communicate()
+            print("WINE compilation timed out and was killed.")
 
         # 4. Check if EX5 exists and upload it internally to trigger delivery
         if build_ex5.exists():
@@ -83,3 +97,4 @@ async def local_wine_compiler(job_id: int):
 
     except Exception as e:
         print(f"Local compile error: {e}")
+
