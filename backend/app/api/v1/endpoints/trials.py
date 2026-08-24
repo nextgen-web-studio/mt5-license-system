@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from app.db.database import get_db
 from app.models import TrialSetting, TrialActivation, License, CompileJob
 from pydantic import BaseModel
-from app.core.azure_vm import start_azure_vm_if_needed
+from app.core.local_compiler import local_wine_compiler
 
 router = APIRouter()
 
@@ -173,7 +173,7 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     db.add(job)
     await db.commit()
 
-    background_tasks.add_task(start_azure_vm_if_needed)
+    background_tasks.add_task(local_wine_compiler, job.id)
     
     return {
         "status": "success",
@@ -190,3 +190,4 @@ async def reset_trial_history(telegram_id: str, db: AsyncSession = Depends(get_d
     await db.execute(TrialActivation.__table__.delete().where(TrialActivation.telegram_user_id == telegram_id))
     await db.commit()
     return {"status": "success", "message": "Trial history cleared for user"}
+
