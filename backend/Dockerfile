@@ -1,9 +1,9 @@
 FROM python:3.11-slim
 
-# Install WINE and Xvfb for MetaEditor
+# Install WINE, Xvfb, and Unzip
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y wine wine32 wine64 xvfb wget software-properties-common && \
+    apt-get install -y wine wine32 wine64 xvfb unzip wget software-properties-common && \
     apt-get clean
 
 WORKDIR /app
@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# We will need metaeditor64.exe copied here later!
+# Unzip the MetaEditor binary and remove the zip to save space
+RUN unzip metaeditor64.zip && rm metaeditor64.zip
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
