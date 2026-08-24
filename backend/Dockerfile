@@ -3,7 +3,7 @@ FROM python:3.11-slim
 # Install WINE, Xvfb, and Unzip
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y wine wine32 wine64 xvfb unzip wget software-properties-common curl jq && \
+    apt-get install -y wine wine32 wine64 xvfb unzip wget curl jq && \
     apt-get clean
 
 WORKDIR /app
@@ -18,3 +18,4 @@ RUN wget -qO metaeditor64.zip "https://github.com/nextgen-web-studio/mt5-license
     rm metaeditor64.zip
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
