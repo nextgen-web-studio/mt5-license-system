@@ -12,8 +12,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# In Render, we can download the ZIP via a startup script to avoid GitHub limits
-# For now, this is a placeholder where Render will pull it from external storage
-# RUN wget -qO metaeditor64.zip "YOUR_EXTERNAL_URL" && unzip metaeditor64.zip && rm metaeditor64.zip
+# Download the ZIP from GitHub Releases, unzip, and clean up
+RUN wget -qO metaeditor64.zip "https://github.com/nextgen-web-studio/mt5-license-system/releases/download/compiler-v1.0/metaeditor64.zip" && \
+    unzip metaeditor64.zip && \
+    rm metaeditor64.zip
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
