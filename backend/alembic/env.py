@@ -84,7 +84,7 @@ async def run_migrations_online():
     connectable = create_async_engine(
         database_url,
         poolclass=pool.NullPool,
-        connect_args={"statement_cache_size": 0},
+        connect_args={"prepared_statement_cache_size": 0},
     )
 
     async with connectable.connect() as connection:
