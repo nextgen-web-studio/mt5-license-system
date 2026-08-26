@@ -69,7 +69,6 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
                         elif pos == 1 and status == "pending":
                             queue_msg = "\n\n👥 *You are next in line!*\n_Your EA will start compiling shortly._"
             except Exception as e:
-                import logging
                 logging.error(f'Queue Error: {e}')
 
         ring = ring_frames[i % len(ring_frames)]
@@ -111,7 +110,6 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
                         }
                     )
             except Exception as e:
-                import logging
                 logging.error(f'Queue Error: {e}')
 
 
@@ -943,7 +941,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 await query.edit_message_text("No EA products available at this time.", reply_markup=await build_main_menu(update.effective_user.id))
             except Exception as e:
-                import logging
                 logging.error(f'Queue Error: {e}')
             return
             
@@ -996,7 +993,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
             except Exception as e:
-                import logging
                 logging.error(f'Queue Error: {e}')
             return
             
