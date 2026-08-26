@@ -128,6 +128,29 @@ async def get_queue_length(db: AsyncSession = Depends(get_db)):
     count = result.scalar() or 0
     return {"queue_length": count}
 
+
+@router.get("/queue-position/{license_id}")
+async def get_queue_position(license_id: int, db: AsyncSession = Depends(get_db)):
+    """Get the specific queue position for a license's compile job"""
+    from sqlalchemy import func
+    result = await db.execute(
+        select(CompileJob)
+        .filter(CompileJob.license_id == license_id)
+        .filter(CompileJob.status.in_(["pending", "processing"]))
+        .order_by(CompileJob.id.desc())
+    )
+    job = result.scalars().first()
+    if not job:
+        return {"position": 0, "status": "completed"}
+    
+    count_res = await db.execute(
+        select(func.count(CompileJob.id))
+        .filter(CompileJob.status.in_(["pending", "processing"]))
+        .filter(CompileJob.id <= job.id)
+    )
+    pos = count_res.scalar() or 1
+    return {"position": pos, "status": job.status}
+
 class ClaimRequest(BaseModel):
     worker_id: str
 
@@ -309,5 +332,6 @@ async def fail_job(job_id: int, req: FailRequest, db: AsyncSession = Depends(get
     
     await db.commit()
     return {"status": "success"}
+
 
 

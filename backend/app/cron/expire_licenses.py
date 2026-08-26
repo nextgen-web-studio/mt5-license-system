@@ -55,7 +55,8 @@ async def run_expiration_check():
                 if not lic.expiry_date:
                     continue
                     
-                days_expired = (now - lic.expiry_date).days
+                expiry_unaware = lic.expiry_date.replace(tzinfo=None) if lic.expiry_date.tzinfo else lic.expiry_date
+                days_expired = (now - expiry_unaware).days
                 
                 # If just expired (0 to 1 day)
                 if 0 <= days_expired < 1:

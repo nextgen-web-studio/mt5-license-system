@@ -58,22 +58,30 @@ Your EA file is being built right now."
         if not info or info.get("stop"):
             break
             
-        # Check queue position every 3 seconds (every 2nd frame)
+        # Check specific queue position every 3 seconds
         if i % 2 == 0:
             try:
                 async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
-                    resp = await client.get(f"{base_url}/jobs/queue-length", timeout=2.0)
+                    resp = await client.get(f"{base_url}/jobs/queue-position/{license_id_str}", timeout=2.0)
                     if resp.status_code == 200:
-                        count = resp.json().get("queue_length", 1)
-                        if count > 1:
+                        data = resp.json()
+                        pos = data.get("position", 0)
+                        status = data.get("status", "completed")
+                        
+                        if pos > 1:
                             queue_msg = f"
 
-👥 *You are in queue position: #{count}*
+👥 *You are in queue position: #{pos}*
 _Your EA will start compiling when it's your turn._"
-                        else:
+                        elif pos == 1 and status == "processing":
                             queue_msg = "
 
 🔨 *Your EA is being compiled right now!*"
+                        elif pos == 1 and status == "pending":
+                            queue_msg = "
+
+👥 *You are next in line!*
+_Your EA will start compiling shortly._"
             except Exception:
                 pass
 
@@ -95,6 +103,7 @@ _Your EA will start compiling when it's your turn._"
             pass
         i += 1
         await _asyncio.sleep(1.5)
+
 
 
         
