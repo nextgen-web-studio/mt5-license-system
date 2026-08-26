@@ -13,7 +13,7 @@ export default function LicensesPage() {
   const queryClient = useQueryClient();
   const [editingLicense, setEditingLicense] = useState<any>(null);
   const { data: licenses = [], isLoading, error } = useQuery({
-    refetchInterval: 5000,
+    
     queryKey: ['admin-licenses'],
     queryFn: async () => {
       const { data } = await api.get('/api/v1/licenses');

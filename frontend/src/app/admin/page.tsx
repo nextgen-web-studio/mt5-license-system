@@ -35,7 +35,7 @@ const StatCard = ({ title, value, icon: Icon, trend }: { title: string, value: s
 
 export default function DashboardPage() {
   const { data: stats, isLoading, error } = useQuery({
-    refetchInterval: 5000,
+    
     queryKey: ['admin-stats'],
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/stats');
