@@ -71,24 +71,28 @@ def do_run_migrations(connection):
 
 async def run_migrations_online():
     """Run migrations in 'online' mode.
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-    
-    For Supabase PgBouncer compatibility:
-    - Alembic uses DIRECT_URL (port 5432, session pooler) which supports prepared statements
-    - If DIRECT_URL not set, falls back to DATABASE_URL with port 6543->5432 swap
-    - The main app uses DATABASE_URL (port 6543, transaction pooler) for fast queries
+    Uses Supabase direct connection (bypasses PgBouncer entirely) for full
+    prepared statement support during migrations.
     """
-    # Prefer DIRECT_URL for migrations (avoids PgBouncer prepared statement issues)
+    import re
     database_url = os.getenv("DIRECT_URL") or os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
-    
-    # If still using transaction pooler port 6543, swap to session pooler port 5432
-    database_url = database_url.replace(":6543/", ":5432/")
-    
-    # Strip pgbouncer param if present - not needed with session pooler
+
+    # Auto-convert Supabase POOLER url → DIRECT connection url
+    # Pooler: postgres.PROJECT_ID:PASS@aws-0-REGION.pooler.supabase.com:PORT/postgres
+    # Direct: postgres:PASS@db.PROJECT_ID.supabase.co:5432/postgres
+    if "pooler.supabase.com" in database_url:
+        match = re.search(r'postgres\.([a-z0-9]+):', database_url)
+        if match:
+            project_id = match.group(1)
+            # Replace username: postgres.PROJECT_ID -> postgres
+            database_url = re.sub(r'postgres\.[^:@]+:', 'postgres:', database_url)
+            # Replace host+port: @*.pooler.supabase.com:PORT/ -> @db.PROJECT_ID.supabase.co:5432/
+            database_url = re.sub(r'@[^@]+\.pooler\.supabase\.com:\d+/', f'@db.{project_id}.supabase.co:5432/', database_url)
+
+    # Strip pgbouncer params - not needed with direct connection
     database_url = database_url.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
     database_url = database_url.replace("?prepared_statement_cache_size=0", "").replace("&prepared_statement_cache_size=0", "")
-    
+
     if database_url:
         if database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
