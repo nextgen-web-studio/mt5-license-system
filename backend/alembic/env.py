@@ -81,10 +81,16 @@ async def run_migrations_online():
         elif database_url.startswith("postgresql://"):
             database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
     
+
+    if "?" in database_url:
+        if "prepared_statement_cache_size" not in database_url:
+            database_url += "&prepared_statement_cache_size=0"
+    else:
+        database_url += "?prepared_statement_cache_size=0"
+
     connectable = create_async_engine(
         database_url,
-        poolclass=pool.NullPool,
-        connect_args={"prepared_statement_cache_size": 0},
+        poolclass=pool.NullPool
     )
 
     async with connectable.connect() as connection:
