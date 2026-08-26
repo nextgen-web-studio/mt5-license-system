@@ -318,20 +318,19 @@ export default function LicensesPage() {
         cancelText="Cancel"
         onConfirm={async () => {
           if(!deletingId) return;
+          const targetId = deletingId;
+          setDeleteModalOpen(false);
+          setDeletingId(null);
           try {
             // Optimistic UI update for instant response
-            queryClient.setQueryData(['admin-licenses'], (old: any) => old?.filter((item: any) => item.id !== deletingId));
-            await api.delete(`/api/v1/licenses/${deletingId}`);
+            queryClient.setQueryData(['admin-licenses'], (old: any) => old?.filter((item: any) => item.id !== targetId));
+            await api.delete(`/api/v1/licenses/${targetId}`);
             queryClient.invalidateQueries({ queryKey: ['admin-licenses'] });
           } catch(e) {
             alert('Failed to delete. Make sure your API is fully deployed!');
           }
-          setDeleteModalOpen(false);
-          setDeletingId(null);
         }}
         onCancel={() => {
-          setDeleteModalOpen(false);
-          setDeletingId(null);
         }}
       />
     

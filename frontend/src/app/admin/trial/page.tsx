@@ -254,18 +254,17 @@ export default function TrialAdminPage() {
         cancelText="Cancel"
         onConfirm={async () => {
           if(!deletingId) return;
+          const targetId = deletingId;
+          setDeleteModalOpen(false);
+          setDeletingId(null);
           try {
-            await api.delete(`/api/v1/trials/admin/reset/${deletingId}`);
+            await api.delete(`/api/v1/trials/admin/reset/${targetId}`);
             window.location.reload();
           } catch(e) {
             alert('Failed to delete. Make sure your API is fully deployed!');
           }
-          setDeleteModalOpen(false);
-          setDeletingId(null);
         }}
         onCancel={() => {
-          setDeleteModalOpen(false);
-          setDeletingId(null);
         }}
       />
     
