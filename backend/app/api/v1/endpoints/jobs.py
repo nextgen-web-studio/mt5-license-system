@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, BackgroundTasks
+﻿from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
@@ -116,6 +116,18 @@ async def get_jobs_status(db: AsyncSession = Depends(get_db), api_key: str = Dep
     return {row[0]: row[1] for row in rows}
 
 from pydantic import BaseModel
+
+@router.get("/queue-length")
+async def get_queue_length(db: AsyncSession = Depends(get_db)):
+    """Public endpoint to get the number of currently pending or processing jobs"""
+    from sqlalchemy import func
+    result = await db.execute(
+        select(func.count(CompileJob.id))
+        .filter(CompileJob.status.in_(["pending", "processing"]))
+    )
+    count = result.scalar() or 0
+    return {"queue_length": count}
+
 class ClaimRequest(BaseModel):
     worker_id: str
 
@@ -146,7 +158,7 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
     lic_res = await db.execute(select(License).filter(License.id == job.license_id))
     lic = lic_res.scalar_one_or_none()
 
-    # Get Order → Product to resolve the plan name
+    # Get Order â†’ Product to resolve the plan name
     prod = None
     if lic:
         ord_res = await db.execute(select(Order).filter(Order.id == lic.order_id))
@@ -297,4 +309,5 @@ async def fail_job(job_id: int, req: FailRequest, db: AsyncSession = Depends(get
     
     await db.commit()
     return {"status": "success"}
+
 

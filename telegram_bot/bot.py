@@ -36,18 +36,50 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 compiling_messages: dict = {}
 
 async def animate_compiling_message(token: str, chat_id: str, message_id: int, license_id_str: str):
-    """Edits the compiling message every 1.5s with a clock-face ring spinner around the gear icon."""
     # Clock emoji forms a spinning ring (12 frames = smooth circle)
     ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
-    tail = "\n\nYour EA file is being built right now.\nThe file will be sent here automatically once ready.\n\n_Usually takes 2-5 minutes. Please wait._"
+    base_tail = "
+
+The file will be sent here automatically once ready.
+
+_Usually takes 2-5 minutes. Please wait._"
+    
     i = 0
     import asyncio as _asyncio
-    while True:
+    max_iterations = 300  # Max 7.5 minutes (300 * 1.5s) to prevent endless looping if compilation crashes
+    
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    queue_msg = "
+
+Your EA file is being built right now."
+    
+    while i < max_iterations:
         info = compiling_messages.get(license_id_str)
         if not info or info.get("stop"):
             break
+            
+        # Check queue position every 3 seconds (every 2nd frame)
+        if i % 2 == 0:
+            try:
+                async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+                    resp = await client.get(f"{base_url}/jobs/queue-length", timeout=2.0)
+                    if resp.status_code == 200:
+                        count = resp.json().get("queue_length", 1)
+                        if count > 1:
+                            queue_msg = f"
+
+👥 *You are in queue position: #{count}*
+_Your EA will start compiling when it's your turn._"
+                        else:
+                            queue_msg = "
+
+🔨 *Your EA is being compiled right now!*"
+            except Exception:
+                pass
+
         ring = ring_frames[i % len(ring_frames)]
-        text = f"{ring}⚙️ *Compiling your EA...*" + tail
+        text = f"{ring}⚙️ *Compiling your EA...*" + queue_msg + base_tail
+        
         try:
             async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                 await client.post(
@@ -63,6 +95,30 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
             pass
         i += 1
         await _asyncio.sleep(1.5)
+
+
+        
+    # If it timed out, clean up
+    if i >= max_iterations:
+        stored = compiling_messages.pop(license_id_str, None)
+        if stored:
+            timeout_msg = "⚠️ *Compilation is taking longer than expected.*
+
+You are in the queue. Your file will be delivered automatically as soon as it finishes."
+            try:
+                async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+                    await client.post(
+                        f"https://api.telegram.org/bot{token}/editMessageText",
+                        json={
+                            "chat_id": chat_id,
+                            "message_id": message_id,
+                            "text": timeout_msg,
+                            "parse_mode": "Markdown"
+                        }
+                    )
+            except Exception:
+                pass
+
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
     """Builds the main menu keyboard, showing the 'My Installment' button
