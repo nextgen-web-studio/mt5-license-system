@@ -1631,6 +1631,11 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 import json
 
 class DummyHandler(BaseHTTPRequestHandler):
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
