@@ -38,20 +38,14 @@ compiling_messages: dict = {}
 async def animate_compiling_message(token: str, chat_id: str, message_id: int, license_id_str: str):
     # Clock emoji forms a spinning ring (12 frames = smooth circle)
     ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
-    base_tail = "
-
-The file will be sent here automatically once ready.
-
-_Usually takes 2-5 minutes. Please wait._"
+    base_tail = "\n\nThe file will be sent here automatically once ready.\n\n_Usually takes 2-5 minutes. Please wait._"
     
     i = 0
     import asyncio as _asyncio
     max_iterations = 300  # Max 7.5 minutes (300 * 1.5s) to prevent endless looping if compilation crashes
     
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    queue_msg = "
-
-Your EA file is being built right now."
+    queue_msg = "\n\nYour EA file is being built right now."
     
     while i < max_iterations:
         info = compiling_messages.get(license_id_str)
@@ -69,19 +63,11 @@ Your EA file is being built right now."
                         status = data.get("status", "completed")
                         
                         if pos > 1:
-                            queue_msg = f"
-
-👥 *You are in queue position: #{pos}*
-_Your EA will start compiling when it's your turn._"
+                            queue_msg = f"\n\n👥 *You are in queue position: #{pos}*\n_Your EA will start compiling when it's your turn._"
                         elif pos == 1 and status == "processing":
-                            queue_msg = "
-
-🔨 *Your EA is being compiled right now!*"
+                            queue_msg = "\n\n🔨 *Your EA is being compiled right now!*"
                         elif pos == 1 and status == "pending":
-                            queue_msg = "
-
-👥 *You are next in line!*
-_Your EA will start compiling shortly._"
+                            queue_msg = "\n\n👥 *You are next in line!*\n_Your EA will start compiling shortly._"
             except Exception as e:
                 import logging
                 logging.error(f'Queue Error: {e}')
@@ -112,9 +98,7 @@ _Your EA will start compiling shortly._"
     if i >= max_iterations:
         stored = compiling_messages.pop(license_id_str, None)
         if stored:
-            timeout_msg = "⚠️ *Compilation is taking longer than expected.*
-
-You are in the queue. Your file will be delivered automatically as soon as it finishes."
+            timeout_msg = "⚠️ *Compilation is taking longer than expected.*\n\nYou are in the queue. Your file will be delivered automatically as soon as it finishes."
             try:
                 async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                     await client.post(
