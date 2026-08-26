@@ -396,6 +396,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
                 kb = [
                     [InlineKeyboardButton("Mark Payment Received", callback_data=f"mark_install_paid_{order_id}")],
+                    [InlineKeyboardButton("✅ Full Settle", callback_data=f"full_settle_{order_id}")],
                     [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
                     [InlineKeyboardButton("Payment History", callback_data=f"install_history_{order_id}")],
                     [InlineKeyboardButton("Disable Arrangement", callback_data=f"disable_install_{order_id}")]
@@ -403,6 +404,65 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
             else:
                 await query.answer("Installment arrangement not found.", show_alert=True)
+        return
+
+    if data.startswith("full_settle_"):
+        admin_id = os.getenv("ADMIN_CHAT_ID")
+        if str(update.effective_user.id) != str(admin_id):
+            await query.answer("Not authorized.", show_alert=True)
+            return
+            
+        order_id = int(data.split("_")[2])
+        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+        import httpx
+        async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+            resp = await client.post(f"{base_url}/installments/admin/settle/{order_id}")
+            if resp.status_code == 200:
+                await query.edit_message_text(
+                    f"✅ Full settlement recorded for Order #{order_id}!\n\nLifetime EA is now being compiled and will be delivered immediately.",
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
+                        [InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]
+                    ])
+                )
+                
+                # Notify customer
+                settle_data = resp.json()
+                telegram_id = settle_data.get("telegram_id")
+                if telegram_id:
+                    confirm_msg = (
+                        f"🎉 *FINAL PAYMENT CONFIRMED!*\n\n"
+                        f"Your account has been fully settled! Your lifetime EA is being compiled right now.\n\n"
+                        f"Remaining balance: ₹0"
+                    )
+                    try:
+                        await context.bot.send_message(chat_id=telegram_id, text=confirm_msg, parse_mode="Markdown")
+                        
+                        spinner_msg = (
+                            f"🕛⚙️ *Compiling your Lifetime EA...*\n\n"
+                            f"Your EA file is being built right now.\n"
+                            f"The file will be sent here automatically once ready.\n\n"
+                            f"_Usually takes 2-5 minutes. Please wait._"
+                        )
+                        sent = await context.bot.send_message(chat_id=telegram_id, text=spinner_msg, parse_mode="Markdown")
+                        
+                        license_id = settle_data.get("license_id")
+                        if license_id:
+                            lid_str = str(license_id)
+                            bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                            compiling_messages[lid_str] = {
+                                "chat_id": telegram_id,
+                                "message_id": sent.message_id,
+                                "stop": False
+                            }
+                            import asyncio as _asyncio
+                            _asyncio.create_task(
+                                animate_compiling_message(bot_token, telegram_id, sent.message_id, lid_str)
+                            )
+                    except Exception as e:
+                        logging.error(f"Failed to notify customer of full settlement: {e}")
+            else:
+                await query.answer(f"Failed to settle: {resp.text}", show_alert=True)
         return
 
     if data.startswith("mark_install_paid_"):

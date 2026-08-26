@@ -101,7 +101,7 @@ async def run_expiration_check():
         if expired_count > 0:
             await db.commit()
             
-        # Check installment reminders
+        # ─── 5-day installment payment reminder ──────────────────────────────
         installment_orders_res = await db.execute(
             select(Order).filter(Order.installment_enabled == True, Order.installment_status != "completed")
         )
@@ -111,25 +111,23 @@ async def run_expiration_check():
             for order in installment_orders:
                 if not order.next_due_date:
                     continue
-                # Make timezone aware comparison
                 next_due = order.next_due_date.replace(tzinfo=None) if order.next_due_date.tzinfo else order.next_due_date
-                now_unaware = now
-                
-                days_left = (next_due - now_unaware).days
-                if 0 <= days_left <= order.grace_days:
+                days_left = (next_due - now).days
+
+                # Only remind exactly when 5 days are left (fires within the 12h cron window)
+                if days_left == 5 or days_left == 4:
                     user_res = await db.execute(select(User).filter(User.id == order.user_id))
                     user = user_res.scalar_one_or_none()
                     if user and user.telegram_id:
+                        due_str = next_due.strftime('%d %B %Y')
                         msg = (
-                            f"⚠️ *INSTALLMENT PAYMENT REMINDER*\n\n"
-                            f"Your next installment is due soon.\n\n"
-                            f"Amount: ₹{order.installment_amount:,.0f}\n\n"
-                            f"Your current EA access expires on:\n"
-                            f"{next_due.strftime('%d %B %Y')}\n\n"
-                            f"Please contact admin to continue your access."
+                            f"⏰ *INSTALLMENT PAYMENT REMINDER*\n\n"
+                            f"Your next installment payment is due in *{days_left} days*.\n\n"
+                            f"💰 Amount Due: ₹{order.installment_amount:,.0f}\n"
+                            f"📅 Due Date: {due_str}\n\n"
+                            f"⚠️ Please make your payment on time to avoid losing EA access.\n\n"
+                            f"Contact your admin to pay and extend your license."
                         )
-                        # In a real system, you'd track if reminder was sent today to avoid spamming
-                        # We will just print for now, or you can uncomment sending
                         try:
                             await client.post(
                                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
@@ -142,4 +140,3 @@ async def run_expiration_check():
 
 if __name__ == "__main__":
     asyncio.run(run_expiration_check())
-
