@@ -82,8 +82,9 @@ _Your EA will start compiling when it's your turn._"
 
 👥 *You are next in line!*
 _Your EA will start compiling shortly._"
-            except Exception:
-                pass
+            except Exception as e:
+                import logging
+                logging.error(f'Queue Error: {e}')
 
         ring = ring_frames[i % len(ring_frames)]
         text = f"{ring}⚙️ *Compiling your EA...*" + queue_msg + base_tail
@@ -125,8 +126,9 @@ You are in the queue. Your file will be delivered automatically as soon as it fi
                             "parse_mode": "Markdown"
                         }
                     )
-            except Exception:
-                pass
+            except Exception as e:
+                import logging
+                logging.error(f'Queue Error: {e}')
 
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
@@ -956,8 +958,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not products:
             try:
                 await query.edit_message_text("No EA products available at this time.", reply_markup=await build_main_menu(update.effective_user.id))
-            except Exception:
-                pass
+            except Exception as e:
+                import logging
+                logging.error(f'Queue Error: {e}')
             return
             
         user_id = context.user_data.get('db_user_id')
@@ -1008,8 +1011,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not products:
             try:
                 await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
-            except Exception:
-                pass
+            except Exception as e:
+                import logging
+                logging.error(f'Queue Error: {e}')
             return
             
         keyboard = []
