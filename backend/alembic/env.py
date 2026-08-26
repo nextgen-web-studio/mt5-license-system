@@ -73,24 +73,31 @@ async def run_migrations_online():
     """Run migrations in 'online' mode.
     In this scenario we need to create an Engine
     and associate a connection with the context.
+    
+    For Supabase PgBouncer compatibility:
+    - Alembic uses DIRECT_URL (port 5432, session pooler) which supports prepared statements
+    - If DIRECT_URL not set, falls back to DATABASE_URL with port 6543->5432 swap
+    - The main app uses DATABASE_URL (port 6543, transaction pooler) for fast queries
     """
-    database_url = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+    # Prefer DIRECT_URL for migrations (avoids PgBouncer prepared statement issues)
+    database_url = os.getenv("DIRECT_URL") or os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+    
+    # If still using transaction pooler port 6543, swap to session pooler port 5432
+    database_url = database_url.replace(":6543/", ":5432/")
+    
+    # Strip pgbouncer param if present - not needed with session pooler
+    database_url = database_url.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
+    database_url = database_url.replace("?prepared_statement_cache_size=0", "").replace("&prepared_statement_cache_size=0", "")
+    
     if database_url:
         if database_url.startswith("postgres://"):
             database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
         elif database_url.startswith("postgresql://"):
             database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    
-
-    if "?" in database_url:
-        if "prepared_statement_cache_size" not in database_url:
-            database_url += "&prepared_statement_cache_size=0"
-    else:
-        database_url += "?prepared_statement_cache_size=0"
 
     connectable = create_async_engine(
         database_url,
-        poolclass=pool.NullPool
+        poolclass=pool.NullPool,
     )
 
     async with connectable.connect() as connection:
