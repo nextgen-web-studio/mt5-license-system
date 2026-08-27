@@ -998,7 +998,7 @@ Storage SSD: 30 GB
 Bandwidth: 300 GB
 OS: Windows
 
-*Yearly plan price (per month): Rs. 580/- + GST @ 18% = 684*12= 8208 Rs/-*
+*Yearly plan price (per month): Rs. 580/- + GST @ 18% = 684 x 12= 8208 Rs/-*
 -----------------------------------------------------------------------------
 1 month price: 792/- + GST@ 18% = Rs. 1035/-
 
@@ -1011,7 +1011,7 @@ Storage SSD: 60 GB
 Bandwidth: 500 GB
 OS: Windows
 
-*Yearly plan price (per month): Rs. 948/- + GST @ 18% = 1,001*12 = 12012. Rs/-*
+*Yearly plan price (per month): Rs. 948/- + GST @ 18% = 1,001 x 12 = 12012. Rs/-*
 -----------------------------------------------------------------------
 1 month price: 1,059/- + GST@ 18% = Rs. 1,450/-
 
@@ -1024,7 +1024,7 @@ Storage SSD: 100 GB
 Bandwidth: 700 GB
 OS: Windows
 
-*Yearly plan price (per month):1,549/- + GST@18%=  1,828*12 = 21936  Rs/-*
+*Yearly plan price (per month):1,549/- + GST@18%=  1,828 x 12 = 21936  Rs/-*
 ---------------------------------------------------------------------
 *1 month price (per month):Rs. 1,999/- + GST@18%=Rs. 2,359/-*
 
@@ -1038,7 +1038,7 @@ Storage SSD: 200 GB
 Bandwidth: 1000 GB
 OS: Windows
 
-*1 Year Price (Per Month): Rs. 2,449/- + GST@18%= 2,890*12 = 34680 Rs/-*
+*1 Year Price (Per Month): Rs. 2,449/- + GST@18%= 2,890 x 12 = 34680 Rs/-*
 ---------------------------------------------------------------------
 *1 Month price: Rs. 3,549/- + GST@18%= Rs. 4188/-*
 
@@ -1055,7 +1055,7 @@ Location: India
 
 *1 Month Price: Rs. 6525/- + GST @ 18 % = Rs. 7,700/-*
 ---------------------------------------------------------------------
-*1 Year Price (Per Month): Rs. 4,849/- + GST@18%= 5,722*12 = 68,664 Rs/-*"""
+*1 Year Price (Per Month): Rs. 4,849/- + GST@18%= 5,722 x 12 = 68,664 Rs/-*"""
         
         keyboard = [
             [InlineKeyboardButton("💬 Support Chat", url="https://t.me/shritheking")],
