@@ -987,6 +987,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         
     elif data == "buy_vps":
+        p_type = "VPS"
+        products = await get_products(product_type=p_type)
+        if not products:
+            try:
+                await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
+            except Exception as e:
+                logging.error(f'Queue Error: {e}')
+            return
+            
+        keyboard = []
+        for p in products:
+            keyboard.append([InlineKeyboardButton(f"{p['name']} - ₹{p['price']}", callback_data=f"buy_product_{p['id']}_{p_type}")])
+        keyboard.append([InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")])
+        
         vps_text = """*Paid VPS service 👇 Not bot price*
 
 Basic Plan Details
@@ -1057,15 +1071,10 @@ Location: India
 ---------------------------------------------------------------------
 *1 Year Price (Per Month): Rs. 4,849/- + GST@18%= 5,722 x 12 = 68,664 Rs/-*"""
         
-        keyboard = [
-            [InlineKeyboardButton("💬 Support Chat", url="https://t.me/shritheking")],
-            [InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")]
-        ]
         try:
-            await query.edit_message_text(vps_text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+            await query.edit_message_text(f"{vps_text}\n\n*Please select a VPS Plan below:*", parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
         except Exception:
             pass
-
     elif data.startswith("buy_product_"):
         parts = data.split("_")
         product_id = int(parts[2])
@@ -1084,6 +1093,11 @@ Location: India
             context.user_data['awaiting_phone'] = True
             return
             
+        if p_type == "VPS":
+            # For VPS, skip asking for MT5 ID and directly create order
+            await proceed_to_order_summary(update, context)
+            return
+
         # Phone already on file - ask for MT5 ID next
         await query.edit_message_text("Please enter your **MT5 ID** to continue with the order:", parse_mode="Markdown")
         context.user_data["awaiting_mt5_id"] = True
