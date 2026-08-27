@@ -43,7 +43,7 @@ export default function InstallmentsPage() {
     if (!selectedOrder) return;
     setProcessing(true);
     try {
-      await api.post(/api/v1/installments/admin/settle/);
+      await api.post(`/api/v1/installments/admin/settle/${selectedOrder.order_id}`);
       toast.success('Full settlement recorded successfully');
       setSettleModalOpen(false);
       setSelectedOrder(null);
