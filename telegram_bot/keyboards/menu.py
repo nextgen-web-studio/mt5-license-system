@@ -1,7 +1,7 @@
-﻿from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 def get_main_menu_keyboard(show_installment: bool = False, show_free_trial: bool = True) -> InlineKeyboardMarkup:
-    ""Returns the main menu keyboard layout.""
+    "Returns the main menu keyboard layout."
     keyboard = [
         [InlineKeyboardButton("🛒 Buy EA", callback_data="buy_ea"), InlineKeyboardButton("🖥️ Buy VPS", callback_data="buy_vps")]
     ]
