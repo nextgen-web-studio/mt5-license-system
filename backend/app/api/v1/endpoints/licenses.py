@@ -13,6 +13,7 @@ class LicenseResponse(BaseModel):
     id: int
     order_id: Optional[int] = None
     user_id: int
+    telegram_id: Optional[str] = None
     mt5_id: str
     license_uuid: str
     status: str
@@ -152,8 +153,18 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
 
 @router.get("/", response_model=List[LicenseResponse])
 async def list_licenses(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(License).order_by(License.created_at.desc()))
-    licenses = result.scalars().all()
+    from app.models import User
+    result = await db.execute(
+        select(License, User.telegram_id)
+        .outerjoin(User, License.user_id == User.id)
+        .order_by(License.created_at.desc())
+    )
+    rows = result.all()
+    licenses = []
+    for lic, t_id in rows:
+        lic_dict = {c.name: getattr(lic, c.name) for c in lic.__table__.columns}
+        lic_dict["telegram_id"] = t_id
+        licenses.append(lic_dict)
     return licenses
 
 @router.get("/user/{user_id}", response_model=List[LicenseResponse])

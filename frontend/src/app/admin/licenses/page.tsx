@@ -104,7 +104,7 @@ export default function LicensesPage() {
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">License Key</th>
-                <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">Customer ID</th>
+                <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">Telegram ID</th>
                 <th className="px-6 py-4 whitespace-nowrap">MT4/MT5 ID</th>
                 <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">Type</th>
                 <th className="px-6 py-4 whitespace-nowrap">Status</th>
@@ -132,7 +132,7 @@ export default function LicensesPage() {
                         <Key size={14} className="text-indigo-400 inline mr-1" />
                         <span>{license.id || license.key}</span>
                       </td>
-                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap hidden md:table-cell">{license.user_id || 'Guest'}</td>
+                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap hidden md:table-cell">{license.telegram_id || 'Guest'}</td>
                       <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         {license.license_type === 'trial' ? (
