@@ -193,7 +193,7 @@ export default function InstallmentsPage() {
       <ConfirmModal
         isOpen={settleModalOpen}
         title="Settle Full Amount"
-        message={Are you sure you want to mark Order # as FULLY PAID? This will instantly compile and deliver their Lifetime EA.}
+        message={`Are you sure you want to mark Order #${selectedOrder?.order_id} as FULLY PAID? This will instantly compile and deliver their Lifetime EA.`}
         confirmText={processing ? "Processing..." : "Settle Now"}
         cancelText="Cancel"
         isDestructive={false}
