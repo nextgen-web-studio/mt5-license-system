@@ -987,25 +987,85 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         
     elif data == "buy_vps":
-        p_type = "VPS"
-        products = await get_products(product_type=p_type)
-        if not products:
-            try:
-                await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
-            except Exception as e:
-                logging.error(f'Queue Error: {e}')
-            return
-            
-        keyboard = []
-        for p in products:
-            keyboard.append([InlineKeyboardButton(f"{p['name']} - ₹{p['price']}", callback_data=f"buy_product_{p['id']}_{p_type}")])
-        keyboard.append([InlineKeyboardButton("« Back to Menu", callback_data="main_menu")])
+        vps_text = """*Paid VPS service 👇 Not bot price*
+
+Basic Plan Details
+Upto 2 MT4 or MT5 terminals (2 Account) can run using this basic plan
++++++++++++++++++++++++++++++++
+RAM: 2 GB
+vCPU: 1
+Storage SSD: 30 GB
+Bandwidth: 300 GB
+OS: Windows
+
+*Yearly plan price (per month): Rs. 580/- + GST @ 18% = 684*12= 8208 Rs/-*
+-----------------------------------------------------------------------------
+1 month price: 792/- + GST@ 18% = Rs. 1035/-
+
+Premium Plan Details:
+Upto 6 MT4 or MT5 terminals (6 Account) can run using this Premium plan
++++++++++++++++++++++++++++++++++
+RAM: 4 GB
+vCPU: 2
+Storage SSD: 60 GB
+Bandwidth: 500 GB
+OS: Windows
+
+*Yearly plan price (per month): Rs. 948/- + GST @ 18% = 1,001*12 = 12012. Rs/-*
+-----------------------------------------------------------------------
+1 month price: 1,059/- + GST@ 18% = Rs. 1,450/-
+
+Gold Plan Details:-
+Upto 12 MT4 or MT5 terminals (12 Account) can run using this Gold plan
+++++++++++++++++++++++++++++++++++++
+RAM: 8 GB
+vCPU: 4
+Storage SSD: 100 GB
+Bandwidth: 700 GB
+OS: Windows
+
+*Yearly plan price (per month):1,549/- + GST@18%=  1,828*12 = 21936  Rs/-*
+---------------------------------------------------------------------
+*1 month price (per month):Rs. 1,999/- + GST@18%=Rs. 2,359/-*
+
+Platinum Plan Details:-
+Upto 18 MT4 or MT5 terminals (18 Account) can run using this Gold plan
+++++++++++++++++++++++++++++++++++++
+
+RAM: 16 GB
+vCPU: 4
+Storage SSD: 200 GB
+Bandwidth: 1000 GB
+OS: Windows
+
+*1 Year Price (Per Month): Rs. 2,449/- + GST@18%= 2,890*12 = 34680 Rs/-*
+---------------------------------------------------------------------
+*1 Month price: Rs. 3,549/- + GST@18%= Rs. 4188/-*
+
+Diamond Plan Details:-
+Upto 38 MT4 or MT5 terminals (38 Account) can run using this Gold plan
+++++++++++++++++++++++++++++++++++++
+
+Memory/RAM: 32 GB
+VCPUS: 8 vCPU
+Storage: 500 GB SSD
+Bandwidth: 1000 GB
+Dedicated IP: 1
+Location: India
+
+*1 Month Price: Rs. 6525/- + GST @ 18 % = Rs. 7,700/-*
+---------------------------------------------------------------------
+*1 Year Price (Per Month): Rs. 4,849/- + GST@18%= 5,722*12 = 68,664 Rs/-*"""
         
+        keyboard = [
+            [InlineKeyboardButton("💬 Support Chat", url="https://t.me/shritheking")],
+            [InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")]
+        ]
         try:
-            await query.edit_message_text(f"Please select a {p_type} Plan:", reply_markup=InlineKeyboardMarkup(keyboard))
+            await query.edit_message_text(vps_text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
         except Exception:
             pass
-        
+
     elif data.startswith("buy_product_"):
         parts = data.split("_")
         product_id = int(parts[2])
@@ -1749,7 +1809,8 @@ from telegram import BotCommand
 async def post_init(application):
     commands = [
         BotCommand("start", "Start the bot and see the main menu"),
-        BotCommand("installment", "View your installment plan status")
+        BotCommand("installment", "View your installment plan status"),
+        BotCommand("licenses", "View your License Details")
     ]
     await application.bot.set_my_commands(commands)
 
