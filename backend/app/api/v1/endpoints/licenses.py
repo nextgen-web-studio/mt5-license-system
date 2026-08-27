@@ -469,9 +469,7 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
                     f"https://api.telegram.org/bot{bot_token}/sendMessage",
                     json={
                         "chat_id": user.telegram_id,
-                        "text": "✅ Your Broker Change request has been approved!
-
-⏳ Compiling your new EA now. Please wait..."
+                        "text": "✅ Your Broker Change request has been approved!\n\n⏳ Compiling your new EA now. Please wait..."
                     }
                 )
         except Exception:
