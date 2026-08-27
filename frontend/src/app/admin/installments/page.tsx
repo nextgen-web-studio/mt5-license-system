@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 export default function InstallmentsPage() {
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [settleModalOpen, setSettleModalOpen] = useState(false);
   const [disableModalOpen, setDisableModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [payAmount, setPayAmount] = useState<number>(0);
@@ -31,6 +32,27 @@ export default function InstallmentsPage() {
   const handleDisableClick = (order: any) => {
     setSelectedOrder(order);
     setDisableModalOpen(true);
+  };
+
+  const handleSettleClick = (order: any) => {
+    setSelectedOrder(order);
+    setSettleModalOpen(true);
+  };
+
+  const handleSettleFullAmount = async () => {
+    if (!selectedOrder) return;
+    setProcessing(true);
+    try {
+      await api.post(/api/v1/installments/admin/settle/);
+      toast.success('Full settlement recorded successfully');
+      setSettleModalOpen(false);
+      setSelectedOrder(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-installments'] });
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || 'Failed to settle installment');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleRecordPayment = async () => {
@@ -130,8 +152,13 @@ export default function InstallmentsPage() {
                         <div className="flex items-center justify-end gap-1">
                           <button 
                             onClick={() => handlePayClick(inst)}
-                            className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Record Payment">
+                            className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Record Next Installment Payment">
                             <CheckCircle size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleSettleClick(inst)}
+                            className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Settle Full Amount & Deliver Lifetime EA">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                           </button>
                           <button 
                             onClick={() => handleDisableClick(inst)}
@@ -159,6 +186,20 @@ export default function InstallmentsPage() {
         onConfirm={handleRecordPayment}
         onCancel={() => {
           setPayModalOpen(false);
+          setSelectedOrder(null);
+        }}
+      />
+
+      <ConfirmModal
+        isOpen={settleModalOpen}
+        title="Settle Full Amount"
+        message={Are you sure you want to mark Order # as FULLY PAID? This will instantly compile and deliver their Lifetime EA.}
+        confirmText={processing ? "Processing..." : "Settle Now"}
+        cancelText="Cancel"
+        isDestructive={false}
+        onConfirm={handleSettleFullAmount}
+        onCancel={() => {
+          setSettleModalOpen(false);
           setSelectedOrder(null);
         }}
       />

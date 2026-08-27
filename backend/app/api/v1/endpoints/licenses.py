@@ -458,6 +458,25 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     db.add(job)
     
     await db.commit()
+    
+    # Notify user that compiling started
+    import os, httpx
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if bot_token and user and user.telegram_id:
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={
+                        "chat_id": user.telegram_id,
+                        "text": "✅ Your Broker Change request has been approved!
+
+⏳ Compiling your new EA now. Please wait..."
+                    }
+                )
+        except Exception:
+            pass
+
     background_tasks.add_task(local_wine_compiler, job.id)
     
     return {"status": "success", "telegram_id": user.telegram_id if user else None}
