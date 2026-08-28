@@ -166,28 +166,47 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await approve_order(order_id)
         if "error" not in resp:
             mt5_id = resp.get("mt5_id", "")
-            kb = [
-                [InlineKeyboardButton("🚀 Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
-                [InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
-            ]
-            await query.edit_message_text(
-                f"✅ Order #{order_id} has been APPROVED.\n\nMT5 ID: `{mt5_id}`\n\nWhat would you like to do?",
-                parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup(kb)
-            )
+            order_type = resp.get("order_type", "")
             
-            # Notify Customer
-            try:
-                telegram_id = resp.get("telegram_id")
-                if telegram_id:
-                    msg = (
-                        f"✅ *YOUR ORDER HAS BEEN APPROVED*\n\n"
-                        f"Your EA order (ORD-{order_id}) has been approved.\n\n"
-                        f"Your EA is being prepared and will be delivered to you shortly."
-                    )
-                    await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
-            except Exception as e:
-                logging.error(f"Failed to notify user: {e}")
+            if order_type == "VPS":
+                await query.edit_message_text(
+                    f"✅ VPS Order #{order_id} has been APPROVED.\n\nPlease contact the customer directly to provide their VPS details.",
+                    parse_mode="Markdown"
+                )
+                try:
+                    telegram_id = resp.get("telegram_id")
+                    if telegram_id:
+                        msg = (
+                            f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*\n\n"
+                            f"Your VPS order (ORD-{order_id}) has been approved.\n\n"
+                            f"The admin will contact you shortly to provide your VPS credentials."
+                        )
+                        await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                except Exception as e:
+                    logging.error(f"Failed to notify user: {e}")
+            else:
+                kb = [
+                    [InlineKeyboardButton("🚀 Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
+                    [InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
+                ]
+                await query.edit_message_text(
+                    f"✅ Order #{order_id} has been APPROVED.\n\nMT5 ID: `{mt5_id}`\n\nWhat would you like to do?",
+                    parse_mode="Markdown",
+                    reply_markup=InlineKeyboardMarkup(kb)
+                )
+            
+                # Notify Customer
+                try:
+                    telegram_id = resp.get("telegram_id")
+                    if telegram_id:
+                        msg = (
+                            f"✅ *YOUR ORDER HAS BEEN APPROVED*\n\n"
+                            f"Your EA order (ORD-{order_id}) has been approved.\n\n"
+                            f"Your EA is being prepared and will be delivered to you shortly."
+                        )
+                        await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                except Exception as e:
+                    logging.error(f"Failed to notify user: {e}")
         else:
             await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
