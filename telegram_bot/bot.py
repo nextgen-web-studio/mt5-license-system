@@ -1437,11 +1437,15 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         # Check if they were in the middle of a purchase — now ask MT5 ID next
         if context.user_data.get('pending_product_id'):
-            await update.message.reply_text(
-                "Please enter your **MT5 ID** to continue:",
-                parse_mode="Markdown"
-            )
-            context.user_data['awaiting_mt5_id'] = True
+            p_type = context.user_data.get('pending_p_type')
+            if p_type == "VPS":
+                await proceed_to_vps_summary(update, context)
+            else:
+                await update.message.reply_text(
+                    "Please enter your **MT5 ID** to continue:",
+                    parse_mode="Markdown"
+                )
+                context.user_data['awaiting_mt5_id'] = True
             return
             
         welcome_text = (
