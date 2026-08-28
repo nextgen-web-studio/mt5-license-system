@@ -169,7 +169,7 @@ export default function LicensesPage() {
                           onClick={async () => {
                             try {
                                 alert("Recompiling EA... The customer will receive it shortly.");
-                                await api.post(/api/v1/licenses//recompile);
+                                await api.post(`/api/v1/licenses/${license.id}/recompile`);
                             } catch (e: any) {
                                 alert("Failed to recompile: " + (e.response?.data?.detail || e.message));
                             }
