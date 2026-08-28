@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X } from 'lucide-react';
+import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, RefreshCcw } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
