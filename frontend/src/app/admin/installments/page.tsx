@@ -44,12 +44,11 @@ export default function InstallmentsPage() {
     setProcessing(true);
     try {
       await api.post(`/api/v1/installments/admin/settle/${selectedOrder.order_id}`);
-      toast.success('Full settlement recorded successfully');
       setSettleModalOpen(false);
       setSelectedOrder(null);
-      queryClient.invalidateQueries({ queryKey: ['admin-installments'] });
+      refetch();
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Failed to settle installment');
+      alert(err.response?.data?.detail || 'Failed to settle installment');
     } finally {
       setProcessing(false);
     }
