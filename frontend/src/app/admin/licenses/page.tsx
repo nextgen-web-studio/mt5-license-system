@@ -166,6 +166,20 @@ export default function LicensesPage() {
                           <Copy size={16} />
                         </button>
                         <button 
+                          onClick={async () => {
+                            try {
+                                alert("Recompiling EA... The customer will receive it shortly.");
+                                await api.post(/api/v1/licenses//recompile);
+                            } catch (e: any) {
+                                alert("Failed to recompile: " + (e.response?.data?.detail || e.message));
+                            }
+                          }}
+                          className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                          title="Resend EA to Customer"
+                        >
+                          <RefreshCcw size={16} />
+                        </button>
+                        <button 
                           onClick={() => setEditingLicense(license)}
                           className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
                           title="Edit License"
