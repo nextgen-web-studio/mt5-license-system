@@ -1113,8 +1113,7 @@ Location: India
             return
             
         if p_type == "VPS":
-            # For VPS, skip asking for MT5 ID and directly create order
-            await proceed_to_order_summary(update, context)
+            await proceed_to_vps_summary(update, context)
             return
 
         # Phone already on file - ask for MT5 ID next
@@ -1144,6 +1143,53 @@ Location: India
             await query.edit_message_text("Please select an option below:", reply_markup=await build_main_menu(update.effective_user.id))
         except Exception:
             pass
+
+async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    product_id = context.user_data.get('pending_product_id')
+    user_id = context.user_data.get('db_user_id')
+    
+    if not user_id:
+        if update.message:
+            await update.message.reply_text("Session expired. Please /start again.")
+        else:
+            await update.callback_query.edit_message_text("Session expired. Please /start again.")
+        return
+        
+    from utils.api_client import get_products, get_settings
+    products = await get_products()
+    product = next((p for p in products if p['id'] == product_id), None)
+    
+    settings = await get_settings()
+    admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+    if not admin_username.startswith("@"):
+        admin_username = f"@{admin_username}"
+        
+    user_msg = (
+        f"✅ *VPS Plan Selected*\n\n"
+        f"You have selected the **{product['name'] if product else 'Unknown'}**.\n\n"
+        f"Your request has been sent to the admin. Please click the button below to contact them and complete your setup."
+    )
+    keyboard = [[InlineKeyboardButton("💬 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
+    
+    if update.message:
+        await update.message.reply_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+    else:
+        await update.callback_query.edit_message_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+        
+    admin_chat_id = os.getenv("ADMIN_CHAT_ID")
+    if admin_chat_id:
+        admin_msg = (
+            f"🖥️ *NEW VPS INQUIRY*\n\n"
+            f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+            f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+            f"Telegram ID: {update.effective_user.id}\n"
+            f"Plan Selected: {product['name'] if product else 'Unknown'}"
+        )
+        try:
+            await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown")
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to notify admin of VPS: {e}")
 
 async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     product_id = context.user_data.get('pending_product_id')
