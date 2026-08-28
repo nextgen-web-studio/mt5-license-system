@@ -100,6 +100,31 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
     await db.commit()
     if lic and job:
         background_tasks.add_task(local_wine_compiler, job.id)
+        
+        # Notify the user via Telegram that their payment was recorded and the EA is compiling
+        import os, httpx
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if bot_token:
+            try:
+                # Need to find user telegram id
+                user_res = await db.execute(select(User).filter(User.id == order.user_id))
+                user = user_res.scalar_one_or_none()
+                if user and user.telegram_id:
+                    msg = (
+                        f"✅ *Installment Payment Recorded*\n\n"
+                        f"Amount Paid: ₹{payload.amount}\n"
+                        f"Next Due: {order.next_due_date.strftime('%d %b %Y') if not is_final else 'Fully Paid!'}\n\n"
+                        f"⏳ *Compiling your updated EA...*\n"
+                        f"Your EA is being updated with the new license period and will be sent to you automatically in a few minutes."
+                    )
+                    async with httpx.AsyncClient(verify=False) as client:
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                            json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                        )
+            except Exception as e:
+                print(f"Failed to send payment notification: {e}")
+
     return {
         "status": "success",
         "message": "Payment recorded. Lifetime EA being compiled!" if is_final else f"Payment recorded. License extended to {order.next_due_date.strftime('%d %b %Y') if order.next_due_date else 'N/A'}",

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Eye, Loader2, CheckCircle, Ban, History } from 'lucide-react';
+import { Eye, Loader2, CheckCircle, Ban, History, DollarSign } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useState } from 'react';
@@ -157,7 +157,7 @@ export default function InstallmentsPage() {
                           <button 
                             onClick={() => handleSettleClick(inst)}
                             className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Settle Full Amount & Deliver Lifetime EA">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <DollarSign size={16} />
                           </button>
                           <button 
                             onClick={() => handleDisableClick(inst)}

@@ -359,11 +359,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             lic_status = lic.get("status")
             lic_id = lic.get("id")
             
-            if lic_status != "active":
+            if lic_status == "active":
+                # File is already active
                 await query.answer(
-                    f"⏳ EA is still {lic_status}. Cannot resend yet. Worker must compile it first.",
+                    f"✅ The file is already compiled and sent to the customer.",
                     show_alert=True
                 )
+            elif lic_status in ["failed", "pending", "generating"]:
+                # Retry compilation
+                recompile_resp = await client.post(f"{base_url}/licenses/{lic_id}/recompile")
+                if recompile_resp.status_code == 200:
+                    await query.answer(f"🔄 Recompiling EA... The customer will receive it shortly.", show_alert=True)
+                else:
+                    await query.answer(f"❌ Failed to trigger recompile: {recompile_resp.text}", show_alert=True)
                 return
             
             # File is compiled — trigger delivery manually
@@ -683,36 +691,45 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if data.startswith("view_license_"):
-        lic_id = int(data.split("_")[2])
-        tid = str(update.effective_user.id)
-        base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        
-        async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
-            resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
-            if resp.status_code == 200:
-                licenses = resp.json()
-                lic = next((l for l in licenses if l['id'] == lic_id), None)
-                if lic:
-                    status_icon = "🟢" if lic['status'] == 'active' else "🔴" if lic['status'] == 'expired' else "⚫"
-                    expiry = lic['expiry_date'].split('T')[0] if lic['expiry_date'] else "Never"
-                    activated = lic['purchase_date'].split('T')[0] if lic['purchase_date'] else "Unknown"
-                    ltype = "Trial" if lic.get('license_type') == 'trial' else "Lifetime"
-                    
-                    text = (
-                        f"📋 *LICENSE DETAILS*\n\n"
-                        f"MT5 ID: `{lic['mt5_id']}`\n\n"
-                        f"Type:\n{ltype}\n\n"
-                        f"Status:\n{status_icon} {lic['status'].title()}\n\n"
-                        f"Expiry:\n{expiry}"
-                    )
-                    
-                    kb = []
-                    if ltype == "Lifetime":
-                        kb.append([InlineKeyboardButton("🔄 Broker Change", callback_data="broker_change")])
-                    kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
-                    
-                    await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-                    return
+        try:
+            lic_id = int(data.split("_")[2])
+            tid = str(update.effective_user.id)
+            base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+            
+            async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
+                resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
+                if resp.status_code == 200:
+                    licenses = resp.json()
+                    lic = next((l for l in licenses if l['id'] == lic_id), None)
+                    if lic:
+                        status_icon = "🟢" if lic['status'] == 'active' else "🔴" if lic['status'] == 'expired' else "⚫"
+                        expiry = lic['expiry_date'].split('T')[0] if lic.get('expiry_date') else "Never"
+                        activated = lic.get('purchase_date', 'T').split('T')[0] if lic.get('purchase_date') else "Unknown"
+                        ltype = "Trial" if lic.get('license_type') == 'trial' else "Lifetime"
+                        
+                        text = (
+                            f"📋 *LICENSE DETAILS*\n\n"
+                            f"MT5 ID: {lic.get('mt5_id', 'Unknown')}\n\n"
+                            f"Type:\n{ltype}\n\n"
+                            f"Status:\n{status_icon} {lic.get('status', 'unknown').title()}\n\n"
+                            f"Expiry:\n{expiry}"
+                        )
+                        
+                        kb = []
+                        if ltype == "Lifetime":
+                            kb.append([InlineKeyboardButton("🔄 Broker Change", callback_data=f"broker_change_{lic['id']}")])
+                        kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
+                        
+                        await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+                    else:
+                        await query.answer("License not found.", show_alert=True)
+                else:
+                    await query.answer("Error fetching license.", show_alert=True)
+        except Exception as e:
+            await query.answer(f"Error: {e}", show_alert=True)
+            import logging
+            logging.error(f"Error in view_license_: {e}")
+        return
         await query.edit_message_text("❌ License not found.")
         return
 
@@ -1153,6 +1170,15 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
             await update.message.reply_text("Session expired. Please /start again.")
         else:
             await update.callback_query.edit_message_text("Session expired. Please /start again.")
+        return
+        
+    from utils.api_client import create_order
+    order = await create_order(user_id, product_id, "VPS", mt5_id="VPS_ORDER")
+    if not order or "error" in order:
+        if update.message:
+            await update.message.reply_text("Failed to create VPS order.", parse_mode="Markdown")
+        else:
+            await update.callback_query.edit_message_text("Failed to create VPS order.", parse_mode="Markdown")
         return
         
     from utils.api_client import get_products, get_settings

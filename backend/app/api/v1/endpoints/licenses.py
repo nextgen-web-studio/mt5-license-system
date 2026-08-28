@@ -235,6 +235,25 @@ async def download_license(license_id: int, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch license file: {e}")
 
+@router.post("/{license_id}/recompile")
+async def recompile_license(license_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(License).filter(License.id == license_id))
+    lic = result.scalar_one_or_none()
+    if not lic:
+        raise HTTPException(status_code=404, detail="License not found")
+        
+    lic.status = "generating"
+    
+    # Create new CompileJob
+    job = CompileJob(license_id=lic.id, status="pending")
+    db.add(job)
+    await db.commit()
+    
+    from app.core.local_compiler import local_wine_compiler
+    background_tasks.add_task(local_wine_compiler, job.id)
+    
+    return {"status": "success", "message": "Recompilation triggered", "job_id": job.id}
+
 @router.get("/{license_id}/delivery-info")
 async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db)):
     # Returns telegram_id, mt5_id, and download_url
