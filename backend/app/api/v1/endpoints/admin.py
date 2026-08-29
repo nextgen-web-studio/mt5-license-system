@@ -120,6 +120,12 @@ from pydantic import BaseModel
 import httpx
 import os
 
+class VpsStatusUpdate(BaseModel):
+    status: str
+
+class VpsMessageData(BaseModel):
+    message: str
+
 class VpsProvisionData(BaseModel):
     ip: str
     username: str
@@ -205,3 +211,51 @@ async def run_migrations():
         return {"stdout": result.stdout, "stderr": result.stderr}
     except Exception as e:
         return {"error": str(e)}
+
+
+@router.put("/vps-orders/{vps_id}/status")
+async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(VpsOrder).filter(VpsOrder.id == vps_id))
+    vps_order = result.scalar_one_or_none()
+    if not vps_order:
+        raise HTTPException(status_code=404, detail="VPS Order not found")
+        
+    vps_order.status = data.status
+    await db.commit()
+    return {"status": "success", "new_status": vps_order.status}
+
+@router.post("/vps-orders/{vps_id}/message")
+async def send_vps_message(vps_id: int, data: VpsMessageData, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(VpsOrder).filter(VpsOrder.id == vps_id))
+    vps_order = result.scalar_one_or_none()
+    if not vps_order:
+        raise HTTPException(status_code=404, detail="VPS Order not found")
+        
+    user_result = await db.execute(select(User).filter(User.id == vps_order.user_id))
+    user = user_result.scalar_one_or_none()
+    
+    if not user or not user.telegram_id:
+        raise HTTPException(status_code=400, detail="User Telegram ID not found")
+        
+    import os
+    import httpx
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    
+    msg_text = f"📩 **Message from Admin regarding your VPS Order:**\n\n{data.message}"
+    
+    try:
+        async with httpx.AsyncClient(verify=False) as client:
+            resp = await client.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={
+                    "chat_id": user.telegram_id,
+                    "text": msg_text,
+                    "parse_mode": "Markdown"
+                }
+            )
+            if resp.status_code != 200:
+                print(f"Telegram error: {resp.text}")
+    except Exception as e:
+        print(f"Failed to send telegram msg: {e}")
+        
+    return {"status": "success", "message": "Message sent to customer"}
