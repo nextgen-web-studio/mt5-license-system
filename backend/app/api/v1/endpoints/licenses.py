@@ -142,6 +142,11 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         
         background_tasks.add_task(local_wine_compiler, job.id)
         
+        from app.models import User
+        user_res = await db.execute(select(User).filter(User.id == order.user_id))
+        user = user_res.scalar_one_or_none()
+        db_license.telegram_id = user.telegram_id if user else None
+        
         return db_license
     except HTTPException:
         raise

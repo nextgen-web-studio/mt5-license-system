@@ -30,6 +30,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    try:
+        from app.db.database import AsyncSessionLocal
+        from app.models import Product
+        from sqlalchemy import update
+        async with AsyncSessionLocal() as session:
+            await session.execute(update(Product).where(Product.type == "EA").values(price=500.0))
+            await session.commit()
+            print("Successfully updated EA product price to 500")
+    except Exception as e:
+        print(f"Failed to update EA price: {e}")
+
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
