@@ -161,26 +161,30 @@ async def full_settle_installment(order_id: int, background_tasks: BackgroundTas
         
         # Settle notification
         import os, httpx
+        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/compile-started")
+        if bot_webhook_url.endswith("/delivery"):
+            bot_webhook_url = bot_webhook_url.replace("/delivery", "/compile-started")
+            
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        if bot_token:
-            try:
-                u_res = await db.execute(select(User).filter(User.id == order.user_id))
-                u = u_res.scalar_one_or_none()
-                if u and u.telegram_id:
-                    msg = (
-                        f"✅ *FULL SETTLEMENT RECORDED!*\n\n"
-                        f"All payments complete! Your lifetime EA is being compiled.\n\n"
-                        f"🔄 *Compiling your Lifetime EA...*\n"
-                        f"Your EA file is being built right now and will be sent automatically.\n\n"
-                        f"_Usually takes 2-5 minutes. Please wait._"
-                    )
+        try:
+            u_res = await db.execute(select(User).filter(User.id == order.user_id))
+            u = u_res.scalar_one_or_none()
+            if u and u.telegram_id:
+                if bot_token:
+                    msg = f"✅ *FULL SETTLEMENT RECORDED!*\n\nAll payments complete! Your lifetime EA is being compiled."
                     async with httpx.AsyncClient(verify=False) as client:
                         await client.post(
                             f"https://api.telegram.org/bot{bot_token}/sendMessage",
                             json={"chat_id": u.telegram_id, "text": msg, "parse_mode": "Markdown"}
                         )
-            except Exception as e:
-                print(f"Failed to send settlement notification: {e}")
+                
+                async def notify_compile():
+                    async with httpx.AsyncClient(verify=False, timeout=5.0) as client:
+                        await client.post(bot_webhook_url, json={"license_id": lic.id, "telegram_id": u.telegram_id})
+                import asyncio
+                asyncio.create_task(notify_compile())
+        except Exception as e:
+            print(f"Failed to send settlement notification: {e}")
 
     user_res = await db.execute(select(User).filter(User.id == order.user_id))
     user = user_res.scalar_one_or_none()

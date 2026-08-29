@@ -1828,10 +1828,70 @@ class DummyHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(b"Error")
+        elif self.path == "/internal/compile-started":
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                license_id = data.get('license_id')
+                telegram_id = data.get('telegram_id')
+                if license_id and telegram_id:
+                    threading.Thread(target=self.start_compile_animation, args=(license_id, telegram_id), daemon=True).start()
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+            except Exception as e:
+                logging.error(f"Internal compile error: {e}")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"Error")
         else:
             self.send_response(404)
             self.end_headers()
 
+
+    def start_compile_animation(self, license_id, telegram_id):
+        import asyncio
+        asyncio.run(self.async_start_compile_animation(license_id, telegram_id))
+        
+    async def async_start_compile_animation(self, license_id, telegram_id):
+        import httpx
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        
+        # Check if already animating
+        if str(license_id) in compiling_messages:
+            return
+            
+        initial_msg = (
+            f"🔄 *Compiling your EA...*\n\n"
+            f"Your EA file is being built right now.\n"
+            f"The file will be sent here automatically once ready.\n\n"
+            f"_Usually takes 2-5 minutes. Please wait._"
+        )
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                resp = await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={"chat_id": telegram_id, "text": initial_msg, "parse_mode": "Markdown"}
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    message_id = data['result']['message_id']
+                    
+                    lid_str = str(license_id)
+                    compiling_messages[lid_str] = {
+                        "chat_id": telegram_id,
+                        "message_id": message_id,
+                        "stop": False
+                    }
+                    import asyncio as _asyncio
+                    _asyncio.create_task(
+                        animate_compiling_message(bot_token, telegram_id, message_id, lid_str)
+                    )
+        except Exception as e:
+            logging.error(f"Failed to start compile animation: {e}")
+            
     def send_delivery(self, license_id):
         import asyncio
         asyncio.run(self.async_send_delivery(license_id))

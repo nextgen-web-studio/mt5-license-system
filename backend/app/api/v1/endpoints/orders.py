@@ -42,6 +42,18 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
         db.add(db_order)
         await db.commit()
         await db.refresh(db_order)
+        
+        if order.order_type == "VPS":
+            from app.models import VpsOrder
+            vps_ord = VpsOrder(
+                order_id=db_order.id,
+                user_id=order.user_id,
+                duration=1,
+                status="pending"
+            )
+            db.add(vps_ord)
+            await db.commit()
+            
         return db_order
     except Exception as e:
         import logging
