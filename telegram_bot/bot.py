@@ -133,14 +133,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['db_user_phone'] = db_user.get('phone')
         context.user_data['db_user_name'] = db_user.get('name')
         await update.message.reply_text(
-            f"Welcome back, {db_user['name']}!\n\nPlease select an option below:",
+            f"Welcome back, {db_user['name']}! 🤖\n\nPlease select an option below:\n\n_Developed by NextGen Web Studio (@shridharsan1)_",
             reply_markup=await build_main_menu(user.id)
         )
         return ConversationHandler.END
         
     # Ask for full name explicitly
     await update.message.reply_text(
-        f"Welcome to Infinity Trader!\n\nPlease enter your **Full Name** to register and continue:",
+        f"Welcome to Infinity Trader! 🤖\n\nPlease enter your **Full Name** to register and continue:\n\n_Developed by NextGen Web Studio (@shridharsan1)_",
         parse_mode="Markdown"
     )
     context.user_data['awaiting_name'] = True
