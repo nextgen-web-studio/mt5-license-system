@@ -85,13 +85,10 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.id}</td>
                     <td className="px-6 py-4 text-white hidden md:table-cell">{order.product || 'Unknown'}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell">{order.customer || 'Guest'}</td>
-                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{order.amount?.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) || 0}</td>
+                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{(order.amount || 0).toLocaleString('en-IN')}</td>
                     <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="View Details">
-                        <Eye size={16} />
-                      </button>
                       <button 
                         onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
                         className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">
