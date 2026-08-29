@@ -174,7 +174,7 @@ async def get_customer_installment(telegram_id: str, db: AsyncSession = Depends(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     o_res = await db.execute(select(Order).filter(Order.user_id == user.id, Order.installment_enabled == True).order_by(Order.id.desc()))
-    order = o_res.scalar_one_or_none()
+    order = o_res.scalars().first()
     if not order:
         raise HTTPException(status_code=404, detail="No active installment arrangement found")
     p_res = await db.execute(select(Product).filter(Product.id == order.product_id))
