@@ -27,7 +27,7 @@ export default function VpsOrdersPage() {
 
   const provisionMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const { data } = await api.post(\/api/v1/admin/vps-orders/\/provision\, payload);
+      const { data } = await api.post(`/api/v1/admin/vps-orders/${selectedOrder.id}/provision`, payload);
       return data;
     },
     onSuccess: () => {
@@ -38,7 +38,7 @@ export default function VpsOrdersPage() {
 
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number, status: string }) => {
-      const { data } = await api.put(\/api/v1/admin/vps-orders/\/status\, { status });
+      const { data } = await api.put(`/api/v1/admin/vps-orders/${id}/status`, { status });
       return data;
     },
     onSuccess: () => {
@@ -48,7 +48,7 @@ export default function VpsOrdersPage() {
 
   const messageMutation = useMutation({
     mutationFn: async ({ id, message }: { id: number, message: string }) => {
-      const { data } = await api.post(\/api/v1/admin/vps-orders/\/message\, { message });
+      const { data } = await api.post(`/api/v1/admin/vps-orders/${id}/message`, { message });
       return data;
     },
     onSuccess: () => {
