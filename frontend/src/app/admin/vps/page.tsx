@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Server, Check, X, Loader2, MessageSquare, Send } from 'lucide-react';
 import api from '@/lib/api';
@@ -17,11 +17,11 @@ const getStatusColor = (status: string) => {
 
 
 const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange: (id: number, status: string) => void }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const statusColor = getStatusColor(order.status);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
