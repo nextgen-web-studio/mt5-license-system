@@ -100,6 +100,15 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
     await db.commit()
     if lic and job:
         background_tasks.add_task(local_wine_compiler, job.id)
+        import os, httpx
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if bot_token:
+            try:
+                user_res = await db.execute(select(User).filter(User.id == order.user_id))
+                user = user_res.scalar_one_or_none()
+                if user and user.telegram_id:
+                    msg = (
+                        f"
         
         # Notify the user via Telegram that their payment was recorded and the EA is compiling
         import os, httpx
@@ -159,6 +168,29 @@ async def full_settle_installment(order_id: int, background_tasks: BackgroundTas
     if lic and job:
         background_tasks.add_task(local_wine_compiler, job.id)
     user_res = await db.execute(select(User).filter(User.id == order.user_id))
+    if lic and job:
+        import os, httpx
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if bot_token:
+            try:
+                user_res = await db.execute(select(User).filter(User.id == order.user_id))
+                user = user_res.scalar_one_or_none()
+                if user and user.telegram_id:
+                    msg = (
+                        f"✅ *FULL SETTLEMENT RECORDED!*\n\n"
+                        f"All payments complete! Your lifetime EA is being compiled.\n\n"
+                        f"🔄 *Compiling your Lifetime EA...*\n"
+                        f"Your EA file is being built right now and will be sent automatically.\n\n"
+                        f"_Usually takes 2-5 minutes. Please wait._"
+                    )
+                    async with httpx.AsyncClient(verify=False) as client:
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                            json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                        )
+            except Exception as e:
+                print(f"Failed to send settlement notification: {e}")
+
     user = user_res.scalar_one_or_none()
     return {
         "status": "success",
