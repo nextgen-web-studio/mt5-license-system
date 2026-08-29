@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { data: stats, isLoading, error } = useQuery({
     
     queryKey: ['admin-stats'],
-    refetchInterval: 10000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/stats');

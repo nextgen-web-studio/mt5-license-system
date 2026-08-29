@@ -8,7 +8,7 @@ export default function CompilerPage() {
   const { data: compilerJobs = [], isLoading, error, refetch } = useQuery({
     
     queryKey: ['admin-compiler-jobs'],
-    refetchInterval: 10000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/compiler_jobs');

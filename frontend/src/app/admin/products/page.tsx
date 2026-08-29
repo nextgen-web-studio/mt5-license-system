@@ -24,7 +24,7 @@ export default function ProductsPage() {
   const { data: products = [], isLoading, error } = useQuery({
     
     queryKey: ['admin-products'],
-    refetchInterval: 10000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/products');
