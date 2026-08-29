@@ -1866,10 +1866,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                         "message_id": message_id,
                         "stop": False
                     }
-                    import asyncio as _asyncio
-                    _asyncio.create_task(
-                        animate_compiling_message(bot_token, telegram_id, message_id, lid_str)
-                    )
+                    await animate_compiling_message(bot_token, telegram_id, message_id, lid_str)
         except Exception as e:
             logging.error(f"Failed to start compile animation: {e}")
             
