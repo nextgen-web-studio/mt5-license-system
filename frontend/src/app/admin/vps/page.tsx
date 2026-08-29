@@ -38,11 +38,11 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
             if(order.status !== 'provisioned') setIsOpen(!isOpen);
         }}
         disabled={order.status === 'provisioned'}
-        className={lex items-center justify-between w-32 border text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none transition-colors  }
+        className={`flex items-center justify-between w-32 border text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none transition-colors ${statusColor} ${order.status === 'provisioned' ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
       >
         <span>● {order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
         {order.status !== 'provisioned' && (
-          <svg className={w-3 h-3 transition-transform } fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          <svg className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         )}
       </button>
       
@@ -52,9 +52,9 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
             <div 
               key={s} 
               onClick={() => { onStatusChange(order.id, s); setIsOpen(false); }} 
-              className={px-4 py-2 text-xs cursor-pointer transition-colors hover:bg-neutral-800 flex items-center }
+              className={`px-4 py-2 text-xs cursor-pointer transition-colors hover:bg-neutral-800 flex items-center ${order.status === s ? 'bg-neutral-800/50 text-white' : 'text-neutral-400'}`}
             >
-              <span className={mr-2 }>●</span> 
+              <span className={`mr-2 ${getStatusColor(s).split(' ')[1]}`}>●</span> 
               {s.charAt(0).toUpperCase() + s.slice(1)}
             </div>
           ))}
