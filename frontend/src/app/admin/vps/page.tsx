@@ -152,7 +152,7 @@ export default function VpsOrdersPage() {
                         value={order.status}
                         onChange={(e) => statusMutation.mutate({ id: order.id, status: e.target.value })}
                         disabled={order.status === 'provisioned'}
-                        className={order text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer transition-colors  }
+                        className={`border text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer transition-colors ${getStatusColor(order.status)} ${order.status === 'provisioned' ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-80'}`}
                       >
                         <option value="pending" className="bg-neutral-900 text-yellow-500">● Pending</option>
                         <option value="contacted" className="bg-neutral-900 text-blue-400">● Contacted</option>
