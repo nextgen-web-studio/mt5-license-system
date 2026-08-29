@@ -316,7 +316,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         order_id = int(data.split("_")[2])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             # Get license for this order
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
@@ -402,7 +401,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Verify MT5 ID exists
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             resp = await client.get(f"{base_url}/orders/{order_id}")
             if resp.status_code == 200:
@@ -428,7 +426,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         order_id = int(data.split("_")[2])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             resp = await client.get(
                 f"{base_url}/installments/admin/{order_id}",
@@ -471,7 +468,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         order_id = int(data.split("_")[2])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             resp = await client.post(f"{base_url}/installments/admin/settle/{order_id}")
             if resp.status_code == 200:
@@ -530,7 +526,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         order_id = int(data.split("_")[3])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             # Fetch installment info
             resp = await client.get(
@@ -635,7 +630,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         order_id = int(data.split("_")[3])
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
             order_resp = await client.get(f"{base_url}/orders/{order_id}")
             if order_resp.status_code != 200:
@@ -708,7 +702,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await query.answer("Error fetching license.", show_alert=True)
         except Exception as e:
             await query.answer(f"Error: {e}", show_alert=True)
-            import logging
             logging.error(f"Error in view_license_: {e}")
         return
         await query.edit_message_text("❌ License not found.")
@@ -763,7 +756,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         await query.edit_message_text("Fetching your active licenses...")
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-        import httpx
         async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
             resp = await client.get(f"{base_url}/licenses/telegram/{tid}")
             
@@ -1195,7 +1187,6 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
         try:
             await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown")
         except Exception as e:
-            import logging
             logging.error(f"Failed to notify admin of VPS: {e}")
 
 async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1320,7 +1311,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             }
             
             base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-            import httpx
             async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                 resp = await client.post(f"{base_url}/installments/create", json=payload)
                 if resp.status_code == 200:
@@ -1509,7 +1499,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if "error" in resp:
             if resp['error'] == "ALREADY_CLAIMED":
                 import datetime
-                import httpx
                 base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
                 duration_days = 2
                 try:
@@ -1837,7 +1826,6 @@ class DummyHandler(BaseHTTPRequestHandler):
         asyncio.run(self.async_start_compile_animation(license_id, telegram_id))
         
     async def async_start_compile_animation(self, license_id, telegram_id):
-        import httpx
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
         
         # Check if already animating
