@@ -5,6 +5,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Server, Check, X, Loader2, MessageSquare, Send } from 'lucide-react';
 import api from '@/lib/api';
 
+const getStatusColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'pending': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+    case 'contacted': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    case 'paid': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+    case 'provisioned': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    default: return 'bg-neutral-800 text-neutral-400 border-neutral-700';
+  }
+};
+
 export default function VpsOrdersPage() {
   const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -19,6 +29,7 @@ export default function VpsOrdersPage() {
 
   const { data: vpsOrders = [], isLoading, error } = useQuery({
     queryKey: ['admin-vps-orders'],
+    refetchInterval: 10000,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/vps-orders');
       return data;
@@ -141,12 +152,12 @@ export default function VpsOrdersPage() {
                         value={order.status}
                         onChange={(e) => statusMutation.mutate({ id: order.id, status: e.target.value })}
                         disabled={order.status === 'provisioned'}
-                        className="bg-neutral-950 border border-neutral-800 text-xs rounded px-2 py-1 focus:outline-none focus:border-blue-500"
+                        className={order text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none cursor-pointer transition-colors  }
                       >
-                        <option value="pending">Pending</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="paid">Paid</option>
-                        <option value="provisioned">Provisioned</option>
+                        <option value="pending" className="bg-neutral-900 text-yellow-500">● Pending</option>
+                        <option value="contacted" className="bg-neutral-900 text-blue-400">● Contacted</option>
+                        <option value="paid" className="bg-neutral-900 text-purple-400">● Paid</option>
+                        <option value="provisioned" className="bg-neutral-900 text-emerald-400">● Provisioned</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
@@ -316,3 +327,4 @@ export default function VpsOrdersPage() {
     </div>
   );
 }
+

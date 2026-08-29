@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +15,7 @@ export default function LicensesPage() {
   const { data: licenses = [], isLoading, error } = useQuery({
     
     queryKey: ['admin-licenses'],
+    refetchInterval: 10000,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/licenses');
       return data;
@@ -340,3 +341,4 @@ export default function LicensesPage() {
 </div>
   );
 }
+
