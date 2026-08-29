@@ -16,6 +16,7 @@ export default function LicensesPage() {
     
     queryKey: ['admin-licenses'],
     refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/licenses');
       return data;
@@ -60,7 +61,7 @@ export default function LicensesPage() {
     );
   }
 
-  if (error) {
+  if (error && (!licenses || (Array.isArray(licenses) && licenses.length === 0) || (typeof licenses === 'object' && Object.keys(licenses).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load licenses.

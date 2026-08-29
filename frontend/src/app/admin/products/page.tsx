@@ -24,6 +24,8 @@ export default function ProductsPage() {
   const { data: products = [], isLoading, error } = useQuery({
     
     queryKey: ['admin-products'],
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/products');
       return data;
@@ -117,7 +119,7 @@ export default function ProductsPage() {
     );
   }
 
-  if (error) {
+  if (error && (!products || (Array.isArray(products) && products.length === 0) || (typeof products === 'object' && Object.keys(products).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load products.

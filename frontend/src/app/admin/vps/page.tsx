@@ -79,6 +79,7 @@ export default function VpsOrdersPage() {
   const { data: vpsOrders = [], isLoading, error } = useQuery({
     queryKey: ['admin-vps-orders'],
     refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/vps-orders');
       return data;
@@ -152,7 +153,7 @@ export default function VpsOrdersPage() {
     );
   }
 
-  if (error) {
+  if (error && (!vpsOrders || (Array.isArray(vpsOrders) && vpsOrders.length === 0) || (typeof vpsOrders === 'object' && Object.keys(vpsOrders).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load VPS orders.

@@ -15,6 +15,7 @@ export default function OrdersPage() {
     
     queryKey: ['admin-orders'],
     refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/all_orders');
       return data;
@@ -42,7 +43,7 @@ export default function OrdersPage() {
     );
   }
 
-  if (error) {
+  if (error && (!orders || (Array.isArray(orders) && orders.length === 0) || (typeof orders === 'object' && Object.keys(orders).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load orders.

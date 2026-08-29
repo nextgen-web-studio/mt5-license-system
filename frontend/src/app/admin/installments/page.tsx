@@ -18,6 +18,7 @@ export default function InstallmentsPage() {
     
     queryKey: ['admin-installments'],
     refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/installments/admin/all');
       return data;
@@ -94,7 +95,7 @@ export default function InstallmentsPage() {
     );
   }
 
-  if (error) {
+  if (error && (!installments || (Array.isArray(installments) && installments.length === 0) || (typeof installments === 'object' && Object.keys(installments).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load installment arrangements.

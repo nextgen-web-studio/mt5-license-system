@@ -8,6 +8,8 @@ export default function CompilerPage() {
   const { data: compilerJobs = [], isLoading, error, refetch } = useQuery({
     
     queryKey: ['admin-compiler-jobs'],
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/compiler_jobs');
       return data;
@@ -22,7 +24,7 @@ export default function CompilerPage() {
     );
   }
 
-  if (error) {
+  if (error && (!compilerJobs || (Array.isArray(compilerJobs) && compilerJobs.length === 0) || (typeof compilerJobs === 'object' && Object.keys(compilerJobs).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load compiler jobs.

@@ -37,6 +37,8 @@ export default function DashboardPage() {
   const { data: stats, isLoading, error } = useQuery({
     
     queryKey: ['admin-stats'],
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/stats');
       return data;
@@ -51,7 +53,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (error) {
+  if (error && (!stats || (Array.isArray(stats) && stats.length === 0) || (typeof stats === 'object' && Object.keys(stats).length === 0))) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
         Failed to load dashboard statistics.
