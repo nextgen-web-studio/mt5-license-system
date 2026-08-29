@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Server, Check, X, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
@@ -43,7 +43,7 @@ export default function VpsOrdersPage() {
     setSelectedOrder(null);
   };
 
-  const handleProvision = (e: React.FormEvent) => {
+  const handleProvision = (e: FormEvent) => {
     e.preventDefault();
     provisionMutation.mutate({ ip, username, password });
   };

@@ -202,6 +202,43 @@ async def get_telegram_licenses(telegram_id: str, db: AsyncSession = Depends(get
 from fastapi.responses import FileResponse
 import os
 
+@router.get("/export/csv")
+async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
+    # Query: User.name, Order.product_id, License.mt5_id, Payment.payment_id (or payment_id)
+    # Join License -> User
+    # Join License -> Order -> Payment
+    
+    stmt = (
+        select(User.name, Order.product_id, License.mt5_id, Payment.payment_id)
+        .join(License, User.id == License.user_id)
+        .join(Order, License.order_id == Order.id)
+        .outerjoin(Payment, Order.id == Payment.order_id)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Customer Name", "Product ID", "License (MT5 ID)", "Payment ID"])
+    
+    for row in rows:
+        name = row[0] or "Unknown"
+        product_id = row[1]
+        mt5_id = row[2]
+        payment_id = row[3] or "N/A"
+        writer.writerow([name, product_id, mt5_id, payment_id])
+        
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=licenses_export.csv"}
+    )
+class BrokerChangePayload(BaseModel):
+    new_mt5_id: str
+    new_broker: str
+    telegram_id: str
+
 @router.get("/{license_id}/download")
 async def download_license(license_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(License).filter(License.id == license_id))
@@ -321,42 +358,7 @@ async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):
 
     return {"status": "success", "message": "License deleted"}
 
-@router.get("/export/csv")
-async def export_licenses_csv(db: AsyncSession = Depends(get_db)):
-    # Query: User.name, Order.product_id, License.mt5_id, Payment.payment_id (or payment_id)
-    # Join License -> User
-    # Join License -> Order -> Payment
-    
-    stmt = (
-        select(User.name, Order.product_id, License.mt5_id, Payment.payment_id)
-        .join(License, User.id == License.user_id)
-        .join(Order, License.order_id == Order.id)
-        .outerjoin(Payment, Order.id == Payment.order_id)
-    )
-    result = await db.execute(stmt)
-    rows = result.all()
-    
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["Customer Name", "Product ID", "License (MT5 ID)", "Payment ID"])
-    
-    for row in rows:
-        name = row[0] or "Unknown"
-        product_id = row[1]
-        mt5_id = row[2]
-        payment_id = row[3] or "N/A"
-        writer.writerow([name, product_id, mt5_id, payment_id])
-        
-    output.seek(0)
-    return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=licenses_export.csv"}
-    )
-class BrokerChangePayload(BaseModel):
-    new_mt5_id: str
-    new_broker: str
-    telegram_id: str
+
 
 @router.post("/{license_id}/broker-change-request")
 async def request_broker_change(license_id: int, payload: BrokerChangePayload, db: AsyncSession = Depends(get_db)):

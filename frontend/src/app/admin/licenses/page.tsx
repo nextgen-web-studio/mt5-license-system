@@ -43,19 +43,6 @@ export default function LicensesPage() {
     }
   });
 
-  const deleteLicenseMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const { data } = await api.delete(`/api/v1/licenses/${id}`);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-licenses'] });
-    },
-    onError: (err: any) => {
-      alert(err.response?.data?.detail || "Failed to delete license");
-    }
-  });
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
@@ -130,7 +117,7 @@ export default function LicensesPage() {
                     <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-neutral-300 items-center space-x-2 whitespace-nowrap hidden md:table-cell">
                         <Key size={14} className="text-indigo-400 inline mr-1" />
-                        <span>{license.id || license.key}</span>
+                        <span className="truncate max-w-[120px] inline-block">{license.license_uuid || license.id}</span>
                       </td>
                       <td className="px-6 py-4 text-neutral-400 whitespace-nowrap hidden md:table-cell">{license.telegram_id || 'Guest'}</td>
                       <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
@@ -159,7 +146,7 @@ export default function LicensesPage() {
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
                         <button 
-                          onClick={() => copyToClipboard(license.id || license.key)}
+                          onClick={() => copyToClipboard(license.license_uuid || String(license.id))}
                           className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
                           title="Copy Key"
                         >
@@ -345,6 +332,8 @@ export default function LicensesPage() {
           }
         }}
         onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeletingId(null);
         }}
       />
     

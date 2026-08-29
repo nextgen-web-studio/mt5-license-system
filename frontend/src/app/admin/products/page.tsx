@@ -83,6 +83,12 @@ export default function ProductsPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingProductId(null);
+    setName('');
+    setType('EA');
+    setPrice('');
+    setDuration('1');
+    setDescription('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -345,6 +351,8 @@ export default function ProductsPage() {
           }
         }}
         onCancel={() => {
+          setDeleteModalOpen(false);
+          setDeletingId(null);
         }}
       />
     

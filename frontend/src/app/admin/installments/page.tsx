@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Eye, Loader2, CheckCircle, Ban, History, DollarSign } from 'lucide-react';
+import { Loader2, CheckCircle, Ban, DollarSign } from 'lucide-react';
 import api from '@/lib/api';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useState } from 'react';
