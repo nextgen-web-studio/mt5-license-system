@@ -905,9 +905,27 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         msg = (
                             f"✅ *Your Broker Change has been approved.*\n\n"
                             f"Your old MT5 ID association has been deactivated.\n"
-                            f"Your new Lifetime EA is now compiling and will be sent here shortly."
+                            f"Your new Lifetime EA is now compiling and will be sent here shortly.\n\n"
+                            f"🔄 *Compiling your EA...*\n\n"
+                            f"Your EA file is being built right now.\n"
+                            f"The file will be sent here automatically once ready.\n\n"
+                            f"_Usually takes 2-5 minutes. Please wait._"
                         )
-                        await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                        sent = await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                        
+                        license_id = resp.get("license_id")
+                        if license_id:
+                            lid_str = str(license_id)
+                            bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                            compiling_messages[lid_str] = {
+                                "chat_id": telegram_id,
+                                "message_id": sent.message_id,
+                                "stop": False
+                            }
+                            import asyncio as _asyncio
+                            _asyncio.create_task(
+                                animate_compiling_message(bot_token, telegram_id, sent.message_id, lid_str)
+                            )
                 except Exception as e:
                     logging.error(f"Failed to notify user: {e}")
             else:

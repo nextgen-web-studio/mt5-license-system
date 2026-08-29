@@ -145,9 +145,9 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         from app.models import User
         user_res = await db.execute(select(User).filter(User.id == order.user_id))
         user = user_res.scalar_one_or_none()
-        db_license.telegram_id = user.telegram_id if user else None
-        
-        return db_license
+        lic_dict = {c.name: getattr(db_license, c.name) for c in db_license.__table__.columns}
+        lic_dict["telegram_id"] = user.telegram_id if user else None
+        return lic_dict
     except HTTPException:
         raise
     except Exception as e:
@@ -503,25 +503,9 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     
     await db.commit()
     
-    # Notify user that compiling started
-    import os, httpx
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    if bot_token and user and user.telegram_id:
-        try:
-            async with httpx.AsyncClient(verify=False) as client:
-                await client.post(
-                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                    json={
-                        "chat_id": user.telegram_id,
-                        "text": "✅ Your Broker Change request has been approved!\n\n⏳ Compiling your new EA now. Please wait..."
-                    }
-                )
-        except Exception:
-            pass
-
     background_tasks.add_task(local_wine_compiler, job.id)
     
-    return {"status": "success", "telegram_id": user.telegram_id if user else None}
+    return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
 
 @router.post("/broker-change/{request_id}/reject")
 async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_db)):
