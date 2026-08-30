@@ -1,4 +1,4 @@
-﻿import os
+import os
 import subprocess
 import asyncio
 from pathlib import Path
@@ -36,12 +36,17 @@ async def local_wine_compiler(job_id: int):
                 active_template = template_result.scalar_one_or_none()
                 
                 if not active_template or not active_template.source_code:
-                    job.status = "failed"
-                    job.error_message = "No active EA template found in database."
-                    await db.commit()
-                    return
-                
-                original_code = active_template.source_code
+                    # Fallback to local file template
+                    fallback = Path("/app/compiler/templates/bot.mq5")
+                    if fallback.exists():
+                        original_code = fallback.read_text(encoding="utf-8")
+                    else:
+                        job.status = "failed"
+                        job.error_message = "No active EA template found in database and no fallback template found."
+                        await db.commit()
+                        return
+                else:
+                    original_code = active_template.source_code
 
             # 1. Prepare Paths
             base_dir = Path("/app")
@@ -62,7 +67,21 @@ async def local_wine_compiler(job_id: int):
 
             # 3. Compile with WINE and Xvfb
             env = os.environ.copy()
-            metaeditor = "/app/metaeditor/metaeditor64.exe"
+            # Try multiple possible paths where MetaEditor might be
+            metaeditor = None
+            for candidate in ["/app/metaeditor64.exe", "/app/metaeditor/metaeditor64.exe", "/app/MetaEditor64.exe"]:
+                if Path(candidate).exists():
+                    metaeditor = candidate
+                    break
+            if not metaeditor:
+                async with AsyncSessionLocal() as db2:
+                    r = await db2.execute(select(CompileJob).filter(CompileJob.id == job_id))
+                    j = r.scalar_one_or_none()
+                    if j:
+                        j.status = "failed"
+                        j.error_message = "MetaEditor64.exe not found. Check Dockerfile setup."
+                        await db2.commit()
+                return
             
             # Add these specific Wine flags to prevent headless crashing
             env["WINEDLLOVERRIDES"] = "mscoree,mshtml="
