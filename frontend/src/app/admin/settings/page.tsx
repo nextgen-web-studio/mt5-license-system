@@ -52,7 +52,7 @@ export default function SettingsPage() {
         <p className="text-neutral-400">Manage your admin dashboard configuration and security.</p>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="p-6 border-b border-neutral-800 flex items-center gap-3">
           <div className="p-2 bg-blue-600/10 rounded-lg text-blue-400 ring-1 ring-blue-500/20">
             <KeyRound size={20} />

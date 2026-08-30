@@ -290,7 +290,7 @@ export default function EaTemplatePage() {
       </div>
 
       {/* Version History */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="p-6 pb-0">
           <h2 className="text-xl font-semibold text-white mb-1 flex items-center gap-2">
             <History size={20} className="text-neutral-400" />
@@ -299,7 +299,7 @@ export default function EaTemplatePage() {
           <p className="text-neutral-500 text-sm mb-4">All uploaded EA source versions, most recent first.</p>
         </div>
 
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
           <table className="w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>

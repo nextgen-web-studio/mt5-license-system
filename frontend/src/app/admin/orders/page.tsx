@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
@@ -62,15 +62,15 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
+        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4 hidden md:table-cell">Product</th>
                 <th className="px-6 py-4 hidden md:table-cell">Customer</th>
-                <th className="px-6 py-4 hidden md:table-cell">Amount (₹)</th>
+                <th className="px-6 py-4 hidden md:table-cell">Amount (?)</th>
                 <th className="px-6 py-4 whitespace-nowrap">Status</th>
                 <th className="px-6 py-4 hidden md:table-cell">Date</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
@@ -89,7 +89,7 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.id}</td>
                     <td className="px-6 py-4 text-white hidden md:table-cell">{order.product || 'Unknown'}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell">{order.customer || 'Guest'}</td>
-                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{(order.amount || 0).toLocaleString('en-IN')}</td>
+                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">?{(order.amount || 0).toLocaleString('en-IN')}</td>
                     <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
                     <td className="px-6 py-4 text-right">
