@@ -49,9 +49,13 @@ async def local_wine_compiler(job_id: int):
                     original_code = active_template.source_code
 
             # 1. Prepare Paths
-            base_dir = Path("/app")
+            base_dir = Path.cwd()
+            if not base_dir.name == "backend" and (base_dir / "backend").exists():
+                base_dir = base_dir / "backend"
+                
             temp_dir = base_dir / "temp_builds"
-            temp_dir.mkdir(exist_ok=True)
+            # create parent dirs if needed
+            temp_dir.mkdir(parents=True, exist_ok=True)
             
             build_mq5 = temp_dir / f"bot_{job_id}.mq5"
             build_ex5 = temp_dir / f"bot_{job_id}.ex5"
@@ -66,12 +70,28 @@ async def local_wine_compiler(job_id: int):
                 f.write(code)
 
             # 3. Compile with WINE and Xvfb
+            import shutil
+            if not shutil.which("wine"):
+                async with AsyncSessionLocal() as db2:
+                    r = await db2.execute(select(CompileJob).filter(CompileJob.id == job_id))
+                    j = r.scalar_one_or_none()
+                    if j:
+                        j.status = "failed"
+                        j.error_message = "Wine is not installed on this server. You MUST deploy this backend using the Docker setup, not as a Native Web Service!"
+                        await db2.commit()
+                return
+
             env = os.environ.copy()
             # Try multiple possible paths where MetaEditor might be
             metaeditor = None
-            for candidate in ["/app/metaeditor64.exe", "/app/metaeditor/metaeditor64.exe", "/app/MetaEditor64.exe"]:
+            for candidate in [
+                base_dir / "metaeditor64.exe", 
+                base_dir / "metaeditor" / "metaeditor64.exe",
+                base_dir / "MetaEditor64.exe",
+                "/app/metaeditor64.exe"
+            ]:
                 if Path(candidate).exists():
-                    metaeditor = candidate
+                    metaeditor = str(candidate)
                     break
             if not metaeditor:
                 async with AsyncSessionLocal() as db2:
