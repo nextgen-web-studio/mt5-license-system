@@ -265,7 +265,7 @@ def process_job(
     _log("INFO", "Compilation started")
     ex5_path_str: str | None = None
     try:
-        ex5_path_str = compile_ea(mt5_id, expiry_date, plan)
+        ex5_path_str = compile_ea(mt5_id, expiry_date, plan, source_code)
     except Exception as exc:
         _log("ERROR", f"MQ5 compilation failed for job {job_id}: {exc}")
         _report_failure(job_id, f"Compilation failed: {exc}")

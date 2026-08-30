@@ -8,7 +8,7 @@ import httpx
 from datetime import datetime
 
 from app.db.database import get_db
-from app.models import CompileJob, License, Order, Product, User, InstallmentPayment, Payment, TrialActivation, TrialClaim, LicenseMt5History, BrokerChangeRequest, VpsOrder
+from app.models import CompileJob, License, Order, Product, User, EaTemplate, InstallmentPayment, Payment, TrialActivation, TrialClaim, LicenseMt5History, BrokerChangeRequest, VpsOrder
 from sqlalchemy import text
 
 router = APIRouter()
@@ -197,6 +197,11 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
     if lic and lic.expiry_date:
         expiry_str = lic.expiry_date.strftime("%Y-%m-%d")
 
+    # Fetch active EA template
+    template_res = await db.execute(select(EaTemplate).filter(EaTemplate.is_active == True))
+    active_template = template_res.scalar_one_or_none()
+    source_code = active_template.source_code if active_template else None
+
     return {
         "status": "success",
         "job": {
@@ -204,7 +209,8 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
             "license_id": job.license_id,
             "mt5_id": lic.mt5_id if lic else None,
             "expiry_date": expiry_str,
-            "plan": prod.name if prod else "standard"
+            "plan": prod.name if prod else "standard",
+            "source_code": source_code
         }
     }
 
