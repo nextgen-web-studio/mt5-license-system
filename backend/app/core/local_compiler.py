@@ -5,7 +5,7 @@ from pathlib import Path
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import AsyncSessionLocal
-from app.models import CompileJob, License
+from app.models import CompileJob, License, EaTemplate
 import re
 import httpx
 
@@ -30,10 +30,21 @@ async def local_wine_compiler(job_id: int):
 
                 mt5_id = lic.mt5_id
                 expiry = lic.expiry_date.strftime("%Y.%m.%d") if lic.expiry_date else "2099.01.01"
+                
+                # Fetch the active EA template from the database!
+                template_result = await db.execute(select(EaTemplate).filter(EaTemplate.is_active == True))
+                active_template = template_result.scalar_one_or_none()
+                
+                if not active_template or not active_template.source_code:
+                    job.status = "failed"
+                    job.error_message = "No active EA template found in database."
+                    await db.commit()
+                    return
+                
+                original_code = active_template.source_code
 
             # 1. Prepare Paths
             base_dir = Path("/app")
-            mq5_template = base_dir / "compiler" / "templates" / "bot.mq5"
             temp_dir = base_dir / "temp_builds"
             temp_dir.mkdir(exist_ok=True)
             
@@ -42,9 +53,7 @@ async def local_wine_compiler(job_id: int):
             log_file = temp_dir / f"bot_{job_id}.log"
 
             # 2. Inject Code
-            with open(mq5_template, 'r', encoding='utf-8') as f:
-                code = f.read()
-
+            code = original_code
             code = re.sub(r'int\s+ALLOWED_MT5_ID\s*=\s*\d+;', f'int ALLOWED_MT5_ID = {mt5_id};', code)
             code = re.sub(r'datetime\s+LICENSE_EXPIRY\s*=\s*D\'[^\']*\';', f'datetime LICENSE_EXPIRY = D\'{expiry}\';', code)
 
@@ -52,10 +61,10 @@ async def local_wine_compiler(job_id: int):
                 f.write(code)
 
             # 3. Compile with WINE and Xvfb
-            metaeditor = base_dir / "metaeditor64.exe"
-            
-            # Suppress Mono/Gecko installation popups and WINE debug logs
             env = os.environ.copy()
+            metaeditor = "/app/metaeditor/metaeditor64.exe"
+            
+            # Add these specific Wine flags to prevent headless crashing
             env["WINEDLLOVERRIDES"] = "mscoree,mshtml="
             env["WINEDEBUG"] = "-all"
 
@@ -68,27 +77,18 @@ async def local_wine_compiler(job_id: int):
                 env=env
             )
             
-            # Add a 5-minute timeout
-            try:
-                await asyncio.wait_for(process.communicate(), timeout=300.0)
-            except asyncio.TimeoutError:
-                process.kill()
-                await process.communicate()
-                print("WINE compilation timed out and was killed.")
-
-            # 4. Check if EX5 exists and upload it internally to trigger delivery
+            stdout, stderr = await process.communicate()
+            
+            # 4. Check results and Upload to central server
             if build_ex5.exists():
-                # Use Render's own external URL (auto-set by Render) so the compiler can call its own API
-                # Falls back to localhost with the correct PORT if not on Render
-                render_url = os.getenv("RENDER_EXTERNAL_URL", "").rstrip("/")
-                port = os.getenv("PORT", "8000")
-                api_url = f"{render_url}/api/v1" if render_url else f"http://localhost:{port}/api/v1"
-                worker_key = os.getenv("INFINITY_WORKER_API_KEY", "")
+                api_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+                admin_token = os.getenv("ADMIN_TOKEN", "supersecretadmin123")
                 
-                with open(build_ex5, 'rb') as f:
-                    files = {'file': (f"InfinityTrader_{mt5_id}.ex5", f, 'application/octet-stream')}
-                    headers = {'infinity-worker-api-key': worker_key}
-                    async with httpx.AsyncClient(verify=False) as client:
+                headers = {"Authorization": f"Bearer {admin_token}"}
+                
+                async with httpx.AsyncClient() as client:
+                    with open(build_ex5, 'rb') as f:
+                        files = {'file': (f'bot_{job_id}.ex5', f, 'application/octet-stream')}
                         await client.post(f"{api_url}/jobs/{job_id}/upload", headers=headers, files=files, timeout=300.0)
                 
                 # Cleanup
@@ -101,9 +101,19 @@ async def local_wine_compiler(job_id: int):
                     job = result.scalar_one_or_none()
                     if job:
                         job.status = "failed"
-                        job.error_message = "WINE Compilation Failed - EX5 missing"
+                        log_content = "Unknown compilation error"
+                        if log_file.exists():
+                            with open(log_file, 'r', encoding='utf-16') as lf:
+                                log_content = lf.read()
+                        job.error_message = log_content[:1000]
                         await db.commit()
 
         except Exception as e:
-            print(f"Local compile error: {e}")
-
+            import traceback
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
+                job = result.scalar_one_or_none()
+                if job:
+                    job.status = "failed"
+                    job.error_message = str(e) + "\\n" + traceback.format_exc()
+                    await db.commit()
