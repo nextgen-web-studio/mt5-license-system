@@ -158,6 +158,15 @@ async def local_wine_compiler(job_id: int):
                                 ord_obj.status = "delivered"
                         
                         await db2.commit()
+                        
+                        # Notify the Telegram Bot to deliver the file!
+                        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/delivery")
+                        try:
+                            import httpx
+                            async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+                                await client.post(bot_webhook_url, json={"license_id": j.license_id})
+                        except Exception as e:
+                            print(f"Failed to notify Telegram bot for delivery: {e}")
                 else:
                     # No Supabase — mark completed anyway (file delivery handled separately)
                     async with AsyncSessionLocal() as db2:
