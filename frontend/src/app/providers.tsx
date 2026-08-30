@@ -50,7 +50,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         
         {toastState.visible && (
           <div className="fixed bottom-6 right-6 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300">
-            <div className={lex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border  backdrop-blur-md}>
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border ${
+              toastState.type === 'error' ? 'bg-red-950/90 border-red-900/50 text-red-200' :
+              toastState.type === 'success' ? 'bg-emerald-950/90 border-emerald-900/50 text-emerald-200' :
+              'bg-neutral-900/90 border-neutral-800 text-neutral-200'
+            } backdrop-blur-md`}>
               {toastState.type === 'error' && <AlertCircle size={20} className="text-red-500" />}
               {toastState.type === 'success' && <CheckCircle size={20} className="text-emerald-500" />}
               {toastState.type === 'info' && <Info size={20} className="text-blue-500" />}
