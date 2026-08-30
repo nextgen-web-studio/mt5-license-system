@@ -98,9 +98,18 @@ async def local_wine_compiler(job_id: int):
             
             stdout, stderr = await process.communicate()
             
-            # 4. Check results and Upload to central server
+            # 4. Check results and Upload compiled file
             if build_ex5.exists():
+                # Use the public URL, not localhost — Render cannot connect to itself via localhost
                 api_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+                # If still localhost, try the public Render URL from env
+                if "localhost" in api_url or "127.0.0.1" in api_url:
+                    api_url = os.getenv("RENDER_EXTERNAL_URL", "")
+                    if api_url:
+                        api_url = api_url.rstrip("/") + "/api/v1"
+                    else:
+                        # Last resort: use the internal Render URL
+                        api_url = "http://localhost:8000/api/v1"
                 admin_token = os.getenv("ADMIN_TOKEN", "supersecretadmin123")
                 
                 headers = {"Authorization": f"Bearer {admin_token}"}
