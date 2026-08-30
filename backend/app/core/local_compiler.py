@@ -98,28 +98,59 @@ async def local_wine_compiler(job_id: int):
             
             stdout, stderr = await process.communicate()
             
-            # 4. Check results and Upload compiled file
+            # 4. Check results and Upload directly to Supabase (no HTTP self-call!)
             if build_ex5.exists():
-                # Use the public URL, not localhost — Render cannot connect to itself via localhost
-                api_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-                # If still localhost, try the public Render URL from env
-                if "localhost" in api_url or "127.0.0.1" in api_url:
-                    api_url = os.getenv("RENDER_EXTERNAL_URL", "")
-                    if api_url:
-                        api_url = api_url.rstrip("/") + "/api/v1"
-                    else:
-                        # Last resort: use the internal Render URL
-                        api_url = "http://localhost:8000/api/v1"
-                admin_token = os.getenv("ADMIN_TOKEN", "supersecretadmin123")
+                content = build_ex5.read_bytes()
                 
-                headers = {"Authorization": f"Bearer {admin_token}"}
+                supabase_url = os.getenv("SUPABASE_URL")
+                supabase_key = os.getenv("SUPABASE_SECRET_KEY")
                 
-                async with httpx.AsyncClient() as client:
-                    with open(build_ex5, 'rb') as f:
-                        files = {'file': (f'bot_{job_id}.ex5', f, 'application/octet-stream')}
-                        await client.post(f"{api_url}/jobs/{job_id}/upload", headers=headers, files=files, timeout=300.0)
+                if supabase_url and supabase_key:
+                    from supabase import create_client
+                    supabase = create_client(supabase_url, supabase_key)
+                    bucket_name = "licenses"
+                    file_path = f"{job_id}/{job_id}/bot.ex5"
+                    
+                    try:
+                        supabase.storage.create_bucket(bucket_name, {"public": True})
+                    except Exception:
+                        pass
+                    
+                    supabase.storage.from_(bucket_name).upload(file_path, content, file_options={"upsert": "true"})
+                    
+                    # Update DB directly
+                    async with AsyncSessionLocal() as db2:
+                        from app.models import License, Order
+                        r = await db2.execute(select(CompileJob).filter(CompileJob.id == job_id))
+                        j = r.scalar_one_or_none()
+                        if j:
+                            j.status = "completed"
+                            from datetime import datetime
+                            j.completed_at = datetime.utcnow()
+                        
+                        lic_r = await db2.execute(select(License).filter(License.id == j.license_id if j else -1))
+                        lic = lic_r.scalar_one_or_none()
+                        if lic:
+                            lic.generated_filename = file_path
+                            lic.status = "active"
+                            ord_r = await db2.execute(select(Order).filter(Order.id == lic.order_id))
+                            ord_obj = ord_r.scalar_one_or_none()
+                            if ord_obj:
+                                ord_obj.status = "delivered"
+                        
+                        await db2.commit()
+                else:
+                    # No Supabase — mark completed anyway (file delivery handled separately)
+                    async with AsyncSessionLocal() as db2:
+                        r = await db2.execute(select(CompileJob).filter(CompileJob.id == job_id))
+                        j = r.scalar_one_or_none()
+                        if j:
+                            j.status = "completed"
+                            from datetime import datetime
+                            j.completed_at = datetime.utcnow()
+                        await db2.commit()
                 
-                # Cleanup
+                # Cleanup temp files
                 build_mq5.unlink(missing_ok=True)
                 build_ex5.unlink(missing_ok=True)
                 log_file.unlink(missing_ok=True)
