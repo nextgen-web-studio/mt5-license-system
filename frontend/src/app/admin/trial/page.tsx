@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { Gift, Save, ShieldAlert, CheckCircle2, Clock, Users } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface TrialSettings {
@@ -15,6 +16,7 @@ interface TrialSettings {
 }
 
 export default function TrialAdminPage() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -261,7 +263,7 @@ export default function TrialAdminPage() {
             await api.delete(`/api/v1/trials/admin/reset/${targetId}`);
             window.location.reload();
           } catch(e) {
-            alert('Failed to delete. Make sure your API is fully deployed!');
+            toast('Failed to delete. Make sure your API is fully deployed!', 'error');
           }
         }}
         onCancel={() => {

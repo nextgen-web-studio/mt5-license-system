@@ -3,10 +3,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, CheckCircle, Ban, DollarSign } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useState } from 'react';
 
 export default function InstallmentsPage() {
+  const { toast } = useToast();
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [settleModalOpen, setSettleModalOpen] = useState(false);
   const [disableModalOpen, setDisableModalOpen] = useState(false);
@@ -50,7 +52,7 @@ export default function InstallmentsPage() {
       setSelectedOrder(null);
       refetch();
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to settle installment');
+      toast(err.response?.data?.detail || 'Failed to settle installment', 'error');
     } finally {
       setProcessing(false);
     }
@@ -68,7 +70,7 @@ export default function InstallmentsPage() {
       setSelectedOrder(null);
       refetch();
     } catch(e: any) {
-      alert('Failed to record payment: ' + (e.response?.data?.detail || e.message));
+      toast('Failed to record payment: ' + (e.response?.data?.detail || e.message, 'error'));
     }
     setProcessing(false);
   };
@@ -82,7 +84,7 @@ export default function InstallmentsPage() {
       setSelectedOrder(null);
       refetch();
     } catch(e: any) {
-      alert('Failed to disable arrangement: ' + (e.response?.data?.detail || e.message));
+      toast('Failed to disable arrangement: ' + (e.response?.data?.detail || e.message, 'error'));
     }
     setProcessing(false);
   };

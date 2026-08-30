@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Package, Plus, Loader2, Edit, Trash2, X, Check } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function ProductsPage() {
+  const { toast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
@@ -349,7 +351,7 @@ export default function ProductsPage() {
             await api.delete(`/api/v1/products/${targetId}`);
             queryClient.invalidateQueries({ queryKey: ['admin-products'] });
           } catch(e) {
-            alert('Failed to delete. Make sure your API is fully deployed!');
+            toast('Failed to delete. Make sure your API is fully deployed!', 'error');
           }
         }}
         onCancel={() => {

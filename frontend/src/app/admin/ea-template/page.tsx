@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface EaTemplateSummary {
@@ -27,6 +28,7 @@ interface EaTemplateSummary {
 }
 
 export default function EaTemplatePage() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -386,7 +388,7 @@ export default function EaTemplatePage() {
             await api.delete(`/api/v1/ea-templates/admin/${deletingId}`);
             window.location.reload();
           } catch(e) {
-            alert('Failed to delete. Make sure your API is fully deployed!');
+            toast('Failed to delete. Make sure your API is fully deployed!', 'error');
           }
           setDeleteModalOpen(false);
           setDeletingId(null);

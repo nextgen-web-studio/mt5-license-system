@@ -4,6 +4,7 @@ import { useState, FormEvent, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Server, Check, X, Loader2, MessageSquare, Send } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -65,6 +66,7 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
 };
 
 export default function VpsOrdersPage() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [ip, setIp] = useState('');
@@ -116,10 +118,10 @@ export default function VpsOrdersPage() {
       setMsgModalOpen(false);
       setMsgOrder(null);
       setMessageText('');
-      alert("Message sent to customer!");
+      toast("Message sent to customer!", 'success');
     },
     onError: (err: any) => {
-      alert("Failed to send message: " + (err.response?.data?.detail || err.message));
+      toast("Failed to send message: " + (err.response?.data?.detail || err.message, 'error'));
     }
   });
 

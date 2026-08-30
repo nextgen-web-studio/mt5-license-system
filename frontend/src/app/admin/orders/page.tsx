@@ -3,10 +3,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useState } from 'react';
 
 export default function OrdersPage() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -122,7 +124,7 @@ export default function OrdersPage() {
             await api.delete(`/api/v1/orders/${targetId}`);
             queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
           } catch(e) {
-            alert('Failed to delete. Make sure your API is fully deployed!');
+            toast('Failed to delete. Make sure your API is fully deployed!', 'error');
           }
         }}
         onCancel={() => {

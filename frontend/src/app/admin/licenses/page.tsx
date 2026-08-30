@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, RefreshCcw } from 'lucide-react';
 import api from '@/lib/api';
+import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function LicensesPage() {
+  const { toast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
@@ -41,7 +43,7 @@ export default function LicensesPage() {
       setEditingLicense(null);
     },
     onError: (err: any) => {
-      alert(err.response?.data?.detail || "Failed to update license");
+      toast(err.response?.data?.detail || "Failed to update license", 'error');
     }
   });
 
@@ -157,10 +159,10 @@ export default function LicensesPage() {
                         <button 
                           onClick={async () => {
                             try {
-                                alert("Recompiling EA... The customer will receive it shortly.");
+                                toast("Recompiling EA... The customer will receive it shortly.", 'info');
                                 await api.post(`/api/v1/licenses/${license.id}/recompile`);
                             } catch (e: any) {
-                                alert("Failed to recompile: " + (e.response?.data?.detail || e.message));
+                                toast("Failed to recompile: " + (e.response?.data?.detail || e.message, 'error'));
                             }
                           }}
                           className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
@@ -330,7 +332,7 @@ export default function LicensesPage() {
             await api.delete(`/api/v1/licenses/${targetId}`);
             queryClient.invalidateQueries({ queryKey: ['admin-licenses'] });
           } catch(e) {
-            alert('Failed to delete. Make sure your API is fully deployed!');
+            toast('Failed to delete. Make sure your API is fully deployed!', 'error');
           }
         }}
         onCancel={() => {
