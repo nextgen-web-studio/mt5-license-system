@@ -5,7 +5,7 @@ from pathlib import Path
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import AsyncSessionLocal
-from app.models import CompileJob, License, EaTemplate
+from app.models import CompileJob, License, EaTemplate, Order
 import re
 import httpx
 
@@ -120,7 +120,6 @@ async def local_wine_compiler(job_id: int):
                     
                     # Update DB directly
                     async with AsyncSessionLocal() as db2:
-                        from app.models import License, Order
                         r = await db2.execute(select(CompileJob).filter(CompileJob.id == job_id))
                         j = r.scalar_one_or_none()
                         if j:
