@@ -143,8 +143,8 @@ export default function InstallmentsPage() {
                       {inst.installment_status === 'completed' && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Completed</span>}
                       {inst.installment_status === 'failed' && <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Disabled</span>}
                     </td>
-                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">â‚¹{inst.amount_paid} / â‚¹{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
-                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">â‚¹{inst.amount_remaining}</td>
+                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{inst.amount_paid} / ₹{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
+                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">₹{inst.amount_remaining}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">
                       {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
@@ -180,7 +180,7 @@ export default function InstallmentsPage() {
       <ConfirmModal
         isOpen={payModalOpen}
         title="Record Payment"
-        message={`Are you sure you want to record a payment of â‚¹${payAmount} for Order #${selectedOrder?.order_id}? This will automatically extend their license and push back the due date.`}
+        message={`Are you sure you want to record a payment of ₹${payAmount} for Order #${selectedOrder?.order_id}? This will automatically extend their license and push back the due date.`}
         confirmText={processing ? "Processing..." : "Record Payment"}
         cancelText="Cancel"
         isDestructive={false}
