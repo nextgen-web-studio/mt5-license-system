@@ -1,35 +1,27 @@
-//+------------------------------------------------------------------+
-//|                                                          bot.mq5 |
-//|                                    Copyright 2026, InfinityTrader|
-//|                                             https://www.mql5.com |
-//+------------------------------------------------------------------+
-#property copyright "InfinityTrader"
-#property link      "https://www.mql5.com"
-#property version   "1.00"
+﻿#property strict
+#property version "1.00"
 
-input string LicenseID = "__MT5_LICENSE_ID__";
+int ALLOWED_MT5_ID = 123456789;
+datetime LICENSE_EXPIRY = D'2099.01.01';
 
-//+------------------------------------------------------------------+
-//| Expert initialization function                                   |
-//+------------------------------------------------------------------+
 int OnInit()
-  {
-   Print("Initializing bot with License ID: ", LicenseID);
-   // License check logic here...
+{
+   Print("Infinity Trader EA initialized");
+   
+   if(AccountInfoInteger(ACCOUNT_LOGIN) != ALLOWED_MT5_ID) {
+      Print("Invalid MT5 ID. License violation.");
+      return INIT_FAILED;
+   }
+   
+   if(TimeCurrent() > LICENSE_EXPIRY) {
+      Print("License expired.");
+      return INIT_FAILED;
+   }
+   
    return(INIT_SUCCEEDED);
-  }
-//+------------------------------------------------------------------+
-//| Expert deinitialization function                                 |
-//+------------------------------------------------------------------+
-void OnDeinit(const int reason)
-  {
-   
-  }
-//+------------------------------------------------------------------+
-//| Expert tick function                                             |
-//+------------------------------------------------------------------+
+}
+
 void OnTick()
-  {
-   
-  }
-//+------------------------------------------------------------------+
+{
+   // EA Logic goes here
+}
