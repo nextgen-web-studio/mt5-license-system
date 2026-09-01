@@ -95,8 +95,12 @@ export default function CompilerPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 text-xs max-w-xs truncate hidden md:table-cell">
-                      {job.logs || 'No logs available'}
+                      <td className="px-6 py-4 text-neutral-400 text-xs max-w-xs truncate hidden md:table-cell" title={job.error_message || job.logs || ''}>
+                        {job.error_message 
+                          ? job.error_message 
+                          : job.status === 'completed' 
+                            ? 'Completed successfully' 
+                            : job.logs || 'No logs available'}
                     </td>
                     <td className="px-6 py-4 text-right text-neutral-400 whitespace-nowrap">
                       {new Date(job.created_at || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
