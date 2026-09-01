@@ -108,15 +108,29 @@ async def local_wine_compiler(job_id: int):
             env["WINEDEBUG"] = "-all"
 
             cmd = f'xvfb-run -a wine "{metaeditor}" /compile:"{build_mq5}" /log:"{log_file}"'
-            
+            print(f"[COMPILER] Running: {cmd}", flush=True)
+
             process = await asyncio.create_subprocess_shell(
                 cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 env=env
             )
-            
-            stdout, stderr = await process.communicate()
+
+            print(f"[COMPILER] WINE process started, PID={process.pid}, waiting up to 90s...", flush=True)
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=90.0)
+            except asyncio.TimeoutError:
+                print("[COMPILER] WINE process TIMED OUT after 90 seconds! Killing...", flush=True)
+                try:
+                    process.kill()
+                except Exception:
+                    pass
+                stdout, stderr = b"", b"WINE process timed out after 90 seconds"
+
+            print(f"[COMPILER] WINE finished. Return code: {process.returncode}", flush=True)
+            if stderr:
+                print(f"[COMPILER] STDERR: {stderr.decode('utf-8', errors='replace')[:500]}", flush=True)
             
             # 4. Check results and Upload directly to Supabase (no HTTP self-call!)
             if build_ex5.exists():
