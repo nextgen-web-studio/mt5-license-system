@@ -190,9 +190,19 @@ async def local_wine_compiler(job_id: int):
                         job.status = "failed"
                         log_content = "Unknown compilation error"
                         if log_file.exists():
-                            with open(log_file, 'r', encoding='utf-16') as lf:
-                                log_content = lf.read()
-                        job.error_message = log_content[:1000]
+                            # Try utf-16 first (MetaEditor default), fallback to utf-8
+                            for enc in ['utf-16', 'utf-8', 'latin-1']:
+                                try:
+                                    with open(log_file, 'r', encoding=enc) as lf:
+                                        log_content = lf.read()
+                                    break
+                                except Exception:
+                                    continue
+                        # Also append wine stderr for maximum debug info
+                        wine_err = stderr.decode('utf-8', errors='replace') if stderr else ""
+                        if wine_err.strip():
+                            log_content += f"\n\n--- WINE STDERR ---\n{wine_err[:500]}"
+                        job.error_message = log_content[:2000]
                         await db.commit()
 
         except Exception as e:
