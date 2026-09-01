@@ -1,6 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-def get_main_menu_keyboard(show_installment: bool = False, show_free_trial: bool = True) -> InlineKeyboardMarkup:
+def get_main_menu_keyboard(show_installment: bool = False, show_free_trial: bool = True, support_username: str = "@infinitytrader004") -> InlineKeyboardMarkup:
     "Returns the main menu keyboard layout."
     keyboard = [
         [InlineKeyboardButton("🛒 Buy EA", callback_data="buy_ea"), InlineKeyboardButton("🖥️ Buy VPS", callback_data="buy_vps")]
@@ -11,7 +11,8 @@ def get_main_menu_keyboard(show_installment: bool = False, show_free_trial: bool
         row2.append(InlineKeyboardButton("🆓 Free Trial", callback_data="free_trial"))
     keyboard.append(row2)
         
-    keyboard.append([InlineKeyboardButton("📞 Support", callback_data="support"), InlineKeyboardButton("🏠 Home", callback_data="home")])
+    support_url = f"https://t.me/{support_username.lstrip('@')}"
+    keyboard.append([InlineKeyboardButton("📞 Support", url=support_url), InlineKeyboardButton("🏠 Home", callback_data="home")])
 
     if show_installment:
         keyboard.append([InlineKeyboardButton("💳 My Installment", callback_data="my_installment")])

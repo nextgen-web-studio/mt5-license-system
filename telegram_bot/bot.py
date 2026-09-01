@@ -121,8 +121,9 @@ async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
     from utils.api_client import get_settings
     settings = await get_settings()
     show_free_trial = str(settings.get('free_trial_enabled', 'true')).lower() == 'true'
+    support_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
     
-    return get_main_menu_keyboard(show_installment=show_installment, show_free_trial=show_free_trial)
+    return get_main_menu_keyboard(show_installment=show_installment, show_free_trial=show_free_trial, support_username=support_username)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
