@@ -117,12 +117,12 @@ async def local_wine_compiler(job_id: int):
                 env=env
             )
 
-            print(f"[COMPILER] WINE process started, PID={process.pid}, waiting up to 180s...", flush=True)
+            print(f"[COMPILER] WINE process started, PID={process.pid}, waiting up to 300s...", flush=True)
             timed_out = False
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=180.0)
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=300.0)
             except asyncio.TimeoutError:
-                print("[COMPILER] WINE process TIMED OUT after 180s! Killing and retrying once...", flush=True)
+                print("[COMPILER] WINE process TIMED OUT after 300s! Killing and retrying once...", flush=True)
                 timed_out = True
                 try:
                     process.kill()
@@ -140,7 +140,7 @@ async def local_wine_compiler(job_id: int):
                     env=env
                 )
                 try:
-                    stdout, stderr = await asyncio.wait_for(process2.communicate(), timeout=180.0)
+                    stdout, stderr = await asyncio.wait_for(process2.communicate(), timeout=300.0)
                     timed_out = False
                     print(f"[COMPILER] Retry succeeded. Return code: {process2.returncode}", flush=True)
                 except asyncio.TimeoutError:
@@ -149,7 +149,7 @@ async def local_wine_compiler(job_id: int):
                         process2.kill()
                     except Exception:
                         pass
-                    stdout, stderr = b"", b"WINE process timed out twice (360s total)"
+                    stdout, stderr = b"", b"WINE process timed out twice (600s total)"
 
             print(f"[COMPILER] WINE finished. Return code: {process.returncode}", flush=True)
             if stderr:
