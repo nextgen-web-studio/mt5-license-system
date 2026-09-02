@@ -17,10 +17,10 @@ const getStatusColor = (status: string) => {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: '🕐 Pending',
-  contacted: '📞 Contacted',
-  paid: '💳 Paid',
-  provisioned: '✅ Provisioned',
+  pending: 'Pending',
+  contacted: 'Contacted',
+  paid: 'Paid',
+  provisioned: 'Provisioned',
 };
 
 

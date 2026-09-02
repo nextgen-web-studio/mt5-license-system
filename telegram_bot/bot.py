@@ -1269,11 +1269,11 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Mark screenshot received in backend (for dashboard red badge)
             try:
                 import httpx
-                base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+                from utils.api_client import BASE_URL
                 async with httpx.AsyncClient() as client:
-                    await client.post(f"{base_url}/admin/vps-orders/by-order/{vps_order_id}/screenshot")
-            except Exception:
-                pass
+                    await client.post(f"{BASE_URL}/admin/vps-orders/by-order/{vps_order_id}/screenshot")
+            except Exception as e:
+                logging.error(f"Failed to flag screenshot received: {e}")
             
             # Always show a friendly message regardless of backend success
             await update.message.reply_text(
