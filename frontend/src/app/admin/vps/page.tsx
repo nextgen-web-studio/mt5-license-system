@@ -122,7 +122,33 @@ export default function VpsOrdersPage() {
       const { data } = await api.put(`/api/v1/admin/vps-orders/${id}/status`, { status });
       return data;
     },
-    onSuccess: () => {
+    onMutate: async (newStatus) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['admin-vps-orders'] });
+      
+      // Snapshot the previous value
+      const previousOrders = queryClient.getQueryData(['admin-vps-orders']);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(['admin-vps-orders'], (old: any) => {
+        if (!old) return old;
+        return old.map((order: any) => 
+          order.id === newStatus.id ? { ...order, status: newStatus.status } : order
+        );
+      });
+      
+      // Return a context object with the snapshotted value
+      return { previousOrders };
+    },
+    onError: (err, newStatus, context: any) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousOrders) {
+        queryClient.setQueryData(['admin-vps-orders'], context.previousOrders);
+      }
+      toast("Failed to update status", "error");
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we have the correct server state
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
     }
   });
