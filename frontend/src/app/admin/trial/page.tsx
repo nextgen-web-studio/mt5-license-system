@@ -218,20 +218,22 @@ export default function TrialAdminPage() {
           <p className="text-neutral-400 text-sm mb-4">
             If a user has exhausted their free trial limit (e.g. for testing purposes), you can completely wipe their trial history here so they can claim a trial again.
           </p>
-          <div className="flex gap-3">
-            <input 
-              type="text" 
-              placeholder="Enter User's Telegram ID"
-              value={grantTg}
-              onChange={e => setGrantTg(e.target.value)}
-              className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500"
-            />
-            <button 
-              onClick={() => { if(!grantTg) return; setDeletingId(grantTg); setDeleteModalOpen(true); }}
-              className="bg-red-500/10 text-red-500 border border-red-500/50 px-6 py-2 rounded-lg font-medium hover:bg-red-500/20 transition-colors"
-            >
-              Reset History
-            </button>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input 
+                type="text" 
+                placeholder="e.g. 123456789"
+                value={grantTg}
+                onChange={e => setGrantTg(e.target.value)}
+                className="flex-1 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-red-500" 
+              />
+              <button 
+                onClick={() => { if(!grantTg) return; setDeletingId(grantTg); setDeleteModalOpen(true); }}
+                className="shrink-0 bg-red-500/10 text-red-500 border border-red-500/50 px-6 py-2 rounded-lg font-medium hover:bg-red-500/20 transition-colors"
+              >
+                Reset History
+              </button>
+            </div>
           </div>
         </div>
       </div>
