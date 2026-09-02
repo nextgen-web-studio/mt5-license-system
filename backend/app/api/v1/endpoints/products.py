@@ -49,3 +49,22 @@ async def delete_product(product_id: int, db: AsyncSession = Depends(get_db)):
     db_product.active = False
     await db.commit()
     return {"status": "success", "message": "Product deleted successfully"}
+import httpx, os
+from fastapi import APIRouter as _ar
+
+_exchange_router = _ar()
+
+@_exchange_router.get("/exchange-rate")
+async def get_usd_inr_rate():
+    """Fetch live USD to INR exchange rate from public API."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            res = await client.get("https://api.frankfurter.app/latest?from=USD&to=INR")
+            if res.status_code == 200:
+                data = res.json()
+                rate = data["rates"]["INR"]
+                return {"rate": rate, "source": "frankfurter.app", "base": "USD"}
+    except Exception:
+        pass
+    # Fallback to a reasonable static rate
+    return {"rate": 84.0, "source": "fallback", "base": "USD"}

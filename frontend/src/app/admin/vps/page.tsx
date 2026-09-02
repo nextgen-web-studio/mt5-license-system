@@ -16,6 +16,13 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  pending: '🕐 Pending',
+  contacted: '📞 Contacted',
+  paid: '💳 Paid',
+  provisioned: '✅ Provisioned',
+};
+
 
 const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange: (id: number, status: string) => void }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +48,7 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
         disabled={order.status === 'provisioned'}
         className={`flex items-center justify-between w-32 border text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none transition-colors ${statusColor} ${order.status === 'provisioned' ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
       >
-        <span>● {order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+        <span>{STATUS_LABELS[order.status] ?? order.status}</span>
         {order.status !== 'provisioned' && (
           <svg className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         )}
@@ -56,7 +63,7 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
               className={`px-4 py-2 text-xs cursor-pointer transition-colors hover:bg-neutral-800 flex items-center ${order.status === s ? 'bg-neutral-800/50 text-white' : 'text-neutral-400'}`}
             >
               <span className={`mr-2 ${getStatusColor(s).split(' ')[1]}`}>●</span> 
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {STATUS_LABELS[s] ?? s}
             </div>
           ))}
         </div>

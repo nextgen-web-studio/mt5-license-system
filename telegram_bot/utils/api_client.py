@@ -99,6 +99,17 @@ async def get_products(product_type=None):
             logging.error(f"Error fetching products: {e}")
             return []
 
+async def get_usd_inr_rate() -> float:
+    """Fetch live USD→INR rate from backend (which calls frankfurter.app)."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            res = await client.get(f"{BASE_URL}/exchange-rate")
+            if res.status_code == 200:
+                return float(res.json().get("rate", 84.0))
+    except Exception:
+        pass
+    return 84.0  # Fallback
+
 async def create_order(user_id, product_id, order_type, mt5_id=None):
     async with httpx.AsyncClient() as client:
         try:

@@ -19,11 +19,15 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.count()).select_from(Order))
     total_orders = result.scalar() or 0
 
-    # Total Revenue (sum of all paid payments)
+    # Total Revenue (sum of all paid payments + installment payments)
     result = await db.execute(select(func.sum(Payment.amount)).filter(Payment.status == "paid"))
-    total_revenue = result.scalar() or 0
-    # Assuming stored in rupees/standard unit (my payment model uses float for amount)
-    # The previous code had total_revenue = total_revenue / 100 which corrupted the dashboard.
+    one_time_revenue = result.scalar() or 0
+    
+    from app.models import InstallmentPayment
+    result2 = await db.execute(select(func.sum(InstallmentPayment.amount_paid)))
+    installment_revenue = result2.scalar() or 0
+    
+    total_revenue = one_time_revenue + installment_revenue
 
     # Active Licenses
     result = await db.execute(select(func.count()).select_from(License).filter(License.status.in_(["active", "valid"])))

@@ -1304,20 +1304,30 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     products = await get_products()
     product = next((p for p in products if p['id'] == product_id), None)
     
-    from utils.api_client import get_settings
+    from utils.api_client import get_settings, get_usd_inr_rate
     settings = await get_settings()
     admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
     if not admin_username.startswith("@"):
         admin_username = f"@{admin_username}"
+    
+    # Resolve price — if product price is in USD (≤ 5000), convert to INR live
+    raw_price = product['price'] if product else 0
+    if raw_price <= 5000:
+        usd_inr = await get_usd_inr_rate()
+        price_inr = round(raw_price * usd_inr)
+        price_str = f"₹{price_inr:,} (${raw_price} × ₹{usd_inr:.1f}/USD today)"
+    else:
+        price_str = f"₹{raw_price:,.0f}"
     
     summary = (
         f"📋 *ORDER SUMMARY*\n\n"
         f"Order ID: #ORD-{order['id']}\n"
         f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
         f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-        f"🖥 MT5 ID: `{mt5_id}`\n"
-        f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
-        f"Status: ⏳ Pending Admin Approval\n\n"
+        f"🔑 MT5 ID: `{mt5_id}`\n"
+        f"📦 Plan: {product['name'] if product else 'Unknown'}\n"
+        f"💰 Price: {price_str}\n\n"
+        f"Status: 🕐 Pending Admin Approval\n\n"
         f"Please contact the admin to discuss and confirm your order.\n"
         f"Your EA will only be generated after admin approval."
     )
