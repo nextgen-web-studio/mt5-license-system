@@ -7,6 +7,8 @@ import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useState } from 'react';
 
+const currencyFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+
 export default function OrdersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -70,7 +72,7 @@ export default function OrdersPage() {
                 <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4 hidden md:table-cell">Product</th>
                 <th className="px-6 py-4 hidden md:table-cell">Customer</th>
-                <th className="px-6 py-4 hidden md:table-cell">Amount (&#8377;)</th>
+                <th className="px-6 py-4 hidden md:table-cell">Amount (INR)</th>
                 <th className="px-6 py-4 whitespace-nowrap">Status</th>
                 <th className="px-6 py-4 hidden md:table-cell">Date</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
@@ -89,7 +91,7 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.id}</td>
                     <td className="px-6 py-4 text-white hidden md:table-cell">{order.product || 'Unknown'}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell">{order.customer || 'Guest'}</td>
-                      <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">&#8377;{(order.amount || 0).toLocaleString('en-IN')}</td>
+                      <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">{currencyFormatter.format(order.amount || 0)}</td>
                     <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
                     <td className="px-6 py-4 text-right">
