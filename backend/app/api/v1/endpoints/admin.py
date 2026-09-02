@@ -248,8 +248,32 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
     if not vps_order:
         raise HTTPException(status_code=404, detail="VPS Order not found")
         
+    old_status = vps_order.status
     vps_order.status = data.status
     await db.commit()
+    
+    if old_status != "paid" and data.status == "paid":
+        user_result = await db.execute(select(User).filter(User.id == vps_order.user_id))
+        user = user_result.scalar_one_or_none()
+        if user and user.telegram_id:
+            bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+            if bot_token:
+                msg = (
+                    f"✅ *PAYMENT SUCCESSFUL*\n\n"
+                    f"Your payment for VPS Order #ORD-{vps_order.order_id} has been verified by the Admin.\n\n"
+                    f"Your VPS node is currently being prepared and provisioned. "
+                    f"You will receive your login details (IP and Password) here shortly!"
+                )
+                import httpx
+                async with httpx.AsyncClient(verify=False) as client:
+                    try:
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                            json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                        )
+                    except Exception as e:
+                        pass
+                        
     return {"status": "success", "new_status": vps_order.status}
 
 @router.post("/vps-orders/{vps_id}/message")

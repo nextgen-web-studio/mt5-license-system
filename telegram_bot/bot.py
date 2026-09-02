@@ -1206,7 +1206,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     settings = await get_settings()
     vps_upi_id = settings.get("vps_upi_id", "sekaran.cs113@okhdfcbank")
     
-    admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+    admin_username = settings.get("vps_admin_username", "@shirish79")
     if not admin_username.startswith("@"):
         admin_username = f"@{admin_username}"
     
