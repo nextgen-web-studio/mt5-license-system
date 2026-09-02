@@ -307,6 +307,20 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
         
     old_status = vps_order.status
     vps_order.status = data.status
+    
+    # Sync parent Order status
+    order_res = await db.execute(select(Order).filter(Order.id == vps_order.order_id))
+    parent_order = order_res.scalar_one_or_none()
+    if parent_order:
+        if data.status == "paid":
+            parent_order.status = "approved"
+        elif data.status == "contacted":
+            parent_order.status = "contacted"
+        elif data.status == "provisioned":
+            parent_order.status = "delivered"
+        else:
+            parent_order.status = data.status
+            
     await db.commit()
     
     if old_status != "paid" and data.status == "paid":

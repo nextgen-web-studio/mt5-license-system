@@ -29,11 +29,21 @@ export default function OrdersPage() {
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'paid':
-        return <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Paid</span>;
+      case 'approved':
+      case 'delivered':
+      case 'provisioned':
+        return <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">{status}</span>;
       case 'pending':
-        return <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded text-xs font-medium border border-yellow-500/20">Pending</span>;
+      case 'pending_admin_approval':
+        return <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded text-xs font-medium border border-yellow-500/20">{status}</span>;
+      case 'contacted':
+        return <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-medium border border-blue-500/20">{status}</span>;
+      case 'compiling':
+      case 'generating':
+        return <span className="px-2 py-1 bg-purple-500/10 text-purple-400 rounded text-xs font-medium border border-purple-500/20">{status}</span>;
       case 'failed':
-        return <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Failed</span>;
+      case 'rejected':
+        return <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">{status}</span>;
       default:
         return <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">{status || 'Unknown'}</span>;
     }
