@@ -128,6 +128,14 @@ async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     
+    # Clear any abandoned purchase flows to prevent accidental orders
+    context.user_data.pop('pending_product_id', None)
+    context.user_data.pop('pending_p_type', None)
+    context.user_data.pop('awaiting_phone', None)
+    context.user_data.pop('awaiting_mt5_id', None)
+    context.user_data.pop('awaiting_trial_mt5_id', None)
+    context.user_data.pop('awaiting_name', None)
+    
     db_user = await get_user(str(user.id))
     if db_user:
         context.user_data['db_user_id'] = db_user['id']
