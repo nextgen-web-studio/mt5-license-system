@@ -1262,11 +1262,18 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             try:
                 await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown")
+                
+                # Auto-update status to paid via backend
+                import httpx
+                base_url = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1")
+                async with httpx.AsyncClient() as client:
+                    await client.put(f"{base_url}/admin/vps-orders/by-order/{vps_order_id}/paid")
+                    
                 await update.message.reply_text("✅ Payment screenshot received and sent to the VPS admin. Your VPS will be provisioned shortly after verification.")
                 context.user_data['awaiting_vps_payment_screenshot'] = None
             except Exception as e:
-                logging.error(f"Failed to send photo to VPS admin: {e}")
-                await update.message.reply_text("⚠️ Failed to forward the screenshot to the admin. Please contact support.")
+                logging.error(f"Failed to send photo to VPS admin or mark paid: {e}")
+                await update.message.reply_text("⚠️ Failed to process the screenshot. Please contact support.")
         else:
             await update.message.reply_text("⚠️ Admin Chat ID not configured properly.")
         return
