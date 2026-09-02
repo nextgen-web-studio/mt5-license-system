@@ -246,10 +246,26 @@ export default function LicensesPage() {
 
                   <div className="flex justify-end gap-2 pt-3 border-t border-neutral-800/50">
                     <button 
-                      onClick={() => revokeMutation.mutate(license.id)}
-                      disabled={!isActive || revokeMutation.isPending}
-                      className="p-2 text-neutral-400 hover:text-orange-400 hover:bg-orange-500/10 rounded transition-colors disabled:opacity-50" title="Revoke">
-                      <Ban size={16} />
+                      onClick={() => copyToClipboard(license.license_uuid || String(license.id))}
+                      className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Copy Key">
+                      <Copy size={16} />
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        try {
+                            toast("Recompiling EA... The customer will receive it shortly.", 'info');
+                            await api.post(`/api/v1/licenses/${license.id}/recompile`);
+                        } catch (e: any) {
+                            toast("Failed to recompile: " + (e.response?.data?.detail || e.message), 'error');
+                        }
+                      }}
+                      className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Resend EA">
+                      <RefreshCcw size={16} />
+                    </button>
+                    <button 
+                      onClick={() => setEditingLicense(license)}
+                      className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit License">
+                      <Edit2 size={16} />
                     </button>
                     <button 
                       onClick={() => { setDeletingId(license.id); setDeleteModalOpen(true); }}

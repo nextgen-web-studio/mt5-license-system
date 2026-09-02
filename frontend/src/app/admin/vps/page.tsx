@@ -345,7 +345,7 @@ export default function VpsOrdersPage() {
                     <MessageSquare size={16} />
                   </button>
                   <button 
-                    onClick={() => { setSelectedOrder(order); setModalOpen(true); }}
+                    onClick={() => { openModal(order); }}
                     className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Provision & Notify">
                     <Check size={16} />
                   </button>
