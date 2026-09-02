@@ -1249,31 +1249,33 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID")
         if not vps_admin_id:
-            # Fallback to general admin if VPS admin isn't set yet
             vps_admin_id = os.getenv("ADMIN_CHAT_ID")
             
         if vps_admin_id:
             user = update.effective_user
             caption = (
-                f"🔴 *NEW VPS PAYMENT SCREENSHOT*\n\n"
+                f"📸 *NEW VPS PAYMENT SCREENSHOT*\n\n"
                 f"**Customer:** {user.full_name} (@{user.username})\n"
-                f"**Order ID:** #ORD-{vps_order_id}\n\n"
+                f"**Order ID:** #ORD-{vps_order_id}\n"
+                f"**Telegram ID:** `{user.id}`\n\n"
                 f"Please verify this payment and go to the Admin Dashboard to Provision the VPS."
             )
             try:
                 await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown")
-                
-                # Auto-update status to paid via backend
                 import httpx
-                base_url = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1")
+                base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
                 async with httpx.AsyncClient() as client:
                     await client.put(f"{base_url}/admin/vps-orders/by-order/{vps_order_id}/paid")
-                    
-                await update.message.reply_text("✅ Payment screenshot received and sent to the VPS admin. Your VPS will be provisioned shortly after verification.")
-                context.user_data['awaiting_vps_payment_screenshot'] = None
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin or mark paid: {e}")
-                await update.message.reply_text("⚠️ Failed to process the screenshot. Please contact support.")
+            
+            # Always show a friendly message regardless of backend success
+            await update.message.reply_text(
+                "✅ Your payment screenshot has been received!\n\n"
+                "Our team will review it shortly and update your order status. "
+                "You will receive a confirmation message here once it is verified. 🙏"
+            )
+            context.user_data['awaiting_vps_payment_screenshot'] = None
         else:
             await update.message.reply_text("⚠️ Admin Chat ID not configured properly.")
         return
@@ -2064,14 +2066,16 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Trial Duration (Days): `{settings.get('trial_duration', 'Not Set')}`\n"
         f"Max Trials / Month: `{settings.get('max_trials', 'Not Set')}`\n"
         f"Broker Change Fee: `{settings.get('broker_change_fee', 'Not Set')}`\n"
-        f"Support Username: `{settings.get('support_username', 'Not Set')}`\n\n"
+        f"EA Support Username: `{settings.get('support_username', 'Not Set')}`\n"
+        f"VPS Admin Username: `{settings.get('vps_admin_username', 'Not Set')}`\n\n"
         "Click a button below to change a setting:"
     )
     
     kb = [
         [InlineKeyboardButton("Edit Trial Status", callback_data="admin_edit_free_trial_enabled"), InlineKeyboardButton("Edit Trial Duration", callback_data="admin_edit_trial_duration")],
         [InlineKeyboardButton("Edit Max Trials", callback_data="admin_edit_max_trials"), InlineKeyboardButton("Edit Change Fee", callback_data="admin_edit_broker_change_fee")],
-        [InlineKeyboardButton("Edit Support Username", callback_data="admin_edit_support_username")]
+        [InlineKeyboardButton("Edit EA Support Username", callback_data="admin_edit_support_username")],
+        [InlineKeyboardButton("Edit VPS Admin Username", callback_data="admin_edit_vps_admin_username")]
     ]
     
     await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))

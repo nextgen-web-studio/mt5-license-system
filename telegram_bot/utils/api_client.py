@@ -302,7 +302,13 @@ async def get_installment_status(telegram_id):
 async def is_installment_eligible(telegram_id):
     """True only for customers with an active/eligible installment arrangement.
     Normal customers must never see the installment menu option."""
-    return await get_installment_status(telegram_id) is not None
+    status_data = await get_installment_status(telegram_id)
+    if not status_data:
+        return False
+    # If the installment is completed, the user doesn't need to see the payment button anymore
+    if status_data.get("installment_status") == "completed":
+        return False
+    return True
 
 
 async def get_settings():
