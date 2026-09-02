@@ -69,9 +69,12 @@ export default function VpsOrdersPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [hostname, setHostname] = useState('');
   const [ip, setIp] = useState('');
   const [username, setUsername] = useState('Administrator');
   const [password, setPassword] = useState('');
+  const [purchasedDate, setPurchasedDate] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
   
   // Message Modal state
   const [msgModalOpen, setMsgModalOpen] = useState(false);
@@ -95,7 +98,18 @@ export default function VpsOrdersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      toast({
+        title: "Success",
+        description: "VPS provisioned and user notified via Telegram.",
+      });
       closeModal();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to provision VPS",
+        variant: "destructive"
+      });
     }
   });
 
@@ -127,18 +141,42 @@ export default function VpsOrdersPage() {
 
   const openModal = (order: any) => {
     setSelectedOrder(order);
+    setHostname('');
     setIp('');
     setUsername('Administrator');
     setPassword('');
+    // Auto-fill purchased date to today
+    const now = new Date();
+    setPurchasedDate(now.toISOString().slice(0, 16));
+    // Auto-fill expiry date based on plan duration
+    if (order.duration) {
+      const expiry = new Date(now);
+      expiry.setMonth(expiry.getMonth() + order.duration);
+      setExpiryDate(expiry.toISOString().slice(0, 16));
+    } else {
+      setExpiryDate('');
+    }
   };
 
   const closeModal = () => {
     setSelectedOrder(null);
+    setHostname('');
+    setIp('');
+    setPassword('');
+    setPurchasedDate('');
+    setExpiryDate('');
   };
 
   const handleProvision = (e: FormEvent) => {
     e.preventDefault();
-    provisionMutation.mutate({ ip, username, password });
+    provisionMutation.mutate({ 
+      hostname, 
+      ip, 
+      username, 
+      password, 
+      purchased_date: purchasedDate ? new Date(purchasedDate).toISOString() : null, 
+      expiry_date: expiryDate ? new Date(expiryDate).toISOString() : null 
+    });
   };
 
   const handleSendMessage = (e: FormEvent) => {
@@ -246,28 +284,40 @@ export default function VpsOrdersPage() {
             
             <form onSubmit={handleProvision} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Server IP Address</label>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Hostname / Server Name</label>
                 <input 
                   type="text" 
-                  required
-                  value={ip}
-                  onChange={(e) => setIp(e.target.value)}
-                  placeholder="e.g. 192.168.1.100"
+                  value={hostname}
+                  onChange={(e) => setHostname(e.target.value)}
+                  placeholder="e.g. VPS-Node-01"
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Username</label>
-                <input 
-                  type="text" 
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Main IP Address</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={ip}
+                    onChange={(e) => setIp(e.target.value)}
+                    placeholder="e.g. 192.168.1.100"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Username</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Password</label>
+                <label className="block text-sm font-medium text-neutral-400 mb-1">Root Password</label>
                 <input 
                   type="password" 
                   required
@@ -275,6 +325,28 @@ export default function VpsOrdersPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Purchased Date</label>
+                  <input 
+                    type="datetime-local" 
+                    required
+                    value={purchasedDate}
+                    onChange={(e) => setPurchasedDate(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">Expiry Date & Time</label>
+                  <input 
+                    type="datetime-local" 
+                    required
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
               </div>
               
               <div className="pt-4 flex justify-end space-x-3">

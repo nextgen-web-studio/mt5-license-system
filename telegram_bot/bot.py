@@ -1181,36 +1181,56 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     product = next((p for p in products if p['id'] == product_id), None)
     
     settings = await get_settings()
-    admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
-    if not admin_username.startswith("@"):
-        admin_username = f"@{admin_username}"
-        
+    vps_upi_id = settings.get("vps_upi_id", "sekaran.cs113@okhdfcbank")
+    
     user_msg = (
-        f"✅ *VPS Plan Selected*\n\n"
-        f"You have selected the **{product['name'] if product else 'Unknown'}**.\n\n"
-        f"Your request has been sent to the admin. Please click the button below to contact them and complete your setup."
+        f"💳 *VPS Order Created*\n\n"
+        f"**Plan:** {product['name'] if product else 'Unknown'}\n"
+        f"**Order ID:** #ORD-{order['id']}\n"
+        f"**Amount:** ₹{product['price'] if product else 0:,.0f}\n\n"
+        f"Please make the payment via UPI to:\n"
+        f"`{vps_upi_id}`\n\n"
+        f"📸 *After payment, please send the screenshot of your payment here in this chat.*"
     )
-    keyboard = [[InlineKeyboardButton("💬 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
+    
+    context.user_data['awaiting_vps_payment_screenshot'] = order['id']
     
     if update.message:
-        await update.message.reply_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.message.reply_text(user_msg, parse_mode="Markdown")
     else:
-        await update.callback_query.edit_message_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
-        
-    admin_chat_id = os.getenv("ADMIN_CHAT_ID")
-    if admin_chat_id:
-        admin_msg = (
-            f"🖥️ *NEW VPS INQUIRY*\n\n"
-            f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
-            f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-            f"Telegram ID: {update.effective_user.id}\n"
-            f"Plan Selected: {product['name'] if product else 'Unknown'}"
-        )
-        try:
-            await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown")
-        except Exception as e:
-            logging.error(f"Failed to notify admin of VPS: {e}")
+        await update.callback_query.edit_message_text(user_msg, parse_mode="Markdown")
 
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    vps_order_id = context.user_data.get('awaiting_vps_payment_screenshot')
+    if vps_order_id:
+        photo_file_id = update.message.photo[-1].file_id
+        
+        vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID")
+        if not vps_admin_id:
+            # Fallback to general admin if VPS admin isn't set yet
+            vps_admin_id = os.getenv("ADMIN_CHAT_ID")
+            
+        if vps_admin_id:
+            user = update.effective_user
+            caption = (
+                f"🔴 *NEW VPS PAYMENT SCREENSHOT*\n\n"
+                f"**Customer:** {user.full_name} (@{user.username})\n"
+                f"**Order ID:** #ORD-{vps_order_id}\n\n"
+                f"Please verify this payment and go to the Admin Dashboard to Provision the VPS."
+            )
+            try:
+                await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown")
+                await update.message.reply_text("✅ Payment screenshot received and sent to the VPS admin. Your VPS will be provisioned shortly after verification.")
+                context.user_data['awaiting_vps_payment_screenshot'] = None
+            except Exception as e:
+                logging.error(f"Failed to send photo to VPS admin: {e}")
+                await update.message.reply_text("⚠️ Failed to forward the screenshot to the admin. Please contact support.")
+        else:
+            await update.message.reply_text("⚠️ Admin Chat ID not configured properly.")
+        return
+        
+    await update.message.reply_text("Please use the menus to navigate.")
+        
 async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     product_id = context.user_data.get('pending_product_id')
     p_type = context.user_data.get('pending_p_type')
@@ -2025,6 +2045,7 @@ def main():
     application.add_handler(CommandHandler("admin", admin_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     
     logging.info("Starting Infinity Trader Bot...")
     application.run_polling()

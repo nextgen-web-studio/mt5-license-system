@@ -127,9 +127,12 @@ class VpsMessageData(BaseModel):
     message: str
 
 class VpsProvisionData(BaseModel):
+    hostname: Optional[str] = None
     ip: str
     username: str
     password: str
+    purchased_date: Optional[str] = None
+    expiry_date: Optional[str] = None
 
 @router.get("/vps-orders")
 async def get_vps_orders(db: AsyncSession = Depends(get_db)):
@@ -140,20 +143,25 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
         .join(Product, Order.product_id == Product.id)
         .order_by(VpsOrder.created_at.desc())
     )
-    rows = result.all()
-    vps_orders = []
-    for vps_order, order, user, product in rows:
-        vps_orders.append({
-            "id": vps_order.id,
+    
+    orders = []
+    for vps, order, user, product in result.all():
+        orders.append({
+            "id": vps.id,
             "order_id": order.id,
             "customer": user.name or user.username or "Unknown",
+            "telegram_id": user.telegram_id,
             "plan_name": product.name,
-            "duration": vps_order.duration,
-            "status": vps_order.status,
-            "ip": vps_order.ip,
-            "created_at": vps_order.created_at
+            "duration": vps.duration,
+            "status": vps.status,
+            "ip": vps.ip,
+            "hostname": vps.hostname,
+            "username": vps.username,
+            "purchased_date": vps.purchased_date,
+            "expiry_date": vps.expiry_date,
+            "created_at": vps.created_at
         })
-    return vps_orders
+    return orders
 
 @router.post("/vps-orders/{vps_id}/provision")
 async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = Depends(get_db)):
@@ -166,16 +174,29 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
     if vps_order.status == "provisioned":
         raise HTTPException(status_code=400, detail="VPS already provisioned")
         
+    vps_order.hostname = data.hostname
     vps_order.ip = data.ip
     vps_order.username = data.username
     vps_order.password = data.password
+    
+    if data.purchased_date:
+        from dateutil.parser import parse
+        vps_order.purchased_date = parse(data.purchased_date)
+    if data.expiry_date:
+        from dateutil.parser import parse
+        vps_order.expiry_date = parse(data.expiry_date)
+        
     vps_order.status = "provisioned"
     
     # 2. Update parent Order
-    order_result = await db.execute(select(Order).filter(Order.id == vps_order.order_id))
-    order = order_result.scalar_one_or_none()
-    if order:
+    order_result = await db.execute(select(Order, Product).join(Product, Order.product_id == Product.id).filter(Order.id == vps_order.order_id))
+    order_data = order_result.first()
+    product_name = "VPS Package"
+    if order_data:
+        order, product = order_data
         order.status = "delivered"
+        if product:
+            product_name = product.name
         
     await db.commit()
     
@@ -186,12 +207,19 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
     if user:
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if bot_token:
+            p_date_str = vps_order.purchased_date.strftime("%Y-%m-%d %I:%M %p") if vps_order.purchased_date else "N/A"
+            e_date_str = vps_order.expiry_date.strftime("%Y-%m-%d %I:%M %p") if vps_order.expiry_date else "N/A"
+            
             msg = (
                 "🎉 *Your VPS is Ready!*\n\n"
-                "Here are your server credentials:\n"
-                f"**IP Address:** `{data.ip}`\n"
-                f"**Username:** `{data.username}`\n"
-                f"**Password:** `{data.password}`\n\n"
+                "*VPS Node Details*\n"
+                f"**Product Name:** `{product_name}`\n"
+                f"**Hostname:** `{data.hostname or 'N/A'}`\n"
+                f"**Main IP:** `{data.ip}`\n"
+                f"**User name:** `{data.username}`\n"
+                f"**Root password:** `{data.password}`\n\n"
+                f"**Purchased Date:** `{p_date_str}`\n"
+                f"**Expiry Date & Time:** `{e_date_str}`\n\n"
                 "Please connect using Remote Desktop Connection (RDP) on your PC or phone."
             )
             async with httpx.AsyncClient(verify=False) as client:

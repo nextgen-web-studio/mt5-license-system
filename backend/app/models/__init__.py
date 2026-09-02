@@ -111,9 +111,12 @@ class VpsOrder(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     duration = Column(Integer)
     status = Column(String, default="pending")
+    hostname = Column(String, nullable=True)
     ip = Column(String)
     username = Column(String)
     password = Column(String)
+    purchased_date = Column(DateTime(timezone=True), nullable=True)
+    expiry_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class AdminNotification(Base):

@@ -6,15 +6,19 @@ from app.api.v1.endpoints import auth, products, users, licenses, orders, admin,
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.cron.expire_licenses import run_expiration_check
+from app.cron.vps_reminders import run_vps_reminders
 
 scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Start APScheduler
     scheduler.add_job(run_expiration_check, 'interval', hours=12)
+    scheduler.add_job(run_vps_reminders, 'cron', hour='3,11', minute='30')
     scheduler.start()
     # Also run it immediately on startup
     scheduler.add_job(run_expiration_check)
+    scheduler.add_job(run_vps_reminders)
     yield
     scheduler.shutdown()
 
