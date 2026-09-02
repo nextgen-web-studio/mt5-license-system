@@ -59,10 +59,10 @@ async def get_usd_inr_rate():
     """Fetch live USD to INR exchange rate from public API."""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            res = await client.get("https://api.frankfurter.app/latest?from=USD&to=INR")
+            res = await client.get("https://v6.exchangerate-api.com/v6/6494af2284407a5967a272d7/latest/USD")
             if res.status_code == 200:
                 data = res.json()
-                rate = data["rates"]["INR"]
+                rate = data["conversion_rates"]["INR"]
                 return {"rate": rate, "source": "frankfurter.app", "base": "USD"}
     except Exception:
         pass

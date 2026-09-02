@@ -24,9 +24,9 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     try:
         import httpx
         async with httpx.AsyncClient(timeout=3.0) as client:
-            res = await client.get("https://api.frankfurter.app/latest?from=USD&to=INR")
+            res = await client.get("https://v6.exchangerate-api.com/v6/6494af2284407a5967a272d7/latest/USD")
             if res.status_code == 200:
-                usd_inr = float(res.json()["rates"]["INR"])
+                usd_inr = float(res.json()["conversion_rates"]["INR"])
     except Exception:
         pass
 
@@ -127,9 +127,9 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
     try:
         import httpx
         async with httpx.AsyncClient(timeout=3.0) as client:
-            res = await client.get("https://api.frankfurter.app/latest?from=USD&to=INR")
+            res = await client.get("https://v6.exchangerate-api.com/v6/6494af2284407a5967a272d7/latest/USD")
             if res.status_code == 200:
-                usd_inr = float(res.json()["rates"]["INR"])
+                usd_inr = float(res.json()["conversion_rates"]["INR"])
     except Exception:
         pass
 
