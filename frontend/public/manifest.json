@@ -1,0 +1,23 @@
+{
+  "name": "Infinity Trader Admin",
+  "short_name": "Admin Panel",
+  "description": "Infinity Trader EA and VPS Management Dashboard",
+  "start_url": "/admin/orders",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
