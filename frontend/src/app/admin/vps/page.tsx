@@ -103,9 +103,13 @@ export default function VpsOrdersPage() {
       const { data } = await api.post(`/api/v1/admin/vps-orders/${selectedOrder.id}/provision`, payload);
       return data;
     },
-      onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
-      toast("VPS provisioned and user notified via Telegram.", "success");
+      if (data?.warning) {
+        toast(`VPS provisioned in DB ✅ — but Telegram notification failed: ${data.warning}`, "error");
+      } else {
+        toast("VPS provisioned and user notified via Telegram. ✅", "success");
+      }
       closeModal();
     },
     onError: (error: any) => {
