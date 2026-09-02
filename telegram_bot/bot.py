@@ -51,6 +51,10 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
         info = compiling_messages.get(license_id_str)
         if not info or info.get("stop"):
             break
+        
+        # If a newer animation task replaced this one in the dict, kill this old task
+        if info.get("message_id") != message_id:
+            break
             
         # Check specific queue position every 3 seconds
         if i % 2 == 0:
