@@ -44,11 +44,15 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
         await db.refresh(db_order)
         
         if order.order_type == "VPS":
-            from app.models import VpsOrder
+            from app.models import VpsOrder, Product
+            prod_res = await db.execute(select(Product).filter(Product.id == order.product_id))
+            db_product = prod_res.scalar_one_or_none()
+            prod_duration = db_product.duration if db_product and db_product.duration else 1
+            
             vps_ord = VpsOrder(
                 order_id=db_order.id,
                 user_id=order.user_id,
-                duration=db_product.duration or 1,
+                duration=prod_duration,
                 status="pending"
             )
             db.add(vps_ord)
