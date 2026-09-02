@@ -75,16 +75,16 @@ export default function OrdersPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
+        <div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
-                <th className="px-6 py-4 hidden md:table-cell">Product</th>
-                <th className="px-6 py-4 hidden md:table-cell">Customer</th>
-                <th className="px-6 py-4 hidden md:table-cell">Amount (INR)</th>
+                <th className="px-6 py-4">Product</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Amount (INR)</th>
                 <th className="px-6 py-4 whitespace-nowrap">Status</th>
-                <th className="px-6 py-4 hidden md:table-cell">Date</th>
+                <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
@@ -99,11 +99,11 @@ export default function OrdersPage() {
                 orders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.id}</td>
-                    <td className="px-6 py-4 text-white hidden md:table-cell">{order.product || 'Unknown'}</td>
-                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell">{order.customer || 'Guest'}</td>
-                      <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">{currencyFormatter.format(order.amount || 0)}</td>
+                    <td className="px-6 py-4 text-white">{order.product || 'Unknown'}</td>
+                    <td className="px-6 py-4 text-neutral-400">{order.customer || 'Guest'}</td>
+                      <td className="px-6 py-4 text-neutral-300">{currencyFormatter.format(order.amount || 0)}</td>
                     <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
-                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
                     <td className="px-6 py-4 text-right">
                       <button 
                         onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}

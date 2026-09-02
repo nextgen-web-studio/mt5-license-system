@@ -146,14 +146,14 @@ export default function ProductsPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
+        <div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4 hidden md:table-cell">Type</th>
+                <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4 whitespace-nowrap">Price</th>
-                <th className="px-6 py-4 hidden md:table-cell">Duration</th>
+                <th className="px-6 py-4">Duration</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
@@ -176,9 +176,9 @@ export default function ProductsPage() {
                         <span className="font-medium text-white">{product.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 capitalize hidden md:table-cell">{product.type}</td>
+                    <td className="px-6 py-4 text-neutral-400 capitalize">{product.type}</td>
                     <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">{product.type === 'EA' ? '$' : '₹'}{(product.price || 0).toLocaleString('en-IN')}</td>
-                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{product.duration} Months</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{product.duration} Months</td>
                     <td className="px-6 py-4">
                       {product.active ? (
                         <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">

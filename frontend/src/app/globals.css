@@ -27,19 +27,19 @@ body {
 
 /* Custom Dark UI Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a; /* matches bg-slate-900 */
+  background: #171717; /* matches bg-neutral-900 */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155; /* matches text-slate-400 / borders */
+  background: #404040; /* matches border-neutral-700 */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #525252; /* matches text-neutral-500 */
 }

@@ -90,14 +90,14 @@ export default function LicensesPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
+        <div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">License Key</th>
-                <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">Telegram ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">License Key</th>
+                <th className="px-6 py-4 whitespace-nowrap">Telegram ID</th>
                 <th className="px-6 py-4 whitespace-nowrap">MT4/MT5 ID</th>
-                <th className="px-6 py-4 whitespace-nowrap hidden md:table-cell">Type</th>
+                <th className="px-6 py-4 whitespace-nowrap">Type</th>
                 <th className="px-6 py-4 whitespace-nowrap">Status</th>
                 <th className="px-6 py-4 whitespace-nowrap">Expiry Date</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
@@ -119,13 +119,13 @@ export default function LicensesPage() {
 
                   return (
                     <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
-                      <td className="px-6 py-4 font-mono text-xs text-neutral-300 items-center space-x-2 whitespace-nowrap hidden md:table-cell">
+                      <td className="px-6 py-4 font-mono text-xs text-neutral-300 items-center space-x-2 whitespace-nowrap">
                         <Key size={14} className="text-indigo-400 inline mr-1" />
                         <span className="truncate max-w-[120px] inline-block">{license.license_uuid || license.id}</span>
                       </td>
-                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap hidden md:table-cell">{license.telegram_id || 'Guest'}</td>
+                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{license.telegram_id || 'Guest'}</td>
                       <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         {license.license_type === 'trial' ? (
                           <span className="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded-full font-medium">Trial</span>
                         ) : (

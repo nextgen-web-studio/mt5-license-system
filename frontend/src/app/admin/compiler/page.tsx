@@ -49,14 +49,14 @@ export default function CompilerPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
+        <div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Job ID</th>
-                <th className="px-6 py-4 hidden md:table-cell whitespace-nowrap">Order ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 hidden md:table-cell">Logs</th>
+                <th className="px-6 py-4">Logs</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Timestamp</th>
               </tr>
             </thead>
@@ -76,7 +76,7 @@ export default function CompilerPage() {
                         <span>{job.id}</span>
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">#{job.order_id}</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">#{job.order_id}</td>
                     <td className="px-6 py-4">
                       {job.status === 'completed' ? (
                         <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
@@ -95,7 +95,7 @@ export default function CompilerPage() {
                         </span>
                       )}
                     </td>
-                      <td className="px-6 py-4 text-neutral-400 text-xs max-w-xs truncate hidden md:table-cell" title={job.error_message || job.logs || ''}>
+                      <td className="px-6 py-4 text-neutral-400 text-xs max-w-xs truncate" title={job.error_message || job.logs || ''}>
                         {job.error_message 
                           ? job.error_message 
                           : job.status === 'completed' 

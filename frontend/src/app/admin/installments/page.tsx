@@ -115,16 +115,16 @@ export default function InstallmentsPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[300px]">
+        <div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
                 <th className="px-6 py-4 whitespace-nowrap">MT5 ID</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 hidden md:table-cell">Paid / Total</th>
-                <th className="px-6 py-4 hidden md:table-cell">Remaining</th>
-                <th className="px-6 py-4 hidden md:table-cell whitespace-nowrap">Next Due</th>
+                <th className="px-6 py-4">Paid / Total</th>
+                <th className="px-6 py-4">Remaining</th>
+                <th className="px-6 py-4 whitespace-nowrap">Next Due</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
@@ -145,9 +145,9 @@ export default function InstallmentsPage() {
                       {inst.installment_status === 'completed' && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Completed</span>}
                       {inst.installment_status === 'failed' && <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Disabled</span>}
                     </td>
-                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">?{inst.amount_paid} / ?{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
-                    <td className="px-6 py-4 text-neutral-300 hidden md:table-cell">?{inst.amount_remaining}</td>
-                    <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">
+                    <td className="px-6 py-4 text-neutral-300">?{inst.amount_paid} / ?{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
+                    <td className="px-6 py-4 text-neutral-300">?{inst.amount_remaining}</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
                       {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
                     <td className="px-6 py-4 text-right">
