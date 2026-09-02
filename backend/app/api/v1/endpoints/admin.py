@@ -33,13 +33,13 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     # One time revenue: sum of product prices for delivered/paid one-time orders
     one_time_revenue = 0
     res_orders = await db.execute(
-        select(Product.price)
+        select(Product.price, Product.type)
         .join(Order, Order.product_id == Product.id)
         .filter(Order.status.in_(["delivered", "paid", "active", "completed"]))
         .filter(Order.installment_enabled == False)
     )
-    for (price,) in res_orders:
-        if price <= 5000:
+    for price, p_type in res_orders:
+        if p_type == 'EA':
             one_time_revenue += int(price * usd_inr)
         else:
             one_time_revenue += price
@@ -142,7 +142,7 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
     rows = result.all()
     orders = []
     for order, product, user in rows:
-        amount = int(product.price * usd_inr) if product.price <= 5000 else product.price
+        amount = int(product.price * usd_inr) if product.type == 'EA' else product.price
         orders.append({
             "id": order.id,
             "product": product.name,

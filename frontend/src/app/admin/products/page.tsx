@@ -152,7 +152,7 @@ export default function ProductsPage() {
               <tr>
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4 hidden md:table-cell">Type</th>
-                <th className="px-6 py-4 whitespace-nowrap">Price (₹)</th>
+                <th className="px-6 py-4 whitespace-nowrap">Price</th>
                 <th className="px-6 py-4 hidden md:table-cell">Duration</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
@@ -177,7 +177,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-neutral-400 capitalize hidden md:table-cell">{product.type}</td>
-                    <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">₹{(product.price || 0).toLocaleString('en-IN')}</td>
+                    <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">{product.type === 'EA' ? '$' : '₹'}{(product.price || 0).toLocaleString('en-IN')}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{product.duration} Months</td>
                     <td className="px-6 py-4">
                       {product.active ? (
