@@ -90,7 +90,8 @@ export default function LicensesPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto min-h-[300px]">
+        <div className="hidden md:block overflow-x-auto min-h-[300px]">
+<div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -191,6 +192,75 @@ export default function LicensesPage() {
               )}
             </tbody>
           </table>
+        </div>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden flex flex-col divide-y divide-neutral-800">
+          {licenses.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No licenses found.</div>
+          ) : (
+            licenses.map((license: any) => {
+              const isActive = license.status === 'active';
+              return (
+                <div key={license.id} className="p-4 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-neutral-500 uppercase tracking-wider font-semibold">MT4/MT5 ID</span>
+                      <span className="font-bold text-white text-lg">{license.mt5_id}</span>
+                    </div>
+                    {isActive ? (
+                      <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Active</span>
+                    ) : (
+                      <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">{license.status}</span>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                    <div className="col-span-2 break-all">
+                      <span className="text-neutral-500 block text-xs mb-1">License Key</span>
+                      <div className="flex items-center text-neutral-300 font-mono text-xs">
+                        <Key size={12} className="mr-2 shrink-0 text-blue-400" />
+                        {license.generated_filename || 'N/A'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 block text-xs mb-1">Telegram ID</span>
+                      <span className="text-neutral-300">{license.telegram_id || 'Unknown'}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-500 block text-xs mb-1">Type</span>
+                      <span className="text-neutral-300 capitalize">{license.license_type || 'Lifetime'}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-neutral-500 block text-xs mb-1">Expiry Date</span>
+                      <span className="text-neutral-300">
+                        {license.license_type === 'lifetime' 
+                          ? 'Never' 
+                          : license.expires_at 
+                            ? new Date(license.expires_at).toLocaleDateString() 
+                            : 'Unknown'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-3 border-t border-neutral-800/50">
+                    <button 
+                      onClick={() => revokeMutation.mutate(license.id)}
+                      disabled={!isActive || revokeMutation.isPending}
+                      className="p-2 text-neutral-400 hover:text-orange-400 hover:bg-orange-500/10 rounded transition-colors disabled:opacity-50" title="Revoke">
+                      <Ban size={16} />
+                    </button>
+                    <button 
+                      onClick={() => { setDeletingId(license.id); setDeleteModalOpen(true); }}
+                      className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
       

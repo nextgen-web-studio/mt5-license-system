@@ -242,7 +242,8 @@ export default function VpsOrdersPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto min-h-[300px]">
+        <div className="hidden md:block overflow-x-auto min-h-[300px]">
+<div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -300,6 +301,58 @@ export default function VpsOrdersPage() {
               )}
             </tbody>
           </table>
+        </div>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden flex flex-col divide-y divide-neutral-800">
+          {vpsOrders.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No VPS orders found.</div>
+          ) : (
+            vpsOrders.map((order: any) => (
+              <div key={order.id} className="p-4 space-y-4">
+                <div className="flex justify-between items-start">
+                  <span className="font-medium text-white">#{order.id}</span>
+                  <div className="flex flex-col items-end gap-2">
+                    <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                    {order.screenshot_received && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
+                        ?? SS Received
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                  <div>
+                    <span className="text-neutral-500 block text-xs mb-1">Customer</span>
+                    <span className="text-neutral-300">{order.customer_name}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-xs mb-1">Plan</span>
+                    <span className="text-white font-medium">{order.plan_name}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-xs mb-1">Terminals</span>
+                    <span className="text-neutral-300">{order.terminals_allowed || 2}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-3 border-t border-neutral-800/50">
+                  <button 
+                    onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
+                    className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Message User">
+                    <MessageSquare size={16} />
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedOrder(order); setModalOpen(true); }}
+                    className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Provision & Notify">
+                    <Check size={16} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

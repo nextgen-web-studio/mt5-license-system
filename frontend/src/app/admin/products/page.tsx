@@ -146,7 +146,8 @@ export default function ProductsPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto min-h-[300px]">
+        <div className="hidden md:block overflow-x-auto min-h-[300px]">
+<div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -209,6 +210,60 @@ export default function ProductsPage() {
               )}
             </tbody>
           </table>
+        </div>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden flex flex-col divide-y divide-neutral-800">
+          {products.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No products found.</div>
+          ) : (
+            products.map((product: any) => (
+              <div key={product.id} className="p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-neutral-800 flex items-center justify-center shrink-0">
+                      <Package size={16} className="text-neutral-400" />
+                    </div>
+                    <span className="font-medium text-white">{product.name}</span>
+                  </div>
+                  {product.active ? (
+                    <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Active</span>
+                  ) : (
+                    <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">Inactive</span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                  <div>
+                    <span className="text-neutral-500 block text-xs mb-1">Type</span>
+                    <span className="text-neutral-300 capitalize">{product.type}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-xs mb-1">Price</span>
+                    <span className="text-neutral-300">{product.type === 'EA' ? '$' : '?'}{(product.price || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-xs mb-1">Duration</span>
+                    <span className="text-neutral-300">{product.duration} Months</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800/50">
+                  <button 
+                    onClick={() => openModal(product)}
+                    className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit">
+                    <Edit size={16} />
+                  </button>
+                  <button 
+                    onClick={() => { setDeletingId(product.id); setDeleteModalOpen(true); }}
+                    className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
