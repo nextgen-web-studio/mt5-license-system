@@ -247,13 +247,15 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
         if user and user.telegram_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
             if bot_token:
-                import pytz
-                ist = pytz.timezone("Asia/Kolkata")
+                
+                
+                from zoneinfo import ZoneInfo
                 def to_ist_str(dt):
                     if not dt: return "N/A"
                     if dt.tzinfo is None:
-                        dt = pytz.utc.localize(dt)
-                    return dt.astimezone(ist).strftime("%Y-%m-%d %I:%M %p IST")
+                        from datetime import timezone
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    return dt.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %I:%M %p IST")
                 p_date_str = to_ist_str(vps_order.purchased_date)
                 e_date_str = to_ist_str(vps_order.expiry_date)
                 
