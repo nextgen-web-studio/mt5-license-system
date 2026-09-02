@@ -1262,12 +1262,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             try:
                 await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown")
-                import httpx
-                base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-                async with httpx.AsyncClient() as client:
-                    await client.put(f"{base_url}/admin/vps-orders/by-order/{vps_order_id}/paid")
             except Exception as e:
-                logging.error(f"Failed to send photo to VPS admin or mark paid: {e}")
+                logging.error(f"Failed to send photo to VPS admin: {e}")
             
             # Always show a friendly message regardless of backend success
             await update.message.reply_text(
