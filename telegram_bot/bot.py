@@ -274,42 +274,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]])
         )
         
-        # Notify customer with a compiling loading message directly from resp
+        # Do NOT send a compiling message here — the backend's local_wine_compiler
+        # fires /internal/compile-started which sends the animated compiling message.
+        # Sending one here would cause TWO compiling messages to appear.
         telegram_id = resp.get("telegram_id")
         license_id = resp.get("id") or resp.get("license_id")
-        
-        logging.info(f"[COMPILING MSG] Starting notification for order {order_id}, telegram_id={telegram_id}, license_id={license_id}")
-        
-        if telegram_id and license_id:
-            initial_msg = (
-                f"✅ *Your Order is Approved!*\n\n"
-                f"MT5 ID: `{mt5_id}`\n\n"
-                f"🔄 *Compiling your EA...*\n\n"
-                f"Your EA file is being built right now.\n"
-                f"The file will be sent here automatically once ready.\n\n"
-                f"_Usually takes 2-5 minutes. Please wait._"
-            )
-            try:
-                sent = await context.bot.send_message(
-                    chat_id=telegram_id,
-                    text=initial_msg,
-                    parse_mode="Markdown"
-                )
-                
-                lid_str = str(license_id)
-                bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-                compiling_messages[lid_str] = {
-                    "chat_id": telegram_id,
-                    "message_id": sent.message_id,
-                    "stop": False
-                }
-                import asyncio as _asyncio
-                _asyncio.create_task(
-                    animate_compiling_message(bot_token, telegram_id, sent.message_id, lid_str)
-                )
-                logging.info(f"[COMPILING MSG] Animation task started for license {lid_str}")
-            except Exception as e:
-                logging.error(f"[COMPILING MSG] FAILED to send message: {e}")
+        logging.info(f"[COMPILING MSG] License {license_id} queued for telegram_id={telegram_id}. Backend webhook will notify customer.")
         return
 
     if data.startswith("resend_ea_"):
@@ -1314,20 +1284,11 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     products = await get_products()
     product = next((p for p in products if p['id'] == product_id), None)
     
-    from utils.api_client import get_settings, get_usd_inr_rate
+    from utils.api_client import get_settings
     settings = await get_settings()
     admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
     if not admin_username.startswith("@"):
         admin_username = f"@{admin_username}"
-    
-    # Resolve price — if product price is in USD (≤ 5000), convert to INR live
-    raw_price = product['price'] if product else 0
-    if raw_price <= 5000:
-        usd_inr = await get_usd_inr_rate()
-        price_inr = round(raw_price * usd_inr)
-        price_str = f"₹{price_inr:,} (${raw_price} × ₹{usd_inr:.1f}/USD today)"
-    else:
-        price_str = f"₹{raw_price:,.0f}"
     
     summary = (
         f"📋 *ORDER SUMMARY*\n\n"
@@ -1335,8 +1296,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
         f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
         f"🔑 MT5 ID: `{mt5_id}`\n"
-        f"📦 Plan: {product['name'] if product else 'Unknown'}\n"
-        f"💰 Price: {price_str}\n\n"
+        f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
         f"Status: 🕐 Pending Admin Approval\n\n"
         f"Please contact the admin to discuss and confirm your order.\n"
         f"Your EA will only be generated after admin approval."
