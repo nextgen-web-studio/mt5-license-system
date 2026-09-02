@@ -178,7 +178,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-neutral-400 capitalize">{product.type}</td>
-                    <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">{product.type === 'EA' ? '$' : '₹'}{(product.price || 0).toLocaleString('en-IN')}</td>
+                    <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">{product.type === 'EA' ? '$' : '\u20B9'}{(product.price || 0).toLocaleString('en-IN')}</td>
                     <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{product.duration} Months</td>
                     <td className="px-6 py-4">
                       {product.active ? (
@@ -241,7 +241,7 @@ export default function ProductsPage() {
                   </div>
                   <div>
                     <span className="text-neutral-500 block text-xs mb-1">Price</span>
-                    <span className="text-neutral-300">{product.type === 'EA' ? '$' : '?'}{(product.price || 0).toLocaleString('en-IN')}</span>
+                    <span className="text-neutral-300">{product.type === 'EA' ? '$' : '\u20B9'}{(product.price || 0).toLocaleString('en-IN')}</span>
                   </div>
                   <div>
                     <span className="text-neutral-500 block text-xs mb-1">Duration</span>
@@ -321,7 +321,7 @@ export default function ProductsPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-neutral-400 mb-1">
-                    {type === 'EA' ? 'Price ($)' : 'Price (₹)'}
+                    {type === 'EA' ? 'Price ($)' : 'Price (\u20B9)'}
                   </label>
                   <input 
                     type="number" 
