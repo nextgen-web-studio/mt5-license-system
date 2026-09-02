@@ -48,7 +48,7 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
             vps_ord = VpsOrder(
                 order_id=db_order.id,
                 user_id=order.user_id,
-                duration=1,
+                duration=db_product.duration or 1,
                 status="pending"
             )
             db.add(vps_ord)

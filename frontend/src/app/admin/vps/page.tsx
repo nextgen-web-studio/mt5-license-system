@@ -140,12 +140,14 @@ export default function VpsOrdersPage() {
     setPassword('');
     // Auto-fill purchased date to today
     const now = new Date();
-    setPurchasedDate(now.toISOString().slice(0, 16));
+    const localNowISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    setPurchasedDate(localNowISO);
     // Auto-fill expiry date based on plan duration
     if (order.duration) {
       const expiry = new Date(now);
       expiry.setMonth(expiry.getMonth() + order.duration);
-      setExpiryDate(expiry.toISOString().slice(0, 16));
+      const localExpiryISO = new Date(expiry.getTime() - (expiry.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      setExpiryDate(localExpiryISO);
     } else {
       setExpiryDate('');
     }
@@ -325,6 +327,7 @@ export default function VpsOrdersPage() {
                   <input 
                     type="datetime-local" 
                     required
+                    style={{ colorScheme: 'dark' }}
                     value={purchasedDate}
                     onChange={(e) => setPurchasedDate(e.target.value)}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -335,6 +338,7 @@ export default function VpsOrdersPage() {
                   <input 
                     type="datetime-local" 
                     required
+                    style={{ colorScheme: 'dark' }}
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
                     className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
