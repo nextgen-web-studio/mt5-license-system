@@ -361,3 +361,28 @@ async def mark_vps_paid_by_order(order_id: int, db: AsyncSession = Depends(get_d
                 except Exception as e:
                     raise HTTPException(status_code=500, detail=f"Failed to reach Telegram API: {str(e)}")
     return {"status": "success"}
+
+@router.get("/force-migration")
+async def force_migration(db: AsyncSession = Depends(get_db)):
+    import sqlalchemy as sa
+    queries = [
+        "ALTER TABLE vps_orders ADD COLUMN hostname VARCHAR;",
+        "ALTER TABLE vps_orders ADD COLUMN purchased_date TIMESTAMP WITH TIME ZONE;",
+        "ALTER TABLE vps_orders ADD COLUMN expiry_date TIMESTAMP WITH TIME ZONE;"
+    ]
+    results = []
+    for q in queries:
+        try:
+            await db.execute(sa.text(q))
+            results.append({"query": q, "status": "success"})
+        except Exception as e:
+            results.append({"query": q, "status": "skipped", "reason": str(e)})
+    
+    # Try updating alembic version table so it knows we are up to date
+    try:
+        await db.execute(sa.text("UPDATE alembic_version SET version_num='d5b9197279f0'"))
+    except Exception:
+        pass
+        
+    await db.commit()
+    return {"results": results}
