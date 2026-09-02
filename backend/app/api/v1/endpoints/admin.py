@@ -246,8 +246,15 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
     if user:
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if bot_token:
-            p_date_str = vps_order.purchased_date.strftime("%Y-%m-%d %I:%M %p") if vps_order.purchased_date else "N/A"
-            e_date_str = vps_order.expiry_date.strftime("%Y-%m-%d %I:%M %p") if vps_order.expiry_date else "N/A"
+            import pytz
+            ist = pytz.timezone("Asia/Kolkata")
+            def to_ist_str(dt):
+                if not dt: return "N/A"
+                if dt.tzinfo is None:
+                    dt = pytz.utc.localize(dt)
+                return dt.astimezone(ist).strftime("%Y-%m-%d %I:%M %p IST")
+            p_date_str = to_ist_str(vps_order.purchased_date)
+            e_date_str = to_ist_str(vps_order.expiry_date)
             
             msg = (
                 "🎉 *Your VPS is Ready!*\n\n"

@@ -117,16 +117,39 @@ async def local_wine_compiler(job_id: int):
                 env=env
             )
 
-            print(f"[COMPILER] WINE process started, PID={process.pid}, waiting up to 90s...", flush=True)
+            print(f"[COMPILER] WINE process started, PID={process.pid}, waiting up to 180s...", flush=True)
+            timed_out = False
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=90.0)
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=180.0)
             except asyncio.TimeoutError:
-                print("[COMPILER] WINE process TIMED OUT after 90 seconds! Killing...", flush=True)
+                print("[COMPILER] WINE process TIMED OUT after 180s! Killing and retrying once...", flush=True)
+                timed_out = True
                 try:
                     process.kill()
                 except Exception:
                     pass
-                stdout, stderr = b"", b"WINE process timed out after 90 seconds"
+                stdout, stderr = b"", b""
+
+            # Auto-retry once on timeout (Wine cold-start can be slow first time)
+            if timed_out:
+                print("[COMPILER] Auto-retry attempt after timeout...", flush=True)
+                process2 = await asyncio.create_subprocess_shell(
+                    cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=env
+                )
+                try:
+                    stdout, stderr = await asyncio.wait_for(process2.communicate(), timeout=180.0)
+                    timed_out = False
+                    print(f"[COMPILER] Retry succeeded. Return code: {process2.returncode}", flush=True)
+                except asyncio.TimeoutError:
+                    print("[COMPILER] Retry also TIMED OUT. Marking as failed.", flush=True)
+                    try:
+                        process2.kill()
+                    except Exception:
+                        pass
+                    stdout, stderr = b"", b"WINE process timed out twice (360s total)"
 
             print(f"[COMPILER] WINE finished. Return code: {process.returncode}", flush=True)
             if stderr:

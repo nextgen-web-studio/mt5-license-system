@@ -265,7 +265,9 @@ export default function ProductsPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Price (₹)</label>
+                  <label className="block text-sm font-medium text-neutral-400 mb-1">
+                    {type === 'EA' ? 'Price ($)' : 'Price (₹)'}
+                  </label>
                   <input 
                     type="number" 
                     required
