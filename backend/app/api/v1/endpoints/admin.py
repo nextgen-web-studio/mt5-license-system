@@ -257,22 +257,26 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
         user = user_result.scalar_one_or_none()
         if user and user.telegram_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-            if bot_token:
-                msg = (
-                    f"✅ *PAYMENT SUCCESSFUL*\n\n"
-                    f"Your payment for VPS Order #ORD-{vps_order.order_id} has been verified by the Admin.\n\n"
-                    f"Your VPS node is currently being prepared and provisioned. "
-                    f"You will receive your login details (IP and Password) here shortly!"
-                )
-                import httpx
-                async with httpx.AsyncClient(verify=False) as client:
-                    try:
-                        await client.post(
-                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                            json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
-                        )
-                    except Exception as e:
-                        pass
+            if not bot_token:
+                raise HTTPException(status_code=500, detail="Backend missing TELEGRAM_BOT_TOKEN environment variable!")
+                
+            msg = (
+                f"✅ *PAYMENT SUCCESSFUL*\n\n"
+                f"Your payment for VPS Order #ORD-{vps_order.order_id} has been verified by the Admin.\n\n"
+                f"Your VPS node is currently being prepared and provisioned. "
+                f"You will receive your login details (IP and Password) here shortly!"
+            )
+            import httpx
+            async with httpx.AsyncClient(verify=False) as client:
+                try:
+                    res = await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                    )
+                    if res.status_code != 200:
+                        raise HTTPException(status_code=500, detail=f"Telegram API Error: {res.text}")
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Failed to reach Telegram API: {str(e)}")
                         
     return {"status": "success", "new_status": vps_order.status}
 
@@ -336,20 +340,23 @@ async def mark_vps_paid_by_order(order_id: int, db: AsyncSession = Depends(get_d
         user = user_result.scalar_one_or_none()
         if user and user.telegram_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-            if bot_token:
-                msg = (
-                    f"✅ *PAYMENT SUCCESSFUL*\n\n"
-                    f"Your payment for VPS Order #ORD-{order_id} has been received and verified.\n\n"
-                    f"Your VPS node is currently being prepared and provisioned. "
-                    f"You will receive your login details (IP and Password) here shortly!"
-                )
-                import httpx
-                async with httpx.AsyncClient(verify=False) as client:
-                    try:
-                        await client.post(
-                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                            json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
-                        )
-                    except Exception:
-                        pass
+            if not bot_token:
+                raise HTTPException(status_code=500, detail="Backend missing TELEGRAM_BOT_TOKEN environment variable!")
+            msg = (
+                f"✅ *PAYMENT SUCCESSFUL*\n\n"
+                f"Your payment for VPS Order #ORD-{order_id} has been received and verified.\n\n"
+                f"Your VPS node is currently being prepared and provisioned. "
+                f"You will receive your login details (IP and Password) here shortly!"
+            )
+            import httpx
+            async with httpx.AsyncClient(verify=False) as client:
+                try:
+                    res = await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                    )
+                    if res.status_code != 200:
+                        raise HTTPException(status_code=500, detail=f"Telegram API Error: {res.text}")
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Failed to reach Telegram API: {str(e)}")
     return {"status": "success"}
