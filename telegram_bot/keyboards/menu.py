@@ -11,8 +11,7 @@ def get_main_menu_keyboard(show_installment: bool = False, show_free_trial: bool
         row2.append(InlineKeyboardButton("🆓 Free Trial", callback_data="free_trial"))
     keyboard.append(row2)
         
-    support_url = f"https://t.me/{support_username.lstrip('@')}"
-    keyboard.append([InlineKeyboardButton("📞 Support", url=support_url), InlineKeyboardButton("🏠 Home", callback_data="home")])
+    keyboard.append([InlineKeyboardButton("📞 Support", callback_data="support"), InlineKeyboardButton("🏠 Home", callback_data="home")])
 
     if show_installment:
         keyboard.append([InlineKeyboardButton("💳 My Installment", callback_data="my_installment")])

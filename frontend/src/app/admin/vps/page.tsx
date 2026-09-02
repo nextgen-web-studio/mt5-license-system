@@ -96,20 +96,13 @@ export default function VpsOrdersPage() {
       const { data } = await api.post(`/api/v1/admin/vps-orders/${selectedOrder.id}/provision`, payload);
       return data;
     },
-    onSuccess: () => {
+      onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
-      toast({
-        title: "Success",
-        description: "VPS provisioned and user notified via Telegram.",
-      });
+      toast("VPS provisioned and user notified via Telegram.", "success");
       closeModal();
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.detail || "Failed to provision VPS",
-        variant: "destructive"
-      });
+      toast(error.response?.data?.detail || "Failed to provision VPS", "error");
     }
   });
 

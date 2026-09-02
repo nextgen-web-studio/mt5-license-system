@@ -1017,6 +1017,29 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=InlineKeyboardMarkup(keyboard)
             )
         
+    elif data == "support":
+        from utils.api_client import get_settings
+        settings = await get_settings()
+        ea_admin = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+        vps_admin = settings.get("vps_admin_username", "@shirish79")
+        
+        if not ea_admin.startswith("@"):
+            ea_admin = f"@{ea_admin}"
+        if not vps_admin.startswith("@"):
+            vps_admin = f"@{vps_admin}"
+            
+        support_msg = (
+            "📞 *Contact Support*\n\n"
+            "Please choose the department you need assistance with:"
+        )
+        support_kb = [
+            [InlineKeyboardButton("💻 EA Support", url=f"https://t.me/{ea_admin.lstrip('@')}")],
+            [InlineKeyboardButton("🖥️ VPS Support", url=f"https://t.me/{vps_admin.lstrip('@')}")],
+            [InlineKeyboardButton("🏠 Back to Home", callback_data="home")]
+        ]
+        
+        await query.edit_message_text(support_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(support_kb))
+        
     elif data == "buy_vps":
         p_type = "VPS"
         products = await get_products(product_type=p_type)
@@ -1183,6 +1206,10 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     settings = await get_settings()
     vps_upi_id = settings.get("vps_upi_id", "sekaran.cs113@okhdfcbank")
     
+    admin_username = settings.get("support_username", os.getenv("ADMIN_USERNAME", "@infinitytrader004"))
+    if not admin_username.startswith("@"):
+        admin_username = f"@{admin_username}"
+    
     user_msg = (
         f"💳 *VPS Order Created*\n\n"
         f"**Plan:** {product['name'] if product else 'Unknown'}\n"
@@ -1194,11 +1221,26 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     )
     
     context.user_data['awaiting_vps_payment_screenshot'] = order['id']
+    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
     
     if update.message:
-        await update.message.reply_text(user_msg, parse_mode="Markdown")
+        await update.message.reply_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
     else:
-        await update.callback_query.edit_message_text(user_msg, parse_mode="Markdown")
+        await update.callback_query.edit_message_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+        
+    vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID", os.getenv("ADMIN_CHAT_ID"))
+    if vps_admin_id:
+        admin_msg = (
+            f"🖥️ *NEW VPS INQUIRY*\n\n"
+            f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+            f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+            f"Telegram ID: {update.effective_user.id}\n"
+            f"Plan Selected: {product['name'] if product else 'Unknown'}"
+        )
+        try:
+            await context.bot.send_message(chat_id=vps_admin_id, text=admin_msg, parse_mode="Markdown")
+        except Exception as e:
+            logging.error(f"Failed to notify admin of VPS: {e}")
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     vps_order_id = context.user_data.get('awaiting_vps_payment_screenshot')
