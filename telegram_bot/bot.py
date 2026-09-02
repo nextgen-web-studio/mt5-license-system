@@ -1248,6 +1248,10 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
             await context.bot.send_message(chat_id=vps_admin_id, text=admin_msg, parse_mode="Markdown")
         except Exception as e:
             logging.error(f"Failed to notify admin of VPS: {e}")
+            
+    # Clear pending purchase states so it doesn't trigger again
+    context.user_data.pop('pending_product_id', None)
+    context.user_data.pop('pending_p_type', None)
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     vps_order_id = context.user_data.get('awaiting_vps_payment_screenshot')
