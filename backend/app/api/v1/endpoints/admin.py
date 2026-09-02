@@ -19,10 +19,32 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.count()).select_from(Order))
     total_orders = result.scalar() or 0
 
-    # Total Revenue (sum of all paid payments + installment payments)
-    result = await db.execute(select(func.sum(Payment.amount)).filter(Payment.status == "paid"))
-    one_time_revenue = result.scalar() or 0
-    
+    # Fetch live USD to INR rate
+    usd_inr = 84.0
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            res = await client.get("https://api.frankfurter.app/latest?from=USD&to=INR")
+            if res.status_code == 200:
+                usd_inr = float(res.json()["rates"]["INR"])
+    except Exception:
+        pass
+
+    # One time revenue: sum of product prices for delivered/paid one-time orders
+    one_time_revenue = 0
+    res_orders = await db.execute(
+        select(Product.price)
+        .join(Order, Order.product_id == Product.id)
+        .filter(Order.status.in_(["delivered", "paid", "active", "completed"]))
+        .filter(Order.installment_enabled == False)
+    )
+    for (price,) in res_orders:
+        if price <= 5000:
+            one_time_revenue += int(price * usd_inr)
+        else:
+            one_time_revenue += price
+            
+    # Installment revenue
     from app.models import InstallmentPayment
     result2 = await db.execute(select(func.sum(InstallmentPayment.amount)))
     installment_revenue = result2.scalar() or 0
@@ -101,6 +123,16 @@ async def retry_job(job_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.get("/all_orders")
 async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
+    usd_inr = 84.0
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            res = await client.get("https://api.frankfurter.app/latest?from=USD&to=INR")
+            if res.status_code == 200:
+                usd_inr = float(res.json()["rates"]["INR"])
+    except Exception:
+        pass
+
     result = await db.execute(
         select(Order, Product, User)
         .join(Product, Order.product_id == Product.id)
@@ -110,11 +142,12 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
     rows = result.all()
     orders = []
     for order, product, user in rows:
+        amount = int(product.price * usd_inr) if product.price <= 5000 else product.price
         orders.append({
             "id": order.id,
             "product": product.name,
             "customer": user.name or user.username or "Unknown",
-            "amount": product.price,
+            "amount": amount,
             "status": order.status,
             "date": order.created_at
         })
