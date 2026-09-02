@@ -24,7 +24,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     one_time_revenue = result.scalar() or 0
     
     from app.models import InstallmentPayment
-    result2 = await db.execute(select(func.sum(InstallmentPayment.amount_paid)))
+    result2 = await db.execute(select(func.sum(InstallmentPayment.amount)))
     installment_revenue = result2.scalar() or 0
     
     total_revenue = one_time_revenue + installment_revenue
@@ -164,7 +164,8 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
             "username": vps.username,
             "purchased_date": vps.purchased_date,
             "expiry_date": vps.expiry_date,
-            "created_at": vps.created_at
+            "created_at": vps.created_at,
+            "screenshot_received": getattr(vps, 'screenshot_received', False) or False
         })
     return orders
 
@@ -390,3 +391,33 @@ async def force_migration(db: AsyncSession = Depends(get_db)):
         
     await db.commit()
     return {"results": results}
+
+@router.get("/vps-orders/force-screenshot-migration")
+async def force_screenshot_migration(db: AsyncSession = Depends(get_db)):
+    import sqlalchemy as sa
+    queries = [
+        "ALTER TABLE vps_orders ADD COLUMN screenshot_received BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE vps_orders ADD COLUMN screenshot_file_id VARCHAR;"
+    ]
+    results = []
+    for q in queries:
+        try:
+            await db.execute(sa.text(q))
+            results.append({"query": q, "status": "success"})
+        except Exception as e:
+            results.append({"query": q, "status": "skipped", "reason": str(e)})
+    await db.commit()
+    return {"results": results}
+
+@router.post("/vps-orders/by-order/{order_id}/screenshot")
+async def mark_vps_screenshot_received(order_id: int, db: AsyncSession = Depends(get_db)):
+    import sqlalchemy as sa
+    try:
+        await db.execute(
+            sa.text("UPDATE vps_orders SET screenshot_received = TRUE WHERE order_id = :oid"),
+            {"oid": order_id}
+        )
+        await db.commit()
+    except Exception:
+        pass
+    return {"status": "success"}

@@ -240,7 +240,14 @@ export default function VpsOrdersPage() {
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell whitespace-nowrap">{order.plan_name || 'Standard'}</td>
                     <td className="px-6 py-4 text-neutral-400 hidden md:table-cell">{order.terminals_allowed || 2}</td>
                     <td className="px-6 py-4">
-                      <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                      <div className="flex items-center gap-2">
+                        <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                        {order.screenshot_received && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
+                            📸 SS Received
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <button 

@@ -1231,7 +1231,8 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID", os.getenv("ADMIN_CHAT_ID"))
     if vps_admin_id:
         admin_msg = (
-            f"🖥️ *NEW VPS INQUIRY*\n\n"
+            f"*NEW VPS INQUIRY*\n\n"
+            f"Order ID: #ORD-{order['id']}\n"
             f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
             f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
             f"Telegram ID: {update.effective_user.id}\n"
@@ -1264,6 +1265,15 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown")
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin: {e}")
+            
+            # Mark screenshot received in backend (for dashboard red badge)
+            try:
+                import httpx
+                base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+                async with httpx.AsyncClient() as client:
+                    await client.post(f"{base_url}/admin/vps-orders/by-order/{vps_order_id}/screenshot")
+            except Exception:
+                pass
             
             # Always show a friendly message regardless of backend success
             await update.message.reply_text(
