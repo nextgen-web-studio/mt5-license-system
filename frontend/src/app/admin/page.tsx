@@ -13,21 +13,21 @@ import {
 import api from '@/lib/api';
 
 const StatCard = ({ title, value, icon: Icon, trend }: { title: string, value: string | number, icon: any, trend?: { value: string, isPositive: boolean } }) => (
-  <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-    <div className="flex items-center justify-between">
+  <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6 flex flex-col justify-between">
+    <div className="flex items-start justify-between">
       <div>
-        <p className="text-sm font-medium text-neutral-400 mb-1">{title}</p>
-        <h3 className="text-2xl font-bold text-white">{value}</h3>
+        <p className="text-xs md:text-sm font-medium text-neutral-400 mb-1">{title}</p>
+        <h3 className="text-xl md:text-2xl font-bold text-white">{value}</h3>
       </div>
-      <div className="p-3 bg-neutral-800/50 rounded-lg">
-        <Icon className="text-blue-400" size={24} />
+      <div className="p-2 md:p-3 bg-neutral-800/50 rounded-lg shrink-0">
+        <Icon className="text-blue-400" size={18} />
       </div>
     </div>
     {trend && (
-      <div className={`mt-4 flex items-center text-sm ${trend.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
-        {trend.isPositive ? <ArrowUpRight size={16} className="mr-1" /> : <ArrowDownRight size={16} className="mr-1" />}
+      <div className={`mt-3 md:mt-4 flex items-center text-[10px] md:text-sm ${trend.isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+        {trend.isPositive ? <ArrowUpRight size={14} className="mr-1 shrink-0" /> : <ArrowDownRight size={14} className="mr-1 shrink-0" />}
         <span className="font-medium">{trend.value}</span>
-        <span className="text-neutral-500 ml-2">vs last month</span>
+        <span className="text-neutral-500 ml-1 md:ml-2 hidden sm:inline">vs last month</span>
       </div>
     )}
   </div>
@@ -81,7 +81,7 @@ export default function DashboardPage() {
         <p className="text-neutral-400 mt-1">Welcome back, here's what's happening today.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <StatCard
           title="Total Revenue"
           value={`₹${(displayStats.totalRevenue || 0).toLocaleString('en-IN')}`}

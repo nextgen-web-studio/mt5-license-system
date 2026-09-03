@@ -174,7 +174,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </div>
           )}
         </div>
-        <main className="flex-1 overflow-y-auto p-4 pb-24 md:px-8 md:pb-8 md:pt-4">
+        <main className="flex-1 overflow-y-auto overscroll-y-contain p-4 pb-24 md:px-8 md:pb-8 md:pt-4" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="h-full">
             {children}
           </div>
