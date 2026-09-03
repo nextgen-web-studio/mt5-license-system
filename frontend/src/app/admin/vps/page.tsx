@@ -331,7 +331,14 @@ export default function VpsOrdersPage() {
                   </div>
                   <div>
                     <span className="text-neutral-500 block text-[10px] mb-0.5">Plan</span>
-                    <span className="text-white font-medium">{order.plan_name}</span>
+                    <span className="text-white font-medium flex items-center gap-2">
+                      {order.plan_name}
+                      {order.is_renewal && (
+                        <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
+                          🔄 Renewal
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div>
                     <span className="text-neutral-500 block text-[10px] mb-0.5">Terminals</span>
