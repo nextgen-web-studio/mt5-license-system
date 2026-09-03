@@ -139,6 +139,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop('awaiting_mt5_id', None)
     context.user_data.pop('awaiting_trial_mt5_id', None)
     context.user_data.pop('awaiting_name', None)
+    context.user_data.pop('awaiting_vps_email', None)
+    context.user_data.pop('awaiting_vps_location', None)
+    context.user_data.pop('awaiting_vps_age', None)
+    context.user_data.pop('awaiting_vps_occupation', None)
+    context.user_data.pop('awaiting_broker_change_mt5_id', None)
+    context.user_data.pop('awaiting_broker_change_broker_name', None)
     
     db_user = await get_user(str(user.id))
     if db_user:
@@ -168,6 +174,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
+    
+    # Clear any stale text input states if the user navigates using the menu
+    if data in ["broker_change", "main_menu", "request_trial"] or data.startswith("buy_") or data.startswith("category_") or data.startswith("bc_select_"):
+        context.user_data.pop('awaiting_vps_email', None)
+        context.user_data.pop('awaiting_vps_location', None)
+        context.user_data.pop('awaiting_vps_age', None)
+        context.user_data.pop('awaiting_vps_occupation', None)
+        context.user_data.pop('awaiting_broker_change_mt5_id', None)
+        context.user_data.pop('awaiting_broker_change_broker_name', None)
+        context.user_data.pop('awaiting_mt5_id', None)
+        context.user_data.pop('awaiting_trial_mt5_id', None)
+        context.user_data.pop('awaiting_phone', None)
+        context.user_data.pop('awaiting_name', None)
     
     if data.startswith("approve_") and not data.startswith("approve_change_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
