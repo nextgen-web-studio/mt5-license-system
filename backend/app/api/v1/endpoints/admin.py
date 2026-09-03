@@ -444,13 +444,6 @@ async def mark_vps_paid_by_order(order_id: int, db: AsyncSession = Depends(get_d
 async def force_migration(db: AsyncSession = Depends(get_db)):
     import sqlalchemy as sa
     queries = [
-        "ALTER TABLE vps_orders ADD COLUMN hostname VARCHAR;",
-        "ALTER TABLE vps_orders ADD COLUMN purchased_date TIMESTAMP WITH TIME ZONE;",
-        "ALTER TABLE vps_orders ADD COLUMN expiry_date TIMESTAMP WITH TIME ZONE;",
-        "ALTER TABLE users ADD COLUMN email VARCHAR;",
-        "ALTER TABLE users ADD COLUMN location VARCHAR;",
-        "ALTER TABLE users ADD COLUMN age VARCHAR;",
-        "ALTER TABLE users ADD COLUMN occupation VARCHAR;",
         "ALTER TABLE orders ADD COLUMN vps_id INTEGER REFERENCES vps_orders(id);"
     ]
     results = []
