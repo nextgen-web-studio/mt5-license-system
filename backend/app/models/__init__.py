@@ -37,6 +37,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     product_id = Column(Integer, ForeignKey("products.id"))
+    vps_id = Column(Integer, ForeignKey('vps_orders.id'), nullable=True)
     order_type = Column(String) # 'EA' or 'VPS'
     mt5_id = Column(String, nullable=True) # captured before payment
     # pending, paid, compiling, ready, delivered, expired, cancelled

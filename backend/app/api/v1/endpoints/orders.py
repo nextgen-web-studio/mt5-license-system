@@ -37,13 +37,14 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
             product_id=order.product_id,
             order_type=order.order_type,
             mt5_id=order.mt5_id,
+            vps_id=order.vps_id,
             status="pending_admin_approval"
         )
         db.add(db_order)
         await db.commit()
         await db.refresh(db_order)
         
-        if order.order_type == "VPS":
+        if order.order_type == "VPS" and not order.vps_id:
             from app.models import VpsOrder, Product
             prod_res = await db.execute(select(Product).filter(Product.id == order.product_id))
             db_product = prod_res.scalar_one_or_none()
@@ -123,9 +124,31 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     if order.status != "pending_admin_approval":
         raise HTTPException(status_code=400, detail=f"Cannot approve order in {order.status} state")
         
-    order.status = "approved_waiting_for_mt5_id"
+    is_renewal = False
+    new_expiry_str = ""
+    if order.order_type == "VPS" and order.vps_id:
+        from app.models import VpsOrder, Product
+        v_res = await db.execute(select(VpsOrder).filter(VpsOrder.id == order.vps_id))
+        v_order = v_res.scalar_one_or_none()
+        p_res = await db.execute(select(Product).filter(Product.id == order.product_id))
+        p_prod = p_res.scalar_one_or_none()
+        if v_order and p_prod:
+            from datetime import datetime, timezone
+            from dateutil.relativedelta import relativedelta
+            now = datetime.now(timezone.utc)
+            if not v_order.expiry_date or v_order.expiry_date.replace(tzinfo=timezone.utc) < now:
+                v_order.expiry_date = now + relativedelta(months=p_prod.duration)
+            else:
+                v_order.expiry_date = v_order.expiry_date.replace(tzinfo=timezone.utc) + relativedelta(months=p_prod.duration)
+            new_expiry_str = v_order.expiry_date.strftime('%d %B %Y, %H:%M')
+            is_renewal = True
+            
+        order.status = "delivered"
+    else:
+        order.status = "approved_waiting_for_mt5_id"
+        
     await db.commit()
-    return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id, "mt5_id": order.mt5_id or "", "order_type": order.order_type}
+    return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id, "mt5_id": order.mt5_id or "", "order_type": order.order_type, "is_renewal": is_renewal, "new_expiry": new_expiry_str}
 
 @router.put("/{order_id}/mt5")
 async def update_order_mt5(order_id: int, payload: OrderMt5Update, db: AsyncSession = Depends(get_db)):

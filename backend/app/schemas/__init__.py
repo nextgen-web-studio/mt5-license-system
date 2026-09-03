@@ -31,6 +31,7 @@ class OrderBase(BaseModel):
     product_id: int
     order_type: str
     mt5_id: Optional[str] = None
+    vps_id: Optional[int] = None
 
 class OrderCreate(OrderBase):
     user_id: int
@@ -68,3 +69,4 @@ class CompileJobResponse(BaseModel):
 
 class OrderFulfillmentRequest(BaseModel):
     mt5_id: Optional[str] = None
+    vps_id: Optional[int] = None

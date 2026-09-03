@@ -352,3 +352,14 @@ async def update_setting(key, value):
             return False
         except Exception:
             return False
+
+async def get_vps_info(vps_id: int):
+    try:
+        async with httpx.AsyncClient() as client:
+            res = await client.get(f"{API_BASE_URL}/admin/vps-orders/{vps_id}/info")
+            if res.status_code == 200:
+                return res.json()
+    except Exception as e:
+        import logging
+        logging.error(f"Error fetching VPS info: {e}")
+    return None

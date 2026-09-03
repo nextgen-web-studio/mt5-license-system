@@ -507,3 +507,20 @@ async def trigger_vps_reminders():
     from app.cron.vps_reminders import run_vps_reminders
     await run_vps_reminders(force_test=True)
     return {"status": "done", "message": "VPS reminders job executed. Check your Telegram for notifications."}
+
+@router.get("/vps-orders/{vps_id}/info")
+async def get_vps_info(vps_id: int, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy.future import select
+    from app.models import VpsOrder, Order, Product
+    result = await db.execute(select(VpsOrder, Order, Product).join(Order, VpsOrder.order_id == Order.id).join(Product, Order.product_id == Product.id).filter(VpsOrder.id == vps_id))
+    row = result.first()
+    if not row:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="VPS not found")
+    vps, order, prod = row
+    return {
+        "id": vps.id,
+        "product_id": prod.id,
+        "product_name": prod.name,
+        "product_price": prod.price
+    }
