@@ -445,7 +445,6 @@ async def mark_vps_paid_by_order(order_id: int, db: AsyncSession = Depends(get_d
 async def force_migration(db: AsyncSession = Depends(get_db)):
     import sqlalchemy as sa
     queries = [
-        "ALTER TABLE orders ADD COLUMN vps_id INTEGER REFERENCES vps_orders(id);",
         "UPDATE orders SET vps_id = 4 WHERE id = 16",
         "UPDATE orders SET vps_id = 7 WHERE id = 14",
         "UPDATE orders SET vps_id = 7 WHERE id = 12",
