@@ -121,9 +121,9 @@ export default function OrdersPage() {
                               onClick={() => {
                                 // Just a toast for now since we don't have the approve API in frontend easily, wait, let's use api.post
                                 api.post(`/api/v1/orders/${order.id}/approve`).then(() => {
-                                  toast.success("Order Approved!");
+                                  toast("Order Approved!", "success");
                                   queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-                                }).catch(() => toast.error("Failed to approve"));
+                                }).catch(() => toast("Failed to approve", "error"));
                               }}
                               className="px-2 py-1 text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded transition-colors" title="Approve">
                               Approve
@@ -186,9 +186,9 @@ export default function OrdersPage() {
                         <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.id}/approve`).then(() => {
-                              toast.success("Order Approved!");
+                              toast("Order Approved!", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-                            }).catch(() => toast.error("Failed to approve"));
+                            }).catch(() => toast("Failed to approve", "error"));
                           }}
                           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors" title="Approve">
                           Approve
