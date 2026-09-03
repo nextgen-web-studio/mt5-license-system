@@ -1089,7 +1089,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         keyboard = []
         for p in products:
-            price_text = f"${p['price']}" if p_type == 'EA' else f"₹{int(p['price'] * await get_usd_inr())}"
+            price_text = f"${p['price']}" if p_type == 'EA' else f"₹{int(p['price'] * await __import__('utils.api_client', fromlist=['']).get_usd_inr_rate())}"
             keyboard.append([InlineKeyboardButton(f"{p['name']} - {price_text}", callback_data=f"prod_{p['id']}")])
             
         keyboard.append([InlineKeyboardButton("?? Back", callback_data="main_menu")])
