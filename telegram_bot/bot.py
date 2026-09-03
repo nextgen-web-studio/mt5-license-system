@@ -139,6 +139,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop('awaiting_mt5_id', None)
     context.user_data.pop('awaiting_trial_mt5_id', None)
     context.user_data.pop('awaiting_name', None)
+        context.user_data.pop('renew_vps_id', None)
     context.user_data.pop('awaiting_vps_email', None)
     context.user_data.pop('awaiting_vps_location', None)
     context.user_data.pop('awaiting_vps_age', None)
@@ -187,6 +188,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.pop('awaiting_trial_mt5_id', None)
         context.user_data.pop('awaiting_phone', None)
         context.user_data.pop('awaiting_name', None)
+        context.user_data.pop('renew_vps_id', None)
     
     if data.startswith("approve_") and not data.startswith("approve_change_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
@@ -1072,6 +1074,33 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         
         await query.edit_message_text(support_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(support_kb))
+        
+    elif data.startswith("renew_vps_"):
+        vps_id = int(data.split("_")[2])
+        context.user_data['renew_vps_id'] = vps_id
+        p_type = "VPS"
+        products = await get_products(product_type=p_type)
+        if not products:
+            try:
+                await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
+            except Exception as e:
+                logging.error(f'Queue Error: {e}')
+            return
+            
+        keyboard = []
+        for p in products:
+            price_text = f"${p['price']}" if p_type == 'EA' else f"₹{int(p['price'] * await get_usd_inr())}"
+            keyboard.append([InlineKeyboardButton(f"{p['name']} - {price_text}", callback_data=f"prod_{p['id']}")])
+            
+        keyboard.append([InlineKeyboardButton("?? Back", callback_data="main_menu")])
+        
+        await query.edit_message_text(
+            f"?? *Renew Your VPS*
+
+Please select a plan to renew VPS #{vps_id}:",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
         
     elif data == "buy_vps":
         p_type = "VPS"
