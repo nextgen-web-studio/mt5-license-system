@@ -76,7 +76,7 @@ export default function CompilerPage() {
                         <span>{job.id}</span>
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">#{job.order_id}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">#{job.order_id}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       {job.status === 'completed' ? (
                         <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">

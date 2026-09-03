@@ -124,7 +124,7 @@ export default function LicensesPage() {
                         <Key size={14} className="text-indigo-400 inline mr-1" />
                         <span className="truncate max-w-[120px] inline-block">{license.license_uuid || license.id}</span>
                       </td>
-                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{license.telegram_id || 'Guest'}</td>
+                      <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">{license.telegram_id || 'Guest'}</td>
                       <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {license.license_type === 'trial' ? (
@@ -146,7 +146,7 @@ export default function LicensesPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
+                      <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
                         {expiryDate ? expiryDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">

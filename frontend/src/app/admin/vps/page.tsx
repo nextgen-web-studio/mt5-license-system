@@ -248,10 +248,10 @@ export default function VpsOrdersPage() {
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
-                <th className="px-6 py-4">Customer</th>
-                <th className="px-6 py-4">Plan</th>
-                <th className="px-6 py-4">Terminals</th>
-                <th className="px-6 py-4">Status</th>
+                <th className="px-3 py-2 md:px-6 md:py-4">Customer</th>
+                <th className="px-3 py-2 md:px-6 md:py-4">Plan</th>
+                <th className="px-3 py-2 md:px-6 md:py-4">Terminals</th>
+                <th className="px-3 py-2 md:px-6 md:py-4">Status</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
@@ -265,11 +265,11 @@ export default function VpsOrdersPage() {
               ) : (
                 vpsOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
-                    <td className="px-6 py-4 text-white">{order.customer || 'Guest'}</td>
-                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{order.plan_name || 'Standard'}</td>
-                    <td className="px-6 py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-white">{order.customer || 'Guest'}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">{order.plan_name || 'Standard'}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4">
                       <div className="flex items-center gap-2">
                         <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
                         {order.screenshot_received && (

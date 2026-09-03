@@ -321,12 +321,12 @@ export default function EaTemplatePage() {
               ) : (
                 versions.map(v => (
                   <tr key={v.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 text-neutral-300">
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">
                       {v.version_label || `#${v.id}`}
                       {v.notes && <p className="text-xs text-neutral-500 mt-0.5 max-w-xs truncate">{v.notes}</p>}
                     </td>
                     <td className="px-6 py-4 text-neutral-400 font-mono text-xs">{v.filename}</td>
-                    <td className="px-6 py-4 text-neutral-400">{formatSize(v.file_size)}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{formatSize(v.file_size)}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       {v.is_active ? (
                         <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">

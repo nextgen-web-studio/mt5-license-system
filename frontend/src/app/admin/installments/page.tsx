@@ -138,16 +138,16 @@ export default function InstallmentsPage() {
               ) : (
                 installments.map((inst: any) => (
                   <tr key={inst.order_id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{inst.order_id}</td>
-                    <td className="px-6 py-4 text-white whitespace-nowrap">{inst.mt5_id || 'N/A'}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-neutral-300 whitespace-nowrap">#{inst.order_id}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-white whitespace-nowrap">{inst.mt5_id || 'N/A'}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       {inst.installment_status === 'active' && <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-medium border border-blue-500/20">Active</span>}
                       {inst.installment_status === 'completed' && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Completed</span>}
                       {inst.installment_status === 'failed' && <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Disabled</span>}
                     </td>
-                    <td className="px-6 py-4 text-neutral-300">?{inst.amount_paid} / ?{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
-                    <td className="px-6 py-4 text-neutral-300">?{inst.amount_remaining}</td>
-                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">?{inst.amount_paid} / ?{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">?{inst.amount_remaining}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
                       {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
                     <td className="px-3 py-2 md:px-6 md:py-4 text-right">
