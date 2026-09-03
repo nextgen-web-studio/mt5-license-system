@@ -125,29 +125,37 @@ export default function OrdersPage() {
               <div className="p-8 text-center text-neutral-500">No orders found.</div>
             ) : (
               orders.map((order: any) => (
-                  <div key={order.id} className="p-3 space-y-2">
-                    <div className="flex justify-between items-start">
+                  <div key={order.id} className="p-3 space-y-3">
+                    <div className="flex justify-between items-center">
                       <span className="font-medium text-white text-xs">#{order.id}</span>
                       {getStatusBadge(order.status)}
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-neutral-500">Product</span>
-                      <span className="text-white text-right font-medium">{order.product || 'Unknown'}</span>
+                    
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-neutral-500 block text-[10px] mb-0.5">Product</span>
+                        <span className="text-white font-medium">{order.product || 'Unknown'}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500 block text-[10px] mb-0.5">Customer</span>
+                        <span className="text-neutral-300">{order.customer || 'Guest'}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500 block text-[10px] mb-0.5">Amount</span>
+                        <span className="text-neutral-300">{currencyFormatter.format(order.amount || 0)}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500 block text-[10px] mb-0.5">Date</span>
+                        <span className="text-neutral-400">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-neutral-500">Customer</span>
-                      <span className="text-neutral-300 text-right">{order.customer || 'Guest'}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-neutral-500">Amount</span>
-                      <span className="text-neutral-300 text-right">{currencyFormatter.format(order.amount || 0)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs items-center pt-1 border-t border-neutral-800/50">
-                      <span className="text-neutral-500 text-[10px]">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+                    
+                    <div className="flex justify-end pt-2 border-t border-neutral-800/50">
                       <button 
                         onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
-                        className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 hover:text-red-400 bg-neutral-800/50 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete Order">
                         <Trash2 size={14} />
+                        Delete
                       </button>
                     </div>
                   </div>

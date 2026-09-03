@@ -236,20 +236,20 @@ export default function ProductsPage() {
                 
                 <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                   <div>
-                    <span className="text-neutral-500 block text-xs mb-1">Type</span>
+                    <span className="text-neutral-500 block text-[10px] mb-0.5">Type</span>
                     <span className="text-neutral-300 capitalize">{product.type}</span>
                   </div>
                   <div>
-                    <span className="text-neutral-500 block text-xs mb-1">Price</span>
+                    <span className="text-neutral-500 block text-[10px] mb-0.5">Price</span>
                     <span className="text-neutral-300">{product.type === 'EA' ? '$' : '\u20B9'}{(product.price || 0).toLocaleString('en-IN')}</span>
                   </div>
                   <div>
-                    <span className="text-neutral-500 block text-xs mb-1">Duration</span>
+                    <span className="text-neutral-500 block text-[10px] mb-0.5">Duration</span>
                     <span className="text-neutral-300">{product.duration} Months</span>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800/50">
+                <div className="flex justify-end gap-1.5 flex-wrap pt-2 border-t border-neutral-800/50">
                   <button 
                     onClick={() => openModal(product)}
                     className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit">
@@ -257,9 +257,7 @@ export default function ProductsPage() {
                   </button>
                   <button 
                     onClick={() => { setDeletingId(product.id); setDeleteModalOpen(true); }}
-                    className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                    <Trash2 size={16} />
-                  </button>
+                    className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded transition-colors"><Trash2 size={13} /> Delete</button>
                 </div>
               </div>
             ))

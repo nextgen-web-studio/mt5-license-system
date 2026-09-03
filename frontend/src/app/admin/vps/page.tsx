@@ -338,17 +338,13 @@ export default function VpsOrdersPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-3 border-t border-neutral-800/50">
+                <div className="flex justify-end gap-2 flex-wrap pt-3 border-t border-neutral-800/50">
                   <button 
                     onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
-                    className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Message User">
-                    <MessageSquare size={16} />
-                  </button>
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors"><MessageSquare size={14} /> Message</button>
                   <button 
                     onClick={() => { openModal(order); }}
-                    className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Provision & Notify">
-                    <Check size={16} />
-                  </button>
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Provision</button>
                 </div>
               </div>
             ))

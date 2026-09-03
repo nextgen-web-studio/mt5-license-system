@@ -218,22 +218,22 @@ export default function LicensesPage() {
                   
                   <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                     <div className="col-span-2 break-all">
-                      <span className="text-neutral-500 block text-xs mb-1">License Key</span>
+                      <span className="text-neutral-500 block text-[10px] mb-0.5">License Key</span>
                       <div className="flex items-center text-neutral-300 font-mono text-xs">
                         <Key size={12} className="mr-2 shrink-0 text-blue-400" />
                         {license.generated_filename || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <span className="text-neutral-500 block text-xs mb-1">Telegram ID</span>
+                      <span className="text-neutral-500 block text-[10px] mb-0.5">Telegram ID</span>
                       <span className="text-neutral-300">{license.telegram_id || 'Unknown'}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-500 block text-xs mb-1">Type</span>
+                      <span className="text-neutral-500 block text-[10px] mb-0.5">Type</span>
                       <span className="text-neutral-300 capitalize">{license.license_type || 'Lifetime'}</span>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-neutral-500 block text-xs mb-1">Expiry Date</span>
+                      <span className="text-neutral-500 block text-[10px] mb-0.5">Expiry Date</span>
                       <span className="text-neutral-300">
                         {license.license_type === 'lifetime' 
                           ? 'Never' 
@@ -244,12 +244,10 @@ export default function LicensesPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-3 border-t border-neutral-800/50">
+                  <div className="flex justify-end gap-1.5 flex-wrap pt-3 border-t border-neutral-800/50">
                     <button 
                       onClick={() => copyToClipboard(license.license_uuid || String(license.id))}
-                      className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Copy Key">
-                      <Copy size={16} />
-                    </button>
+                      className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-neutral-300 bg-neutral-800/80 hover:bg-neutral-700 border border-neutral-700/50 rounded transition-colors"><Copy size={13} /> Copy</button>
                     <button 
                       onClick={async () => {
                         try {
@@ -264,14 +262,10 @@ export default function LicensesPage() {
                     </button>
                     <button 
                       onClick={() => setEditingLicense(license)}
-                      className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors" title="Edit License">
-                      <Edit2 size={16} />
-                    </button>
+                      className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded transition-colors"><Edit2 size={13} /> Edit</button>
                     <button 
                       onClick={() => { setDeletingId(license.id); setDeleteModalOpen(true); }}
-                      className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
-                      <Trash2 size={16} />
-                    </button>
+                      className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded transition-colors"><Trash2 size={13} /> Delete</button>
                   </div>
                 </div>
               );
