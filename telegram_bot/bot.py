@@ -139,7 +139,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop('awaiting_mt5_id', None)
     context.user_data.pop('awaiting_trial_mt5_id', None)
     context.user_data.pop('awaiting_name', None)
-        context.user_data.pop('renew_vps_id', None)
+    context.user_data.pop('renew_vps_id', None)
     context.user_data.pop('awaiting_vps_email', None)
     context.user_data.pop('awaiting_vps_location', None)
     context.user_data.pop('awaiting_vps_age', None)
@@ -188,7 +188,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.pop('awaiting_trial_mt5_id', None)
         context.user_data.pop('awaiting_phone', None)
         context.user_data.pop('awaiting_name', None)
-        context.user_data.pop('renew_vps_id', None)
+    context.user_data.pop('renew_vps_id', None)
     
     if data.startswith("approve_") and not data.startswith("approve_change_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
