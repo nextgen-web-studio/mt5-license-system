@@ -1078,24 +1078,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("renew_vps_"):
         vps_id = int(data.split("_")[2])
         context.user_data['renew_vps_id'] = vps_id
-        p_type = "VPS"
-        products = await get_products(product_type=p_type)
-        if not products:
-            try:
-                await query.edit_message_text(f"No {p_type} products available.", reply_markup=await build_main_menu(update.effective_user.id))
-            except Exception as e:
-                logging.error(f'Queue Error: {e}')
+        
+        from utils.api_client import get_vps_info
+        vps_info = await get_vps_info(vps_id)
+        
+        if not vps_info:
+            await query.edit_message_text("? Could not find VPS details.", reply_markup=await build_main_menu(update.effective_user.id))
             return
             
-        keyboard = []
-        for p in products:
-            price_text = f"${p['price']}" if p_type == 'EA' else f"₹{int(p['price'] * await __import__('utils.api_client', fromlist=['']).get_usd_inr_rate())}"
-            keyboard.append([InlineKeyboardButton(f"{p['name']} - {price_text}", callback_data=f"prod_{p['id']}")])
-            
-        keyboard.append([InlineKeyboardButton("?? Back", callback_data="main_menu")])
+        keyboard = [
+            [InlineKeyboardButton(f"? Proceed to Renew (?{vps_info['product_price']})", callback_data=f"buy_product_{vps_info['product_id']}_VPS")],
+            [InlineKeyboardButton("?? Cancel", callback_data="main_menu")]
+        ]
         
         await query.edit_message_text(
-            f"?? *Renew Your VPS*\n\nPlease select a plan to renew VPS #{vps_id}:",
+            f"?? *Renew Your VPS*\n\n"
+            f"You are renewing your **{vps_info['product_name']}**.\n"
+            f"**Price:** ?{vps_info['product_price']}\n\n"
+            f"Press Proceed below to continue to payment.",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
