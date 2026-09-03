@@ -215,22 +215,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             mt5_id = resp.get("mt5_id", "")
             order_type = resp.get("order_type", "")
             
-                        if order_type == "VPS":
+            if order_type == "VPS":
                 is_renewal = resp.get("is_renewal", False)
                 new_expiry = resp.get("new_expiry", "")
                 
                 if is_renewal:
                     await query.edit_message_text(
-                        f"✅ VPS Renewal #{order_id} has been APPROVED.
-
-Expiry extended to: {new_expiry}",
+                        f"✅ VPS Renewal #{order_id} has been APPROVED.\n\nExpiry extended to: {new_expiry}",
                         parse_mode="Markdown"
                     )
                 else:
                     await query.edit_message_text(
-                        f"✅ VPS Order #{order_id} has been APPROVED.
-
-Please contact the customer directly to provide their VPS details.",
+                        f"✅ VPS Order #{order_id} has been APPROVED.\n\nPlease contact the customer directly to provide their VPS details.",
                         parse_mode="Markdown"
                     )
                 try:
@@ -238,21 +234,14 @@ Please contact the customer directly to provide their VPS details.",
                     if telegram_id:
                         if is_renewal:
                             msg = (
-                                f"✅ *YOUR VPS HAS BEEN RENEWED!*
-
-"
-                                f"Your VPS renewal (ORD-{order_id}) has been successfully approved.
-"
+                                f"✅ *YOUR VPS HAS BEEN RENEWED!*\n\n"
+                                f"Your VPS renewal (ORD-{order_id}) has been successfully approved.\n"
                                 f"Your server expiry date has been extended to: **{new_expiry}**."
                             )
                         else:
                             msg = (
-                                f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*
-
-"
-                                f"Your VPS order (ORD-{order_id}) has been approved.
-
-"
+                                f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*\n\n"
+                                f"Your VPS order (ORD-{order_id}) has been approved.\n\n"
                                 f"The admin will contact you shortly to provide your VPS credentials."
                             )
                         await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
