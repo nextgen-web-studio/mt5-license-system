@@ -149,7 +149,8 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
             "customer": user.name or user.username or "Unknown",
             "amount": amount,
             "status": order.status,
-            "date": order.created_at
+            "date": order.created_at,
+            "is_renewal": bool(order.vps_id)
         })
     return orders
 

@@ -100,7 +100,16 @@ export default function OrdersPage() {
                   orders.map((order: any) => (
                     <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
                       <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.id}</td>
-                      <td className="px-3 py-2 md:px-6 md:py-4 text-white">{order.product || 'Unknown'}</td>
+                      <td className="px-3 py-2 md:px-6 md:py-4 text-white">
+                        <span className="flex items-center gap-2">
+                          {order.product || 'Unknown'}
+                          {order.is_renewal && (
+                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
+                              🔄 Renewal
+                            </span>
+                          )}
+                        </span>
+                      </td>
                       <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{order.customer || 'Guest'}</td>
                         <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">{currencyFormatter.format(order.amount || 0)}</td>
                       <td className="px-3 py-2 md:px-6 md:py-4">{getStatusBadge(order.status)}</td>
@@ -134,7 +143,14 @@ export default function OrdersPage() {
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <span className="text-neutral-500 block text-[10px] mb-0.5">Product</span>
-                        <span className="text-white font-medium">{order.product || 'Unknown'}</span>
+                        <span className="text-white font-medium flex items-center gap-2">
+                          {order.product || 'Unknown'}
+                          {order.is_renewal && (
+                            <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
+                              🔄 Renewal
+                            </span>
+                          )}
+                        </span>
                       </div>
                       <div>
                         <span className="text-neutral-500 block text-[10px] mb-0.5">Customer</span>
