@@ -115,17 +115,18 @@ export default function InstallmentsPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="overflow-x-auto min-h-[300px]">
-          <table className="min-w-full text-xs md:text-sm text-left">
-            <thead className="text-[10px] md:text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto min-h-[300px]">
+          <table className="min-w-full text-sm text-left">
+            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap">Order ID</th>
-                <th className="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap">MT5 ID</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Status</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Paid / Total</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Remaining</th>
-                <th className="px-3 py-2 md:px-6 md:py-4 whitespace-nowrap">Next Due</th>
-                <th className="px-3 py-2 md:px-6 md:py-4 text-right whitespace-nowrap">Actions</th>
+                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">MT5 ID</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Paid / Total</th>
+                <th className="px-6 py-4">Remaining</th>
+                <th className="px-6 py-4 whitespace-nowrap">Next Due</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -138,36 +139,24 @@ export default function InstallmentsPage() {
               ) : (
                 installments.map((inst: any) => (
                   <tr key={inst.order_id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-neutral-300 whitespace-nowrap">#{inst.order_id}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-white whitespace-nowrap">{inst.mt5_id || 'N/A'}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4">
+                    <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{inst.order_id}</td>
+                    <td className="px-6 py-4 text-white whitespace-nowrap">{inst.mt5_id || 'N/A'}</td>
+                    <td className="px-6 py-4">
                       {inst.installment_status === 'active' && <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-medium border border-blue-500/20">Active</span>}
                       {inst.installment_status === 'completed' && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Completed</span>}
                       {inst.installment_status === 'failed' && <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Disabled</span>}
                     </td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">?{inst.amount_paid} / ?{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">?{inst.amount_remaining}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
+                    <td className="px-6 py-4 text-neutral-300">₹{inst.amount_paid} / ₹{inst.total_amount} ({inst.installments_paid}/{inst.installment_count})</td>
+                    <td className="px-6 py-4 text-neutral-300">₹{inst.amount_remaining}</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
                       {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-right">
+                    <td className="px-6 py-4 text-right">
                       {inst.installment_status === 'active' && (
                         <div className="flex items-center justify-end gap-1">
-                          <button 
-                            onClick={() => handlePayClick(inst)}
-                            className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Record Next Installment Payment">
-                            <CheckCircle size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleSettleClick(inst)}
-                            className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Settle Full Amount & Deliver Lifetime EA">
-                            <DollarSign size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleDisableClick(inst)}
-                            className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Disable Arrangement">
-                            <Ban size={16} />
-                          </button>
+                          <button onClick={() => handlePayClick(inst)} className="p-2 text-neutral-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors" title="Record Next Installment Payment"><CheckCircle size={16} /></button>
+                          <button onClick={() => handleSettleClick(inst)} className="p-2 text-neutral-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors" title="Settle Full Amount & Deliver Lifetime EA"><DollarSign size={16} /></button>
+                          <button onClick={() => handleDisableClick(inst)} className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Disable Arrangement"><Ban size={16} /></button>
                         </div>
                       )}
                     </td>
@@ -176,6 +165,62 @@ export default function InstallmentsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden flex flex-col divide-y divide-neutral-800">
+          {installments.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No installment plans found.</div>
+          ) : (
+            installments.map((inst: any) => (
+              <div key={inst.order_id} className="p-3 space-y-2">
+                {/* Header row */}
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white text-xs">#{inst.order_id}</span>
+                    <span className="font-mono text-xs text-blue-300">{inst.mt5_id || 'N/A'}</span>
+                  </div>
+                  {inst.installment_status === 'active' && <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-[10px] font-medium border border-blue-500/20">Active</span>}
+                  {inst.installment_status === 'completed' && <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded text-[10px] font-medium border border-emerald-500/20">Completed</span>}
+                  {inst.installment_status === 'failed' && <span className="px-2 py-0.5 bg-red-500/10 text-red-400 rounded text-[10px] font-medium border border-red-500/20">Disabled</span>}
+                </div>
+
+                {/* Details grid */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-neutral-500 block text-[10px] mb-0.5">Paid / Total</span>
+                    <span className="text-neutral-300">₹{inst.amount_paid} / ₹{inst.total_amount}</span>
+                    <span className="text-neutral-500 text-[10px] ml-1">({inst.installments_paid}/{inst.installment_count})</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-[10px] mb-0.5">Remaining</span>
+                    <span className="text-neutral-300">₹{inst.amount_remaining}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-neutral-500 block text-[10px] mb-0.5">Next Due</span>
+                    <span className="text-neutral-400">
+                      {inst.installment_status === 'completed' ? '—' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                {inst.installment_status === 'active' && (
+                  <div className="flex items-center gap-2 pt-1 border-t border-neutral-800/50">
+                    <button onClick={() => handlePayClick(inst)} className="flex items-center gap-1 px-2 py-1 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded transition-colors">
+                      <CheckCircle size={13} /> Record Payment
+                    </button>
+                    <button onClick={() => handleSettleClick(inst)} className="flex items-center gap-1 px-2 py-1 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded transition-colors">
+                      <DollarSign size={13} /> Settle
+                    </button>
+                    <button onClick={() => handleDisableClick(inst)} className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors">
+                      <Ban size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     
