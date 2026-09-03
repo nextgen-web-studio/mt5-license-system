@@ -1095,9 +1095,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard.append([InlineKeyboardButton("?? Back", callback_data="main_menu")])
         
         await query.edit_message_text(
-            f"?? *Renew Your VPS*
-
-Please select a plan to renew VPS #{vps_id}:",
+            f"?? *Renew Your VPS*\n\nPlease select a plan to renew VPS #{vps_id}:",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
