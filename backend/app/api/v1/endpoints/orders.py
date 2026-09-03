@@ -148,6 +148,34 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
         order.status = "approved_waiting_for_mt5_id"
         
     await db.commit()
+    
+    # Send Telegram notification automatically if it's a VPS order
+    if order.order_type == "VPS" and user.telegram_id:
+        import os
+        import httpx
+        import asyncio
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if bot_token:
+            if is_renewal:
+                msg = f"✅ *YOUR VPS HAS BEEN RENEWED!*
+
+Your VPS renewal (ORD-{order_id}) has been successfully approved.
+Your server expiry date has been extended to: **{new_expiry_str}**."
+            else:
+                msg = f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*
+
+Your VPS order (ORD-{order_id}) has been approved.
+
+The admin will contact you shortly to provide your VPS credentials."
+            
+            async def send_tg():
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                    )
+            asyncio.create_task(send_tg())
+            
     return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id, "mt5_id": order.mt5_id or "", "order_type": order.order_type, "is_renewal": is_renewal, "new_expiry": new_expiry_str}
 
 @router.put("/{order_id}/mt5")

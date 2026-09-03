@@ -268,7 +268,16 @@ export default function VpsOrdersPage() {
                   <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4 text-white">{order.customer || 'Guest'}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">{order.plan_name || 'Standard'}</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
+                    <span className="flex items-center gap-2">
+                      {order.plan_name || 'Standard'}
+                      {order.is_renewal && (
+                        <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
+                          🔄 Renewal
+                        </span>
+                      )}
+                    </span>
+                  </td>
                     <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       <div className="flex items-center gap-2">
@@ -288,14 +297,28 @@ export default function VpsOrdersPage() {
                       >
                         <MessageSquare size={16} />
                       </button>
-                      {order.status !== 'provisioned' && (
-                        <button 
-                          onClick={() => openModal(order)}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
-                        >
-                          Provision
-                        </button>
-                      )}
+                      {order.status !== 'provisioned' && order.status !== 'delivered' && (
+                          order.is_renewal ? (
+                            <button 
+                              onClick={() => {
+                                api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
+                                  toast("Renewal Approved!", "success");
+                                  queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                                }).catch(() => toast("Failed to approve", "error"));
+                              }}
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
+                            >
+                              Approve
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => openModal(order)}
+                              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
+                            >
+                              Provision
+                            </button>
+                          )
+                        )}
                     </td>
                   </tr>
                 ))
@@ -350,9 +373,20 @@ export default function VpsOrdersPage() {
                   <button 
                     onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors"><MessageSquare size={14} /> Message</button>
-                  <button 
-                    onClick={() => { openModal(order); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Provision</button>
+                  {order.is_renewal ? (
+                      <button 
+                        onClick={() => {
+                          api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
+                            toast("Renewal Approved!", "success");
+                            queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                          }).catch(() => toast("Failed to approve", "error"));
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Approve</button>
+                    ) : (
+                      <button 
+                        onClick={() => { openModal(order); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Provision</button>
+                    )}
                 </div>
               </div>
             ))
