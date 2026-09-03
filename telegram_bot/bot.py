@@ -867,10 +867,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Notify Admin
         admin_chat_id = os.getenv("ADMIN_CHAT_ID")
         if admin_chat_id:
+            tg_user = update.effective_user.username
+            tg_username = f"@{tg_user}" if tg_user else "N/A"
+            
             admin_msg = (
                 f"🔄 *BROKER CHANGE REQUEST*\n\n"
                 f"Request ID: `#BCR-{request_id}`\n"
                 f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
+                f"Telegram Username: `{tg_username}`\n"
                 f"Telegram ID: `{tid}`\n\n"
                 f"Selected License ID: `{lic_id}`\n"
                 f"Old MT5 ID: `{context.user_data.get('bc_old_mt5_id')}`\n"
@@ -1287,6 +1291,9 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     
     vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID", os.getenv("ADMIN_CHAT_ID"))
     if vps_admin_id:
+        tg_user = update.effective_user.username
+        tg_username = f"@{tg_user}" if tg_user else "N/A"
+        
         admin_msg = (
             f"*NEW VPS INQUIRY*\n\n"
             f"Order ID: `#ORD-{order['id']}`\n"
@@ -1296,6 +1303,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
             f"Location: `{db_user.get('location', 'N/A')}`\n"
             f"Age: `{db_user.get('age', 'N/A')}`\n"
             f"Occupation: `{db_user.get('occupation', 'N/A')}`\n"
+            f"Telegram Username: `{tg_username}`\n"
             f"Telegram ID: `{update.effective_user.id}`\n"
             f"Plan Selected: `{product['name'] if product else 'Unknown'}`"
         )
@@ -1419,12 +1427,16 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         
     admin_chat_id = os.getenv("ADMIN_CHAT_ID")
     if admin_chat_id:
+        tg_user = update.effective_user.username
+        tg_username = f"@{tg_user}" if tg_user else "N/A"
+        
         admin_msg = (
             f"🆕 *NEW EA ORDER*\n\n"
             f"Order ID: `#ORD-{order['id']}`\n"
             f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
             f"Phone: `{context.user_data.get('db_user_phone', 'Unknown')}`\n"
             f"MT5 ID: `{mt5_id}`\n"
+            f"Telegram Username: `{tg_username}`\n"
             f"Telegram ID: `{update.effective_user.id}`\n"
             f"Plan: `{product['name'] if product else 'Unknown'}`\n"
             f"Status: `Pending Admin Approval`"
