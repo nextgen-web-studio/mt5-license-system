@@ -50,14 +50,14 @@ export default function CompilerPage() {
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="overflow-x-auto min-h-[300px]">
-          <table className="min-w-full text-xs text-left">
-            <thead className="text-[10px] text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+          <table className="min-w-full text-sm text-left">
+            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-3 py-2 whitespace-nowrap">Job ID</th>
-                <th className="px-3 py-2 whitespace-nowrap">Order ID</th>
-                <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2">Logs</th>
-                <th className="px-3 py-2 text-right whitespace-nowrap">Timestamp</th>
+                <th className="px-6 py-4 whitespace-nowrap">Job ID</th>
+                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Logs</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Timestamp</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -77,7 +77,7 @@ export default function CompilerPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">#{job.order_id}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-6 py-4">
                       {job.status === 'completed' ? (
                         <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
                           <CheckCircle2 size={14} />

@@ -301,7 +301,7 @@ export default function EaTemplatePage() {
 
         <div className="overflow-x-auto min-h-[300px]">
           <table className="w-full text-sm text-left">
-            <thead className="text-[10px] text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-3">Version</th>
                 <th className="px-6 py-3">File</th>
@@ -327,7 +327,7 @@ export default function EaTemplatePage() {
                     </td>
                     <td className="px-6 py-4 text-neutral-400 font-mono text-xs">{v.filename}</td>
                     <td className="px-6 py-4 text-neutral-400">{formatSize(v.file_size)}</td>
-                    <td className="px-3 py-2">
+                    <td className="px-6 py-4">
                       {v.is_active ? (
                         <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
                           <CheckCircle2 size={14} /> Active
@@ -340,7 +340,7 @@ export default function EaTemplatePage() {
                       <Clock size={12} />
                       {v.created_at ? new Date(v.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         {!v.is_active && (
                           <button
