@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import os
 import httpx
 from datetime import datetime, timedelta, timezone
@@ -19,7 +19,6 @@ async def run_vps_reminders(force_test: bool = False):
         return
 
     async with AsyncSessionLocal() as db:
-        # Find active VPS orders with an expiry date
         result = await db.execute(select(VpsOrder).filter(VpsOrder.status == "provisioned"))
         vps_orders = result.scalars().all()
         
@@ -34,25 +33,29 @@ async def run_vps_reminders(force_test: bool = False):
                 expiry_dt = vps.expiry_date if vps.expiry_date.tzinfo else vps.expiry_date.replace(tzinfo=timezone.utc)
                 days_left = (expiry_dt - now).days
                 
-                # Check if it's exactly 5 days left (or 4 days if we consider fraction of days depending on when cron runs)
                 if force_test or days_left == 5 or days_left == 4:
                     user_res = await db.execute(select(User).filter(User.id == vps.user_id))
                     user = user_res.scalar_one_or_none()
                     
                     if user and user.telegram_id:
-                        due_str = expiry_dt.strftime('%d %B %Y')
+                        due_str = expiry_dt.strftime("%d %B %Y")
                         msg = (
                             f"🔔 *VPS RENEWAL REMINDER*\n\n"
                             f"Your VPS server is expiring in *{days_left} days*.\n\n"
-                            f"🖥️ **Hostname:** `{vps.hostname or 'N/A'}`\n"
+                            f"💻 **Hostname:** `{vps.hostname or 'N/A'}`\n"
                             f"🌐 **IP:** `{vps.ip}`\n"
                             f"📅 **Due Date:** {due_str}\n\n"
-                            f"⚠️ Please renew your VPS via the main menu to avoid downtime and data loss."
+                            f"⚠️ Please renew your VPS now to avoid downtime and data loss."
                         )
+                        keyboard = {
+                            "inline_keyboard": [
+                                [{"text": "🔄 Renew VPS", "callback_data": f"renew_vps_{vps.id}"}]
+                            ]
+                        }
                         try:
                             await client.post(
                                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                                json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                                json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown", "reply_markup": keyboard}
                             )
                             notified_count += 1
                         except Exception as e:
