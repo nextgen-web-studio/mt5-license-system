@@ -36,21 +36,24 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    import subprocess
-    import os
-    print("Running automatic database migrations...")
-    try:
-        # Run migrations using alembic
-        subprocess.run(["alembic", "upgrade", "head"], check=False)
-        print("Migrations completed successfully.")
-    except Exception as e:
-        print(f"Failed to run migrations: {e}")
-        
     try:
         from app.db.database import AsyncSessionLocal
         from app.models import Product
         from sqlalchemy import update
+        import sqlalchemy as sa
+        
         async with AsyncSessionLocal() as session:
+            # Safely add columns if they don't exist
+            try:
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR;"))
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR;"))
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR;"))
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation VARCHAR;"))
+                await session.commit()
+                print("Database columns verified/added successfully.")
+            except Exception as db_e:
+                print(f"Failed to run ALTER TABLE: {db_e}")
+                
             await session.execute(update(Product).where(Product.type == "EA").values(price=500.0))
             await session.commit()
             print("Successfully updated EA product price to 500")
