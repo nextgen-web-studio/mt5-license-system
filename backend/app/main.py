@@ -36,6 +36,16 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    import subprocess
+    import os
+    print("Running automatic database migrations...")
+    try:
+        # Run migrations using alembic
+        subprocess.run(["alembic", "upgrade", "head"], check=False)
+        print("Migrations completed successfully.")
+    except Exception as e:
+        print(f"Failed to run migrations: {e}")
+        
     try:
         from app.db.database import AsyncSessionLocal
         from app.models import Product
