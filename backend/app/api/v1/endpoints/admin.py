@@ -199,8 +199,39 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
             "purchased_date": vps.purchased_date,
             "expiry_date": vps.expiry_date,
             "created_at": vps.created_at,
-            "screenshot_received": getattr(vps, 'screenshot_received', False) or False
+            "screenshot_received": getattr(vps, 'screenshot_received', False) or False,
+            "is_renewal": False
         })
+        
+    # Also fetch RENEWAL orders
+    renewal_res = await db.execute(
+        select(Order, User, Product, VpsOrder)
+        .join(User, Order.user_id == User.id)
+        .join(Product, Order.product_id == Product.id)
+        .join(VpsOrder, Order.vps_id == VpsOrder.id)
+        .filter(Order.order_type == "VPS")
+        .filter(Order.vps_id.isnot(None))
+    )
+    for order, user, product, vps in renewal_res.all():
+        orders.append({
+            "id": vps.id,
+            "order_id": order.id,
+            "customer": user.name or user.username or "Unknown",
+            "telegram_id": user.telegram_id,
+            "plan_name": product.name,
+            "duration": product.duration or 1,
+            "status": order.status,
+            "ip": vps.ip,
+            "hostname": vps.hostname,
+            "username": vps.username,
+            "purchased_date": vps.purchased_date,
+            "expiry_date": vps.expiry_date,
+            "created_at": order.created_at,
+            "screenshot_received": False,
+            "is_renewal": True
+        })
+        
+    orders.sort(key=lambda x: x["created_at"], reverse=True)
     return orders
 
 @router.post("/vps-orders/{vps_id}/provision")
