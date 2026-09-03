@@ -1327,6 +1327,8 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     from utils.api_client import create_order
     vps_id = context.user_data.get('renew_vps_id')
     order = await create_order(user_id, product_id, "VPS", mt5_id="VPS_ORDER", vps_id=vps_id)
+    if vps_id:
+        context.user_data['is_vps_renewal'] = True
     context.user_data.pop('renew_vps_id', None)
     if not order or "error" in order:
         if update.message:
@@ -1372,7 +1374,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
         tg_user = update.effective_user.username
         tg_username = f"@{tg_user}" if tg_user else "N/A"
         
-        is_renewal = context.user_data.get('renew_vps_id') is not None
+        is_renewal = context.user_data.pop('is_vps_renewal', False)
         title = "🔄 *VPS RENEWAL INITIATED*" if is_renewal else "🔔 *NEW VPS INQUIRY*"
         admin_msg = (
             f"{title}\n\n"
@@ -1407,7 +1409,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         if vps_admin_id:
             user = update.effective_user
-            is_renewal = context.user_data.get('renew_vps_id') is not None
+            is_renewal = context.user_data.pop('is_vps_renewal', False)
             title = "🔄 *NEW VPS RENEWAL PAYMENT*" if is_renewal else "🔔 *NEW VPS PAYMENT SCREENSHOT*"
             action_text = "Please verify this payment and click APPROVE to automatically extend the VPS expiry." if is_renewal else "Please verify this payment and go to the Admin Dashboard to Provision the VPS."
             
@@ -1467,6 +1469,8 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         
     vps_id = context.user_data.get('renew_vps_id')
     order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id, vps_id=vps_id)
+    if vps_id and p_type == "VPS":
+        context.user_data['is_vps_renewal'] = True
     context.user_data.pop('renew_vps_id', None)
     if not order or "error" in order:
         err = order.get("error", "Unknown") if order else "Failed to create order"
