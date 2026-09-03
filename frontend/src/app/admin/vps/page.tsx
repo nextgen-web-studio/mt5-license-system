@@ -252,13 +252,14 @@ export default function VpsOrdersPage() {
                 <th className="px-3 py-2 md:px-6 md:py-4">Plan</th>
                 <th className="px-3 py-2 md:px-6 md:py-4">Terminals</th>
                 <th className="px-3 py-2 md:px-6 md:py-4">Status</th>
+                <th className="px-3 py-2 md:px-6 md:py-4">Expiry</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
               {vpsOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-neutral-500">
                     No VPS orders found.
                   </td>
                 </tr>
@@ -413,30 +414,7 @@ export default function VpsOrdersPage() {
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-medium text-neutral-400 mb-1">Purchased Date</label>
-                  <input 
-                    type="datetime-local" 
-                    required
-                    style={{ colorScheme: 'dark' }}
-                    value={purchasedDate}
-                    onChange={(e) => setPurchasedDate(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-400 mb-1">Expiry Date & Time</label>
-                  <input 
-                    type="datetime-local" 
-                    required
-                    style={{ colorScheme: 'dark' }}
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
+
               
               <div className="pt-4 flex justify-end space-x-3">
                 <button 

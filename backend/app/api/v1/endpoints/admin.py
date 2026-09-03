@@ -216,18 +216,20 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
     vps_order.username = data.username
     vps_order.password = data.password
     
-    if data.purchased_date:
-        from dateutil.parser import parse
-        vps_order.purchased_date = parse(data.purchased_date)
-    if data.expiry_date:
-        from dateutil.parser import parse
-        vps_order.expiry_date = parse(data.expiry_date)
-        
-    vps_order.status = "provisioned"
-    
-    # 2. Update parent Order
+    # Fetch product to calculate auto expiry
     order_result = await db.execute(select(Order, Product).join(Product, Order.product_id == Product.id).filter(Order.id == vps_order.order_id))
     order_data = order_result.first()
+    
+    from datetime import datetime, timezone
+    from dateutil.relativedelta import relativedelta
+    
+    if not vps_order.purchased_date:
+        vps_order.purchased_date = datetime.now(timezone.utc)
+        
+    if not vps_order.expiry_date and order_data and order_data.Product:
+        vps_order.expiry_date = vps_order.purchased_date + relativedelta(months=order_data.Product.duration)
+        
+    vps_order.status = "provisioned" 
     product_name = "VPS Package"
     if order_data:
         order, product = order_data
@@ -472,7 +474,8 @@ async def force_screenshot_migration(db: AsyncSession = Depends(get_db)):
     import sqlalchemy as sa
     queries = [
         "ALTER TABLE vps_orders ADD COLUMN screenshot_received BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE vps_orders ADD COLUMN screenshot_file_id VARCHAR;"
+        "ALTER TABLE vps_orders ADD COLUMN screenshot_file_id VARCHAR;",
+        "ALTER TABLE orders ADD COLUMN vps_id INTEGER REFERENCES vps_orders(id);"
     ]
     results = []
     for q in queries:
