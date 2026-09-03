@@ -121,7 +121,7 @@ async def get_usd_inr_rate() -> float:
         pass
     return 84.0  # Fallback
 
-async def create_order(user_id, product_id, order_type, mt5_id=None):
+async def create_order(user_id, product_id, order_type, mt5_id=None, vps_id=None):
     async with httpx.AsyncClient() as client:
         try:
             payload = {
@@ -131,6 +131,8 @@ async def create_order(user_id, product_id, order_type, mt5_id=None):
             }
             if mt5_id:
                 payload["mt5_id"] = mt5_id
+            if vps_id:
+                payload["vps_id"] = vps_id
                 
             response = await client.post(
                 f"{BASE_URL}/orders/",

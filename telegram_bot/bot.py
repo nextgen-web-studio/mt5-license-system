@@ -198,7 +198,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.pop('awaiting_trial_mt5_id', None)
         context.user_data.pop('awaiting_phone', None)
         context.user_data.pop('awaiting_name', None)
-    context.user_data.pop('renew_vps_id', None)
+        context.user_data.pop('renew_vps_id', None)
     
     if data.startswith("approve_") and not data.startswith("approve_change_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
@@ -215,19 +215,46 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             mt5_id = resp.get("mt5_id", "")
             order_type = resp.get("order_type", "")
             
-            if order_type == "VPS":
-                await query.edit_message_text(
-                    f"✅ VPS Order #{order_id} has been APPROVED.\n\nPlease contact the customer directly to provide their VPS details.",
-                    parse_mode="Markdown"
-                )
+                        if order_type == "VPS":
+                is_renewal = resp.get("is_renewal", False)
+                new_expiry = resp.get("new_expiry", "")
+                
+                if is_renewal:
+                    await query.edit_message_text(
+                        f"✅ VPS Renewal #{order_id} has been APPROVED.
+
+Expiry extended to: {new_expiry}",
+                        parse_mode="Markdown"
+                    )
+                else:
+                    await query.edit_message_text(
+                        f"✅ VPS Order #{order_id} has been APPROVED.
+
+Please contact the customer directly to provide their VPS details.",
+                        parse_mode="Markdown"
+                    )
                 try:
                     telegram_id = resp.get("telegram_id")
                     if telegram_id:
-                        msg = (
-                            f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*\n\n"
-                            f"Your VPS order (ORD-{order_id}) has been approved.\n\n"
-                            f"The admin will contact you shortly to provide your VPS credentials."
-                        )
+                        if is_renewal:
+                            msg = (
+                                f"✅ *YOUR VPS HAS BEEN RENEWED!*
+
+"
+                                f"Your VPS renewal (ORD-{order_id}) has been successfully approved.
+"
+                                f"Your server expiry date has been extended to: **{new_expiry}**."
+                            )
+                        else:
+                            msg = (
+                                f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*
+
+"
+                                f"Your VPS order (ORD-{order_id}) has been approved.
+
+"
+                                f"The admin will contact you shortly to provide your VPS credentials."
+                            )
                         await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
                 except Exception as e:
                     logging.error(f"Failed to notify user: {e}")
@@ -1309,7 +1336,8 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
         return
         
     from utils.api_client import create_order
-    order = await create_order(user_id, product_id, "VPS", mt5_id="VPS_ORDER")
+    vps_id = context.user_data.get('renew_vps_id')
+    order = await create_order(user_id, product_id, "VPS", mt5_id="VPS_ORDER", vps_id=vps_id)
     if not order or "error" in order:
         if update.message:
             await update.message.reply_text("Failed to create VPS order.", parse_mode="Markdown")
@@ -1387,15 +1415,26 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         if vps_admin_id:
             user = update.effective_user
+            is_renewal = context.user_data.get('renew_vps_id') is not None
+            title = "🔄 *NEW VPS RENEWAL PAYMENT*" if is_renewal else "🔔 *NEW VPS PAYMENT SCREENSHOT*"
+            action_text = "Please verify this payment and click APPROVE to automatically extend the VPS expiry." if is_renewal else "Please verify this payment and go to the Admin Dashboard to Provision the VPS."
+            
             caption = (
-                f"📸 *NEW VPS PAYMENT SCREENSHOT*\n\n"
+                f"{title}\n\n"
                 f"**Customer:** {user.full_name} (@{user.username})\n"
                 f"**Order ID:** #ORD-{vps_order_id}\n"
                 f"**Telegram ID:** `{user.id}`\n\n"
-                f"Please verify this payment and go to the Admin Dashboard to Provision the VPS."
+                f"{action_text}"
             )
+            
+            kb = []
+            if is_renewal:
+                kb = [[InlineKeyboardButton("✅ APPROVE RENEWAL", callback_data=f"approve_{vps_order_id}")]]
+                
+            reply_markup = InlineKeyboardMarkup(kb) if kb else None
+            
             try:
-                await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown")
+                await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown", reply_markup=reply_markup)
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin: {e}")
             
@@ -1434,7 +1473,8 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             await update.callback_query.edit_message_text("Session expired. Please /start again.")
         return
         
-    order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id)
+    vps_id = context.user_data.get('renew_vps_id')
+    order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id, vps_id=vps_id)
     if not order or "error" in order:
         err = order.get("error", "Unknown") if order else "Failed to create order"
         msg = f"❌ *Error:*\n\n{err}"
