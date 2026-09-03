@@ -219,7 +219,7 @@ export default function ProductsPage() {
             <div className="p-8 text-center text-neutral-500">No products found.</div>
           ) : (
             products.map((product: any) => (
-              <div key={product.id} className="p-4 space-y-3">
+              <div key={product.id} className="p-3 space-y-2">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded bg-neutral-800 flex items-center justify-center shrink-0">
@@ -234,7 +234,7 @@ export default function ProductsPage() {
                   )}
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                   <div>
                     <span className="text-neutral-500 block text-xs mb-1">Type</span>
                     <span className="text-neutral-300 capitalize">{product.type}</span>
@@ -295,7 +295,7 @@ export default function ProductsPage() {
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Product Name</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Product Name</label>
                 <input 
                   type="text" 
                   required
@@ -306,9 +306,9 @@ export default function ProductsPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Product Type</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Product Type</label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
@@ -320,7 +320,7 @@ export default function ProductsPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">
                     {type === 'EA' ? 'Price ($)' : 'Price (\u20B9)'}
                   </label>
                   <input 
@@ -337,7 +337,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Duration (Months)</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Duration (Months)</label>
                 <input 
                   type="number" 
                   required
@@ -350,7 +350,7 @@ export default function ProductsPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Description (Optional)</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Description (Optional)</label>
                 <textarea 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}

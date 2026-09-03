@@ -375,7 +375,7 @@ export default function VpsOrdersPage() {
             
             <form onSubmit={handleProvision} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Hostname / Server Name</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Hostname / Server Name</label>
                 <input 
                   type="text" 
                   value={hostname}
@@ -384,9 +384,9 @@ export default function VpsOrdersPage() {
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Main IP Address</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Main IP Address</label>
                   <input 
                     type="text" 
                     required
@@ -397,7 +397,7 @@ export default function VpsOrdersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Username</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Username</label>
                   <input 
                     type="text" 
                     required
@@ -408,7 +408,7 @@ export default function VpsOrdersPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Root Password</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Root Password</label>
                 <input 
                   type="password" 
                   required
@@ -417,9 +417,9 @@ export default function VpsOrdersPage() {
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Purchased Date</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Purchased Date</label>
                   <input 
                     type="datetime-local" 
                     required
@@ -430,7 +430,7 @@ export default function VpsOrdersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Expiry Date & Time</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Expiry Date & Time</label>
                   <input 
                     type="datetime-local" 
                     required
@@ -492,7 +492,7 @@ export default function VpsOrdersPage() {
             
             <form onSubmit={handleSendMessage} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Direct Message to {msgOrder.customer}</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Direct Message to {msgOrder.customer}</label>
                 <textarea 
                   required
                   rows={4}

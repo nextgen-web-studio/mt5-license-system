@@ -203,7 +203,7 @@ export default function LicensesPage() {
             licenses.map((license: any) => {
               const isActive = license.status === 'active';
               return (
-                <div key={license.id} className="p-4 space-y-4">
+                <div key={license.id} className="p-3 space-y-2">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-neutral-500 uppercase tracking-wider font-semibold">MT4/MT5 ID</span>
@@ -216,7 +216,7 @@ export default function LicensesPage() {
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                  <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                     <div className="col-span-2 break-all">
                       <span className="text-neutral-500 block text-xs mb-1">License Key</span>
                       <div className="flex items-center text-neutral-300 font-mono text-xs">
@@ -299,10 +299,10 @@ export default function LicensesPage() {
                 e.preventDefault();
                 updateLicenseMutation.mutate(editingLicense);
               }}
-              className="p-4 space-y-4"
+              className="p-3 space-y-2"
             >
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">MT5 ID</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">MT5 ID</label>
                 <input
                   type="text"
                   required
@@ -313,7 +313,7 @@ export default function LicensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Broker Name</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Broker Name</label>
                 <input
                   type="text"
                   value={editingLicense.broker || ''}
@@ -323,7 +323,7 @@ export default function LicensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Status</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Status</label>
                 <select
                   value={editingLicense.status || 'active'}
                   onChange={(e) => setEditingLicense({...editingLicense, status: e.target.value})}
@@ -337,7 +337,7 @@ export default function LicensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Purchase Date</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Purchase Date</label>
                 <input
                   type="date"
                   value={editingLicense.purchase_date ? editingLicense.purchase_date.split('T')[0] : ''}
@@ -347,7 +347,7 @@ export default function LicensesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-1">Expiry Date</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Expiry Date</label>
                 <input
                   type="date"
                   value={editingLicense.expiry_date ? editingLicense.expiry_date.split('T')[0] : ''}
@@ -356,9 +356,9 @@ export default function LicensesPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Download Count</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Download Count</label>
                   <input
                     type="number"
                     min="0"
@@ -368,7 +368,7 @@ export default function LicensesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-400 mb-1">Renew Count</label>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Renew Count</label>
                   <input
                     type="number"
                     min="0"
