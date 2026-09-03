@@ -262,21 +262,25 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                 msg = (
                     "🎉 *Your VPS is Ready!*\n\n"
                     "*VPS Node Details*\n"
-                    f"**Product Name:** `{product_name}`\n"
-                    f"**Hostname:** `{data.hostname or 'N/A'}`\n"
-                    f"**Main IP:** `{data.ip}`\n"
-                    f"**User name:** `{data.username}`\n"
-                    f"**Root password:** `{data.password}`\n\n"
-                    f"**Purchased Date:** `{p_date_str}`\n"
-                    f"**Expiry Date & Time:** `{e_date_str}`\n\n"
+                    f"Product Name: `{product_name}`\n"
+                    f"Hostname: `{data.hostname or 'N/A'}`\n"
+                    f"Main IP: `{data.ip}`\n"
+                    f"User name: `{data.username}`\n"
+                    f"Root password: `{data.password}`\n\n"
+                    f"Purchased Date: `{p_date_str}`\n"
+                    f"Expiry Date & Time: `{e_date_str}`\n\n"
                     "Please connect using Remote Desktop Connection (RDP) on your PC or phone.\n\n"
-                    "📺 **VPS Setup Guide:**\n"
-                    "[Click here to watch the setup tutorial](https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR)"
+                    "📺 *VPS Setup Guide:* [Click here to watch the setup tutorial](https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR)"
                 )
                 async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
                     resp = await client.post(
                         f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                        json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                        json={
+                            "chat_id": user.telegram_id,
+                            "text": msg,
+                            "parse_mode": "Markdown",
+                            "disable_web_page_preview": True
+                        }
                     )
                     if resp.status_code != 200:
                         telegram_error = f"Telegram API error: {resp.text}"
