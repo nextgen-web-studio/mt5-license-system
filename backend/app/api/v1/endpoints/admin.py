@@ -450,7 +450,8 @@ async def force_migration(db: AsyncSession = Depends(get_db)):
         "ALTER TABLE users ADD COLUMN email VARCHAR;",
         "ALTER TABLE users ADD COLUMN location VARCHAR;",
         "ALTER TABLE users ADD COLUMN age VARCHAR;",
-        "ALTER TABLE users ADD COLUMN occupation VARCHAR;"
+        "ALTER TABLE users ADD COLUMN occupation VARCHAR;",
+        "ALTER TABLE orders ADD COLUMN vps_id INTEGER REFERENCES vps_orders(id);"
     ]
     results = []
     for q in queries:
