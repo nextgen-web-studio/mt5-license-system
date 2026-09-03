@@ -115,11 +115,26 @@ export default function OrdersPage() {
                       <td className="px-3 py-2 md:px-6 md:py-4">{getStatusBadge(order.status)}</td>
                       <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
-                          className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {order.status === 'pending_admin_approval' && (
+                            <button 
+                              onClick={() => {
+                                // Just a toast for now since we don't have the approve API in frontend easily, wait, let's use api.post
+                                api.post(`/api/v1/orders/${order.id}/approve`).then(() => {
+                                  toast.success("Order Approved!");
+                                  queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+                                }).catch(() => toast.error("Failed to approve"));
+                              }}
+                              className="px-2 py-1 text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded transition-colors" title="Approve">
+                              Approve
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
+                            className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -166,7 +181,19 @@ export default function OrdersPage() {
                       </div>
                     </div>
                     
-                    <div className="flex justify-end pt-2 border-t border-neutral-800/50">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-neutral-800/50">
+                      {order.status === 'pending_admin_approval' && (
+                        <button 
+                          onClick={() => {
+                            api.post(`/api/v1/orders/${order.id}/approve`).then(() => {
+                              toast.success("Order Approved!");
+                              queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+                            }).catch(() => toast.error("Failed to approve"));
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors" title="Approve">
+                          Approve
+                        </button>
+                      )}
                       <button 
                         onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 hover:text-red-400 bg-neutral-800/50 hover:bg-red-500/10 rounded-lg transition-colors" title="Delete Order">
