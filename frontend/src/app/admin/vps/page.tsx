@@ -244,15 +244,15 @@ export default function VpsOrdersPage() {
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="hidden md:block overflow-x-auto min-h-[300px]">
 <div className="overflow-x-auto min-h-[300px]">
-          <table className="min-w-full text-sm text-left">
-            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+          <table className="min-w-full text-xs text-left">
+            <thead className="text-[10px] text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
-                <th className="px-6 py-4">Customer</th>
-                <th className="px-6 py-4">Plan</th>
-                <th className="px-6 py-4">Terminals</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
+                <th className="px-3 py-2 whitespace-nowrap">Order ID</th>
+                <th className="px-3 py-2">Customer</th>
+                <th className="px-3 py-2">Plan</th>
+                <th className="px-3 py-2">Terminals</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -269,7 +269,7 @@ export default function VpsOrdersPage() {
                     <td className="px-6 py-4 text-white">{order.customer || 'Guest'}</td>
                     <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{order.plan_name || 'Standard'}</td>
                     <td className="px-6 py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
                         <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
                         {order.screenshot_received && (

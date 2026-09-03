@@ -92,16 +92,16 @@ export default function LicensesPage() {
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="hidden md:block overflow-x-auto min-h-[300px]">
 <div className="overflow-x-auto min-h-[300px]">
-          <table className="min-w-full text-sm text-left">
-            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+          <table className="min-w-full text-xs text-left">
+            <thead className="text-[10px] text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4 whitespace-nowrap">License Key</th>
-                <th className="px-6 py-4 whitespace-nowrap">Telegram ID</th>
-                <th className="px-6 py-4 whitespace-nowrap">MT4/MT5 ID</th>
-                <th className="px-6 py-4 whitespace-nowrap">Type</th>
-                <th className="px-6 py-4 whitespace-nowrap">Status</th>
-                <th className="px-6 py-4 whitespace-nowrap">Expiry Date</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
+                <th className="px-3 py-2 whitespace-nowrap">License Key</th>
+                <th className="px-3 py-2 whitespace-nowrap">Telegram ID</th>
+                <th className="px-3 py-2 whitespace-nowrap">MT4/MT5 ID</th>
+                <th className="px-3 py-2 whitespace-nowrap">Type</th>
+                <th className="px-3 py-2 whitespace-nowrap">Status</th>
+                <th className="px-3 py-2 whitespace-nowrap">Expiry Date</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -126,14 +126,14 @@ export default function LicensesPage() {
                       </td>
                       <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{license.telegram_id || 'Guest'}</td>
                       <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         {license.license_type === 'trial' ? (
                           <span className="bg-purple-500/20 text-purple-400 text-xs px-2 py-1 rounded-full font-medium">Trial</span>
                         ) : (
                           <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full font-medium">Paid</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 py-2 whitespace-nowrap">
                         {license.status === 'active' || license.status === 'valid' ? (
                           <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
                             <Shield size={14} />

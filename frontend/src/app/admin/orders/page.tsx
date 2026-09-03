@@ -77,16 +77,16 @@ export default function OrdersPage() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
           {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto min-h-[300px]">
-            <table className="min-w-full text-sm text-left">
-              <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+            <table className="min-w-full text-xs text-left">
+              <thead className="text-[10px] text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
                 <tr>
-                  <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
-                  <th className="px-6 py-4">Product</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Amount (INR)</th>
-                  <th className="px-6 py-4 whitespace-nowrap">Status</th>
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
+                  <th className="px-3 py-2 whitespace-nowrap">Order ID</th>
+                  <th className="px-3 py-2">Product</th>
+                  <th className="px-3 py-2">Customer</th>
+                  <th className="px-3 py-2">Amount (INR)</th>
+                  <th className="px-3 py-2 whitespace-nowrap">Status</th>
+                  <th className="px-3 py-2">Date</th>
+                  <th className="px-3 py-2 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-800">
@@ -103,9 +103,9 @@ export default function OrdersPage() {
                       <td className="px-6 py-4 text-white">{order.product || 'Unknown'}</td>
                       <td className="px-6 py-4 text-neutral-400">{order.customer || 'Guest'}</td>
                         <td className="px-6 py-4 text-neutral-300">{currencyFormatter.format(order.amount || 0)}</td>
-                      <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
+                      <td className="px-3 py-2">{getStatusBadge(order.status)}</td>
                       <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-3 py-2 text-right">
                         <button 
                           onClick={() => { setDeletingId(order.id); setDeleteModalOpen(true); }}
                           className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete Order">

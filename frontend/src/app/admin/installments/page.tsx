@@ -116,16 +116,16 @@ export default function InstallmentsPage() {
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="overflow-x-auto min-h-[300px]">
-          <table className="min-w-full text-sm text-left">
-            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+          <table className="min-w-full text-xs text-left">
+            <thead className="text-[10px] text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
-                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
-                <th className="px-6 py-4 whitespace-nowrap">MT5 ID</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Paid / Total</th>
-                <th className="px-6 py-4">Remaining</th>
-                <th className="px-6 py-4 whitespace-nowrap">Next Due</th>
-                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
+                <th className="px-3 py-2 whitespace-nowrap">Order ID</th>
+                <th className="px-3 py-2 whitespace-nowrap">MT5 ID</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Paid / Total</th>
+                <th className="px-3 py-2">Remaining</th>
+                <th className="px-3 py-2 whitespace-nowrap">Next Due</th>
+                <th className="px-3 py-2 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -140,7 +140,7 @@ export default function InstallmentsPage() {
                   <tr key={inst.order_id} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{inst.order_id}</td>
                     <td className="px-6 py-4 text-white whitespace-nowrap">{inst.mt5_id || 'N/A'}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-2">
                       {inst.installment_status === 'active' && <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-medium border border-blue-500/20">Active</span>}
                       {inst.installment_status === 'completed' && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Completed</span>}
                       {inst.installment_status === 'failed' && <span className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-xs font-medium border border-red-500/20">Disabled</span>}
@@ -150,7 +150,7 @@ export default function InstallmentsPage() {
                     <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
                       {inst.installment_status === 'completed' ? '-' : (inst.next_due_date ? new Date(inst.next_due_date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A')}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-3 py-2 text-right">
                       {inst.installment_status === 'active' && (
                         <div className="flex items-center justify-end gap-1">
                           <button 

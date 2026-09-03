@@ -269,7 +269,9 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                     f"**Root password:** `{data.password}`\n\n"
                     f"**Purchased Date:** `{p_date_str}`\n"
                     f"**Expiry Date & Time:** `{e_date_str}`\n\n"
-                    "Please connect using Remote Desktop Connection (RDP) on your PC or phone."
+                    "Please connect using Remote Desktop Connection (RDP) on your PC or phone.\n\n"
+                    "📺 **VPS Setup Guide:**\n"
+                    "[Click here to watch the setup tutorial](https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR)"
                 )
                 async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
                     resp = await client.post(
