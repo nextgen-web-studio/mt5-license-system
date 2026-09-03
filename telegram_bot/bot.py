@@ -1327,6 +1327,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     from utils.api_client import create_order
     vps_id = context.user_data.get('renew_vps_id')
     order = await create_order(user_id, product_id, "VPS", mt5_id="VPS_ORDER", vps_id=vps_id)
+    context.user_data.pop('renew_vps_id', None)
     if not order or "error" in order:
         if update.message:
             await update.message.reply_text("Failed to create VPS order.", parse_mode="Markdown")
@@ -1466,6 +1467,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         
     vps_id = context.user_data.get('renew_vps_id')
     order = await create_order(user_id, product_id, p_type, mt5_id=mt5_id, vps_id=vps_id)
+    context.user_data.pop('renew_vps_id', None)
     if not order or "error" in order:
         err = order.get("error", "Unknown") if order else "Failed to create order"
         msg = f"❌ *Error:*\n\n{err}"
