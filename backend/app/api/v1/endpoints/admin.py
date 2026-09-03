@@ -438,7 +438,11 @@ async def force_migration(db: AsyncSession = Depends(get_db)):
     queries = [
         "ALTER TABLE vps_orders ADD COLUMN hostname VARCHAR;",
         "ALTER TABLE vps_orders ADD COLUMN purchased_date TIMESTAMP WITH TIME ZONE;",
-        "ALTER TABLE vps_orders ADD COLUMN expiry_date TIMESTAMP WITH TIME ZONE;"
+        "ALTER TABLE vps_orders ADD COLUMN expiry_date TIMESTAMP WITH TIME ZONE;",
+        "ALTER TABLE users ADD COLUMN email VARCHAR;",
+        "ALTER TABLE users ADD COLUMN location VARCHAR;",
+        "ALTER TABLE users ADD COLUMN age VARCHAR;",
+        "ALTER TABLE users ADD COLUMN occupation VARCHAR;"
     ]
     results = []
     for q in queries:
@@ -450,7 +454,7 @@ async def force_migration(db: AsyncSession = Depends(get_db)):
     
     # Try updating alembic version table so it knows we are up to date
     try:
-        await db.execute(sa.text("UPDATE alembic_version SET version_num='d5b9197279f0'"))
+        await db.execute(sa.text("UPDATE alembic_version SET version_num='e6c0208380g1'"))
     except Exception:
         pass
         

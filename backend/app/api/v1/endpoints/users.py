@@ -16,12 +16,22 @@ class UserCreate(BaseModel):
     username: str
     phone: Optional[str] = None
 
+class UserUpdate(BaseModel):
+    email: Optional[str] = None
+    location: Optional[str] = None
+    age: Optional[str] = None
+    occupation: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
     telegram_id: str
     name: str
     username: str
     phone: Optional[str] = None
+    email: Optional[str] = None
+    location: Optional[str] = None
+    age: Optional[str] = None
+    occupation: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -55,6 +65,26 @@ async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.put("/by-id/{user_id}", response_model=UserResponse)
+async def update_user_details(user_id: int, user_update: UserUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).filter(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if user_update.email is not None:
+        user.email = user_update.email
+    if user_update.location is not None:
+        user.location = user_update.location
+    if user_update.age is not None:
+        user.age = user_update.age
+    if user_update.occupation is not None:
+        user.occupation = user_update.occupation
+        
+    await db.commit()
+    await db.refresh(user)
     return user
 
 @router.get("/{telegram_id}", response_model=UserResponse)

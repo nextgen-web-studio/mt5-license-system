@@ -1158,7 +1158,7 @@ Location: India
             return
             
         if p_type == "VPS":
-            await proceed_to_vps_summary(update, context)
+            await prompt_vps_details_or_proceed(update, context)
             return
 
         # Phone already on file - ask for MT5 ID next
@@ -1188,6 +1188,50 @@ Location: India
             await query.edit_message_text("Please select an option below:", reply_markup=await build_main_menu(update.effective_user.id))
         except Exception:
             pass
+
+async def prompt_vps_details_or_proceed(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = context.user_data.get('db_user_id')
+    from utils.api_client import get_user
+    db_user = await get_user(str(update.effective_user.id))
+    
+    if not db_user.get('email'):
+        msg = "Since you are purchasing a VPS, we need a few details.\n\nPlease enter your **Email ID**:"
+        if update.callback_query:
+            await update.callback_query.edit_message_text(msg, parse_mode="Markdown")
+        else:
+            await update.message.reply_text(msg, parse_mode="Markdown")
+        context.user_data['awaiting_vps_email'] = True
+        return
+        
+    if not db_user.get('location'):
+        msg = "Please enter your **Location** (City/State):"
+        if update.callback_query:
+            await update.callback_query.edit_message_text(msg, parse_mode="Markdown")
+        else:
+            await update.message.reply_text(msg, parse_mode="Markdown")
+        context.user_data['awaiting_vps_location'] = True
+        return
+        
+    if not db_user.get('age'):
+        msg = "Please enter your **Age**:"
+        if update.callback_query:
+            await update.callback_query.edit_message_text(msg, parse_mode="Markdown")
+        else:
+            await update.message.reply_text(msg, parse_mode="Markdown")
+        context.user_data['awaiting_vps_age'] = True
+        return
+        
+    if not db_user.get('occupation'):
+        msg = "Please enter your **Occupation**:"
+        if update.callback_query:
+            await update.callback_query.edit_message_text(msg, parse_mode="Markdown")
+        else:
+            await update.message.reply_text(msg, parse_mode="Markdown")
+        context.user_data['awaiting_vps_occupation'] = True
+        return
+
+    # All details present, proceed
+    await proceed_to_vps_summary(update, context)
 
 async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     product_id = context.user_data.get('pending_product_id')
@@ -1238,6 +1282,9 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     else:
         await update.callback_query.edit_message_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
         
+    from utils.api_client import get_user
+    db_user = await get_user(str(update.effective_user.id))
+    
     vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID", os.getenv("ADMIN_CHAT_ID"))
     if vps_admin_id:
         admin_msg = (
@@ -1245,6 +1292,10 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
             f"Order ID: #ORD-{order['id']}\n"
             f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
             f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+            f"Email: {db_user.get('email', 'N/A')}\n"
+            f"Location: {db_user.get('location', 'N/A')}\n"
+            f"Age: {db_user.get('age', 'N/A')}\n"
+            f"Occupation: {db_user.get('occupation', 'N/A')}\n"
             f"Telegram ID: {update.effective_user.id}\n"
             f"Plan Selected: {product['name'] if product else 'Unknown'}"
         )
@@ -1506,6 +1557,34 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
 
+    if context.user_data.get('awaiting_vps_email'):
+        context.user_data['awaiting_vps_email'] = False
+        from utils.api_client import update_user_details
+        await update_user_details(context.user_data['db_user_id'], {"email": text.strip()})
+        await prompt_vps_details_or_proceed(update, context)
+        return
+
+    if context.user_data.get('awaiting_vps_location'):
+        context.user_data['awaiting_vps_location'] = False
+        from utils.api_client import update_user_details
+        await update_user_details(context.user_data['db_user_id'], {"location": text.strip()})
+        await prompt_vps_details_or_proceed(update, context)
+        return
+
+    if context.user_data.get('awaiting_vps_age'):
+        context.user_data['awaiting_vps_age'] = False
+        from utils.api_client import update_user_details
+        await update_user_details(context.user_data['db_user_id'], {"age": text.strip()})
+        await prompt_vps_details_or_proceed(update, context)
+        return
+
+    if context.user_data.get('awaiting_vps_occupation'):
+        context.user_data['awaiting_vps_occupation'] = False
+        from utils.api_client import update_user_details
+        await update_user_details(context.user_data['db_user_id'], {"occupation": text.strip()})
+        await prompt_vps_details_or_proceed(update, context)
+        return
+
     if context.user_data.get('awaiting_name'):
         context.user_data['awaiting_name'] = False
         tid = context.user_data.get('temp_telegram_id')
@@ -1536,7 +1615,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if context.user_data.get('pending_product_id'):
             p_type = context.user_data.get('pending_p_type')
             if p_type == "VPS":
-                await proceed_to_vps_summary(update, context)
+                await prompt_vps_details_or_proceed(update, context)
             else:
                 await update.message.reply_text(
                     "Please enter your **MT5 ID** to continue:",

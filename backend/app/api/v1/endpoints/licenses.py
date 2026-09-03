@@ -131,16 +131,23 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
             db.add(db_license)
             await db.flush()
         
-        # 4. Enqueue compilation job
-        job = CompileJob(license_id=db_license.id, status="pending")
-        db.add(job)
+        # 4. Enqueue compilation job (only if not already pending/processing)
+        existing_job_res = await db.execute(
+            select(CompileJob).filter(
+                CompileJob.license_id == db_license.id,
+                CompileJob.status.in_(["pending", "processing"])
+            )
+        )
+        if existing_job_res.first() is None:
+            job = CompileJob(license_id=db_license.id, status="pending")
+            db.add(job)
+            await db.flush()
+            background_tasks.add_task(local_wine_compiler, job.id)
         
         order.status = "compiling"
         
         await db.commit()
         await db.refresh(db_license)
-        
-        background_tasks.add_task(local_wine_compiler, job.id)
         
         from app.models import User
         user_res = await db.execute(select(User).filter(User.id == order.user_id))
@@ -286,13 +293,21 @@ async def recompile_license(license_id: int, background_tasks: BackgroundTasks, 
         
     lic.status = "generating"
     
-    # Create new CompileJob
-    job = CompileJob(license_id=lic.id, status="pending")
-    db.add(job)
-    await db.commit()
-    
-    from app.core.local_compiler import local_wine_compiler
-    background_tasks.add_task(local_wine_compiler, job.id)
+    # Create new CompileJob only if not pending
+    existing_job_res = await db.execute(
+        select(CompileJob).filter(
+            CompileJob.license_id == lic.id,
+            CompileJob.status.in_(["pending", "processing"])
+        )
+    )
+    if existing_job_res.first() is None:
+        job = CompileJob(license_id=lic.id, status="pending")
+        db.add(job)
+        await db.commit()
+        from app.core.local_compiler import local_wine_compiler
+        background_tasks.add_task(local_wine_compiler, job.id)
+    else:
+        await db.commit()
     
     import os, httpx
     bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/compile-started")

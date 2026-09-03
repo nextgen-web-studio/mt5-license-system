@@ -11,6 +11,13 @@ class User(Base):
     name = Column(String)
     username = Column(String)
     phone = Column(String)
+    
+    # VPS Specific Fields
+    email = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    age = Column(String, nullable=True)
+    occupation = Column(String, nullable=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class Product(Base):

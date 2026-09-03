@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
@@ -44,11 +44,21 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
     else:
         lic.expiry_date = expiry
         lic.status = "generating"
-    job = CompileJob(license_id=lic.id, status="pending")
-    db.add(job)
-    order.status = "compiling"
-    await db.commit()
-    background_tasks.add_task(local_wine_compiler, job.id)
+    existing_job_res = await db.execute(
+        select(CompileJob).filter(
+            CompileJob.license_id == lic.id,
+            CompileJob.status.in_(["pending", "processing"])
+        )
+    )
+    if existing_job_res.first() is None:
+        job = CompileJob(license_id=lic.id, status="pending")
+        db.add(job)
+        order.status = "compiling"
+        await db.commit()
+        background_tasks.add_task(local_wine_compiler, job.id)
+    else:
+        order.status = "compiling"
+        await db.commit()
     return {"status": "success", "message": "Installment arrangement created and first payment recorded"}
 
 @router.post("/pay")
@@ -95,11 +105,19 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
         else:
             lic.expiry_date = order.next_due_date
         lic.status = "generating"
-        job = CompileJob(license_id=lic.id, status="pending")
-        db.add(job)
-    await db.commit()
-    if lic and job:
-        background_tasks.add_task(local_wine_compiler, job.id)
+        job = None
+        existing_job_res = await db.execute(
+            select(CompileJob).filter(
+                CompileJob.license_id == lic.id,
+                CompileJob.status.in_(["pending", "processing"])
+            )
+        )
+        if existing_job_res.first() is None:
+            job = CompileJob(license_id=lic.id, status="pending")
+            db.add(job)
+        await db.commit()
+        if job:
+            background_tasks.add_task(local_wine_compiler, job.id)
         
         # Notify the user via Telegram that their payment was recorded and the EA is compiling
         import os, httpx
@@ -153,11 +171,19 @@ async def full_settle_installment(order_id: int, background_tasks: BackgroundTas
         lic.expiry_date = None
         lic.license_type = "paid"
         lic.status = "generating"
-        job = CompileJob(license_id=lic.id, status="pending")
-        db.add(job)
-    await db.commit()
-    if lic and job:
-        background_tasks.add_task(local_wine_compiler, job.id)
+        job = None
+        existing_job_res = await db.execute(
+            select(CompileJob).filter(
+                CompileJob.license_id == lic.id,
+                CompileJob.status.in_(["pending", "processing"])
+            )
+        )
+        if existing_job_res.first() is None:
+            job = CompileJob(license_id=lic.id, status="pending")
+            db.add(job)
+        await db.commit()
+        if job:
+            background_tasks.add_task(local_wine_compiler, job.id)
         
         # Settle notification
         import os, httpx

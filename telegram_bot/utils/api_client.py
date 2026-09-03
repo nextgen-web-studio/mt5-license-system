@@ -86,6 +86,17 @@ async def update_user_phone(user_id, phone):
             logging.error(f"Error updating phone: {e}")
             return False
 
+async def update_user_details(user_id, details: dict):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.put(f"{BASE_URL}/users/by-id/{user_id}", json=details)
+            if response.status_code >= 400:
+                return False
+            return response.json()
+        except Exception as e:
+            logging.error(f"Error updating user details: {e}")
+            return False
+
 async def get_products(product_type=None):
     async with httpx.AsyncClient() as client:
         try:

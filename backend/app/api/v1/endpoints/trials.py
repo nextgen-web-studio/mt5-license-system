@@ -169,11 +169,19 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     await db.commit()
 
     # 5. Enqueue compile job
-    job = CompileJob(license_id=lic.id, status="pending")
-    db.add(job)
-    await db.commit()
-
-    background_tasks.add_task(local_wine_compiler, job.id)
+    existing_job_res = await db.execute(
+        select(CompileJob).filter(
+            CompileJob.license_id == lic.id,
+            CompileJob.status.in_(["pending", "processing"])
+        )
+    )
+    if existing_job_res.first() is None:
+        job = CompileJob(license_id=lic.id, status="pending")
+        db.add(job)
+        await db.commit()
+        background_tasks.add_task(local_wine_compiler, job.id)
+    else:
+        await db.commit()
     
     return {
         "status": "success",
