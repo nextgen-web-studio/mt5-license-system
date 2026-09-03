@@ -492,3 +492,11 @@ async def mark_vps_screenshot_received(order_id: int, db: AsyncSession = Depends
     except Exception:
         pass
     return {"status": "success"}
+
+
+@router.get("/trigger-vps-reminders")
+async def trigger_vps_reminders():
+    """Manually trigger the VPS expiry reminder cron job for testing."""
+    from app.cron.vps_reminders import run_vps_reminders
+    await run_vps_reminders(force_test=True)
+    return {"status": "done", "message": "VPS reminders job executed. Check your Telegram for notifications."}

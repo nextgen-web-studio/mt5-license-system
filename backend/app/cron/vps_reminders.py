@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import os
 import httpx
 from datetime import datetime, timedelta, timezone
@@ -11,7 +11,7 @@ from app.db.database import get_db, AsyncSessionLocal
 from sqlalchemy.future import select
 from app.models import VpsOrder, User, Order
 
-async def run_vps_reminders():
+async def run_vps_reminders(force_test: bool = False):
     logging.info(f"[{datetime.utcnow()}] Running VPS payment reminders check...")
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not bot_token:
@@ -35,7 +35,7 @@ async def run_vps_reminders():
                 days_left = (expiry_dt - now).days
                 
                 # Check if it's exactly 5 days left (or 4 days if we consider fraction of days depending on when cron runs)
-                if days_left == 5 or days_left == 4:
+                if force_test or days_left == 5 or days_left == 4:
                     user_res = await db.execute(select(User).filter(User.id == vps.user_id))
                     user = user_res.scalar_one_or_none()
                     
