@@ -176,6 +176,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     data = query.data
     
+    # Auto-fetch user session if they clicked a broadcast button (like renew)
+    user = update.effective_user
+    if not context.user_data.get('db_user_id'):
+        from utils.api_client import get_user
+        db_user = await get_user(str(user.id))
+        if db_user:
+            context.user_data['db_user_id'] = db_user.get('id')
+            context.user_data['db_user_phone'] = db_user.get('phone')
+            context.user_data['db_user_name'] = db_user.get('name')
+    
     # Clear any stale text input states if the user navigates using the menu
     if data in ["broker_change", "main_menu", "request_trial"] or data.startswith("buy_") or data.startswith("category_") or data.startswith("bc_select_"):
         context.user_data.pop('awaiting_vps_email', None)
@@ -1083,19 +1093,23 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         vps_info = await get_vps_info(vps_id)
         
         if not vps_info:
-            await query.edit_message_text("? Could not find VPS details.", reply_markup=await build_main_menu(update.effective_user.id))
+            await query.edit_message_text("❌ Could not find VPS details.", reply_markup=await build_main_menu(update.effective_user.id))
             return
             
         keyboard = [
-            [InlineKeyboardButton(f"? Proceed to Renew (?{vps_info['product_price']})", callback_data=f"buy_product_{vps_info['product_id']}_VPS")],
-            [InlineKeyboardButton("?? Cancel", callback_data="main_menu")]
+            [InlineKeyboardButton(f"✅ Proceed to Renew (₹{vps_info['product_price']})", callback_data=f"buy_product_{vps_info['product_id']}_VPS")],
+            [InlineKeyboardButton("🔙 Cancel", callback_data="main_menu")]
         ]
         
+        text = f'''🔄 *Renew Your VPS*
+
+You are renewing your **{vps_info['product_name']}**.
+**Price:** ₹{vps_info['product_price']}
+
+Press Proceed below to continue to payment.'''
+        
         await query.edit_message_text(
-            f"?? *Renew Your VPS*\n\n"
-            f"You are renewing your **{vps_info['product_name']}**.\n"
-            f"**Price:** ?{vps_info['product_price']}\n\n"
-            f"Press Proceed below to continue to payment.",
+            text,
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
