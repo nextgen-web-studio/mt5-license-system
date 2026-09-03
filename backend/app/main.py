@@ -12,14 +12,42 @@ scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Run Database Migrations
+    try:
+        from app.db.database import AsyncSessionLocal
+        from app.models import Product
+        from sqlalchemy import update
+        import sqlalchemy as sa
+        
+        async with AsyncSessionLocal() as session:
+            try:
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR;"))
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR;"))
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR;"))
+                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation VARCHAR;"))
+                await session.commit()
+                print("Database columns verified/added successfully.")
+            except Exception as db_e:
+                print(f"Failed to run ALTER TABLE: {db_e}")
+                
+            try:
+                await session.execute(update(Product).where(Product.type == "EA").values(price=500.0))
+                await session.commit()
+                print("Successfully updated EA product price to 500")
+            except Exception as e:
+                print(f"Failed to update EA price: {e}")
+    except Exception as e:
+        print(f"Lifespan setup failed: {e}")
+
     # Start APScheduler
     scheduler.add_job(run_expiration_check, 'interval', hours=12)
     scheduler.add_job(run_vps_reminders, 'cron', hour='3,11', minute='30')
     scheduler.start()
-    # Also run it immediately on startup
     scheduler.add_job(run_expiration_check)
     scheduler.add_job(run_vps_reminders)
+    
     yield
+    
     scheduler.shutdown()
 
 app = FastAPI(title="Infinity Trader API", lifespan=lifespan)
@@ -33,32 +61,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup_event():
-    try:
-        from app.db.database import AsyncSessionLocal
-        from app.models import Product
-        from sqlalchemy import update
-        import sqlalchemy as sa
-        
-        async with AsyncSessionLocal() as session:
-            # Safely add columns if they don't exist
-            try:
-                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR;"))
-                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR;"))
-                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR;"))
-                await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation VARCHAR;"))
-                await session.commit()
-                print("Database columns verified/added successfully.")
-            except Exception as db_e:
-                print(f"Failed to run ALTER TABLE: {db_e}")
-                
-            await session.execute(update(Product).where(Product.type == "EA").values(price=500.0))
-            await session.commit()
-            print("Successfully updated EA product price to 500")
-    except Exception as e:
-        print(f"Failed to update EA price: {e}")
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
