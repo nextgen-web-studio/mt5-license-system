@@ -1371,8 +1371,10 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
         tg_user = update.effective_user.username
         tg_username = f"@{tg_user}" if tg_user else "N/A"
         
+        is_renewal = context.user_data.get('renew_vps_id') is not None
+        title = "🔄 *VPS RENEWAL INITIATED*" if is_renewal else "🔔 *NEW VPS INQUIRY*"
         admin_msg = (
-            f"*NEW VPS INQUIRY*\n\n"
+            f"{title}\n\n"
             f"Order ID: `#ORD-{order['id']}`\n"
             f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
             f"Phone: `{context.user_data.get('db_user_phone', 'Unknown')}`\n"
