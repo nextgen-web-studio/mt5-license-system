@@ -869,16 +869,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if admin_chat_id:
             admin_msg = (
                 f"🔄 *BROKER CHANGE REQUEST*\n\n"
-                f"Request ID: BCR-{request_id}\n"
-                f"Customer: {context.user_data.get('db_user_name', 'Unknown')}\n"
+                f"Request ID: `#BCR-{request_id}`\n"
+                f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
                 f"Telegram ID: `{tid}`\n\n"
-                f"Selected License ID: {lic_id}\n"
+                f"Selected License ID: `{lic_id}`\n"
                 f"Old MT5 ID: `{context.user_data.get('bc_old_mt5_id')}`\n"
                 f"Old Broker: `{context.user_data.get('bc_old_broker')}`\n\n"
                 f"Requested Change:\n"
                 f"New MT5 ID: `{new_mt5}`\n"
                 f"New Broker: `{new_broker}`\n\n"
-                f"Status: Pending Admin Approval"
+                f"Status: `Pending Admin Approval`"
             )
             kb = [
                 [InlineKeyboardButton("✅ APPROVE", callback_data=f"approve_change_{request_id}"),
@@ -1289,15 +1289,15 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     if vps_admin_id:
         admin_msg = (
             f"*NEW VPS INQUIRY*\n\n"
-            f"Order ID: #ORD-{order['id']}\n"
-            f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
-            f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-            f"Email: {db_user.get('email', 'N/A')}\n"
-            f"Location: {db_user.get('location', 'N/A')}\n"
-            f"Age: {db_user.get('age', 'N/A')}\n"
-            f"Occupation: {db_user.get('occupation', 'N/A')}\n"
-            f"Telegram ID: {update.effective_user.id}\n"
-            f"Plan Selected: {product['name'] if product else 'Unknown'}"
+            f"Order ID: `#ORD-{order['id']}`\n"
+            f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
+            f"Phone: `{context.user_data.get('db_user_phone', 'Unknown')}`\n"
+            f"Email: `{db_user.get('email', 'N/A')}`\n"
+            f"Location: `{db_user.get('location', 'N/A')}`\n"
+            f"Age: `{db_user.get('age', 'N/A')}`\n"
+            f"Occupation: `{db_user.get('occupation', 'N/A')}`\n"
+            f"Telegram ID: `{update.effective_user.id}`\n"
+            f"Plan Selected: `{product['name'] if product else 'Unknown'}`"
         )
         try:
             await context.bot.send_message(chat_id=vps_admin_id, text=admin_msg, parse_mode="Markdown")
@@ -1421,13 +1421,13 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     if admin_chat_id:
         admin_msg = (
             f"🆕 *NEW EA ORDER*\n\n"
-            f"Order ID: ORD-{order['id']}\n"
-            f"Customer Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
-            f"Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+            f"Order ID: `#ORD-{order['id']}`\n"
+            f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
+            f"Phone: `{context.user_data.get('db_user_phone', 'Unknown')}`\n"
             f"MT5 ID: `{mt5_id}`\n"
             f"Telegram ID: `{update.effective_user.id}`\n"
-            f"Plan: {product['name'] if product else 'Unknown'}\n"
-            f"Status: Pending Admin Approval"
+            f"Plan: `{product['name'] if product else 'Unknown'}`\n"
+            f"Status: `Pending Admin Approval`"
         )
         admin_kb = [
             [
