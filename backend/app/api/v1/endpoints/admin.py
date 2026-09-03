@@ -457,8 +457,10 @@ async def force_migration(db: AsyncSession = Depends(get_db)):
     for q in queries:
         try:
             await db.execute(sa.text(q))
+            await db.commit()
             results.append({"query": q, "status": "success"})
         except Exception as e:
+            await db.rollback()
             results.append({"query": q, "status": "skipped", "reason": str(e)})
     
     # Try updating alembic version table so it knows we are up to date
@@ -482,8 +484,10 @@ async def force_screenshot_migration(db: AsyncSession = Depends(get_db)):
     for q in queries:
         try:
             await db.execute(sa.text(q))
+            await db.commit()
             results.append({"query": q, "status": "success"})
         except Exception as e:
+            await db.rollback()
             results.append({"query": q, "status": "skipped", "reason": str(e)})
     await db.commit()
     return {"results": results}
