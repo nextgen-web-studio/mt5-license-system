@@ -3,8 +3,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
+import { LayoutDashboard, 
   ShoppingCart, 
   Package, 
   Key, 
@@ -17,13 +16,14 @@ import {
   X,
   History,
   Clock, Settings
-} from 'lucide-react';
+, ShieldCheck } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Licenses', href: '/admin/licenses', icon: Key },
+  { name: 'EA Approvals', href: '/admin/ea-approvals', icon: ShieldCheck },
   { name: 'Installments', href: '/admin/installments', icon: History },
   { name: 'VPS', href: '/admin/vps', icon: Server },
   { name: 'Compiler', href: '/admin/compiler', icon: Terminal },
