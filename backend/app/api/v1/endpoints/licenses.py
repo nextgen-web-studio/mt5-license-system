@@ -150,6 +150,7 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         
         # Send Compiling notification to TG
         import os, httpx, asyncio
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:
             if bot_token:
                 from app.core.telegram_animator import animate_compiling
