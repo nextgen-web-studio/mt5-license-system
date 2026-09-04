@@ -157,16 +157,9 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if bot_token:
             if is_renewal:
-                msg = f"✅ *YOUR VPS HAS BEEN RENEWED!*
-
-Your VPS renewal (ORD-{order_id}) has been successfully approved.
-Your server expiry date has been extended to: **{new_expiry_str}**."
+                msg = f"✅ *YOUR VPS HAS BEEN RENEWED!*\n\nYour VPS renewal (ORD-{order_id}) has been successfully approved.\nYour server expiry date has been extended to: **{new_expiry_str}**."
             else:
-                msg = f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*
-
-Your VPS order (ORD-{order_id}) has been approved.
-
-The admin will contact you shortly to provide your VPS credentials."
+                msg = f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*\n\nYour VPS order (ORD-{order_id}) has been approved.\n\nThe admin will contact you shortly to provide your VPS credentials."
             
             async def send_tg():
                 async with httpx.AsyncClient() as client:
