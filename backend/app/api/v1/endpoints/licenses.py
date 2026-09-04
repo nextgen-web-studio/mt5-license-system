@@ -154,7 +154,6 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         try:
             if bot_token:
                 from app.models import User
-                from sqlalchemy import select
                 u_res = await db.execute(select(User).filter(User.id == order.user_id))
                 u = u_res.scalar_one_or_none()
                 if u and u.telegram_id:
