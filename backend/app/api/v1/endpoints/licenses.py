@@ -158,7 +158,7 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
                 u = u_res.scalar_one_or_none()
                 if u and u.telegram_id:
                     from app.core.telegram_animator import animate_compiling
-                    asyncio.create_task(animate_compiling(bot_token, u.telegram_id))
+                    asyncio.create_task(animate_compiling(bot_token, u.telegram_id, db_license.id))
         except Exception as e:
             logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
