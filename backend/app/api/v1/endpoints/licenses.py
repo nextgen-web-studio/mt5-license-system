@@ -150,9 +150,9 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         
         # Send Compiling notification to TG
         import os, httpx, asyncio
-        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/compile-started")
-        if bot_webhook_url.endswith("/delivery"):
-            bot_webhook_url = bot_webhook_url.replace("/delivery", "/compile-started")
+        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com")
+        bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+        bot_webhook_url += "/internal/compile-started" 
             
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:

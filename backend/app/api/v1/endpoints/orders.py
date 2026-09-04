@@ -155,9 +155,9 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     
     # Notify bot to clear admin buttons
     import os, httpx, asyncio
-    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/order-approved")
-    if bot_webhook_url.endswith("/delivery") or bot_webhook_url.endswith("/compile-started"):
-        bot_webhook_url = bot_webhook_url.replace("/delivery", "/order-approved").replace("/compile-started", "/order-approved")
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com")
+    bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    bot_webhook_url += "/internal/order-approved" 
     try:
         async def trigger_clear_buttons():
             async with httpx.AsyncClient(verify=False) as client:

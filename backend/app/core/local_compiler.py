@@ -197,7 +197,9 @@ async def local_wine_compiler(job_id: int):
                         await db2.commit()
                         
                         # Notify the Telegram Bot to deliver the file!
-                        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/delivery")
+                        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com")
+                        bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+                        bot_webhook_url += "/internal/delivery" 
                         try:
                             import httpx
                             async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
