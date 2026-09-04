@@ -142,6 +142,7 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
                 v_order.expiry_date = v_order.expiry_date.replace(tzinfo=timezone.utc) + relativedelta(months=p_prod.duration)
             new_expiry_str = v_order.expiry_date.strftime('%d %B %Y, %H:%M')
             is_renewal = True
+            v_order.status = "delivered"
             
         order.status = "delivered"
     else:

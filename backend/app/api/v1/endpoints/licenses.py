@@ -147,6 +147,37 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         order.status = "compiling"
         
         await db.commit()
+        
+        # Send Compiling notification to TG
+        import os, httpx, asyncio
+        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/compile-started")
+        if bot_webhook_url.endswith("/delivery"):
+            bot_webhook_url = bot_webhook_url.replace("/delivery", "/compile-started")
+            
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        try:
+            from app.models import User
+            u_res = await db.execute(select(User).filter(User.id == order.user_id))
+            u = u_res.scalar_one_or_none()
+            if u and u.telegram_id:
+                if bot_token:
+                    msg = f"⏳ *Compiling your EA...*
+
+Your EA file is being built right now.
+The file will be sent here automatically once ready.
+
+_Usually takes 2-5 minutes. Please wait._"
+                    async def send_tg_compiling():
+                        async with httpx.AsyncClient(verify=False) as client:
+                            await client.post(
+                                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                                json={"chat_id": u.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                            )
+                            # trigger animation
+                            await client.post(bot_webhook_url, json={"license_id": db_license.id, "telegram_id": u.telegram_id})
+                    asyncio.create_task(send_tg_compiling())
+        except Exception as e:
+            logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
         
         from app.models import User

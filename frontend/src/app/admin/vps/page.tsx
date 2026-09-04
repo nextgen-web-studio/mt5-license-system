@@ -400,19 +400,21 @@ export default function VpsOrdersPage() {
                   <button 
                     onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors"><MessageSquare size={14} /> Message</button>
-                  {order.is_renewal ? (
-                      <button 
-                        onClick={() => {
-                          api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
-                            toast("Renewal Approved!", "success");
-                            queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
-                          }).catch(() => toast("Failed to approve", "error"));
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Approve</button>
-                    ) : (
-                      <button 
-                        onClick={() => { openModal(order); }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Provision</button>
+                  {order.status !== 'provisioned' && order.status !== 'delivered' && (
+                      order.is_renewal ? (
+                        <button 
+                          onClick={() => {
+                            api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
+                              toast("Renewal Approved!", "success");
+                              queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                            }).catch(() => toast("Failed to approve", "error"));
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Approve</button>
+                      ) : (
+                        <button 
+                          onClick={() => { openModal(order); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Provision</button>
+                      )
                     )}
                 </div>
               </div>

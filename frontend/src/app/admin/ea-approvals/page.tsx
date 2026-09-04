@@ -239,12 +239,7 @@ export default function EaApprovalsPage() {
         {renderTable(pendingOrders)}
       </div>
 
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden opacity-80">
-        <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
-          <h2 className="text-sm font-semibold text-neutral-300">History</h2>
-        </div>
-        {renderTable(otherOrders)}
-      </div>
+
 
       {approveModalOpen && selectedOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
