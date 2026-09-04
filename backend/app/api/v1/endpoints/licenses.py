@@ -153,8 +153,13 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:
             if bot_token:
-                from app.core.telegram_animator import animate_compiling
-                asyncio.create_task(animate_compiling(bot_token, u.telegram_id))
+                from app.models import User
+                from sqlalchemy import select
+                u_res = await db.execute(select(User).filter(User.id == order.user_id))
+                u = u_res.scalar_one_or_none()
+                if u and u.telegram_id:
+                    from app.core.telegram_animator import animate_compiling
+                    asyncio.create_task(animate_compiling(bot_token, u.telegram_id))
         except Exception as e:
             logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
