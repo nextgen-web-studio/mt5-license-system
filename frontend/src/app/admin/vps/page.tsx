@@ -348,7 +348,7 @@ export default function VpsOrdersPage() {
             vpsOrders.map((order: any) => (
               <div key={order.id} className="p-3 space-y-2">
                 <div className="flex justify-between items-start">
-                  <span className="font-medium text-white text-xs">#{order.id}</span>
+                  <span className="font-medium text-white text-xs">#{order.order_id || order.id}</span>
                   <div className="flex flex-col items-end gap-1">
                     {order.is_renewal ? (
                           <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
