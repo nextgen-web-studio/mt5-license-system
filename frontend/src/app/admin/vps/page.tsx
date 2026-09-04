@@ -298,7 +298,10 @@ export default function VpsOrdersPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right space-x-2">
+                      <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
+                        {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
                       <button 
                         onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
                         className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
@@ -385,6 +388,12 @@ export default function VpsOrdersPage() {
                     <span className="text-neutral-500 block text-[10px] mb-0.5">Terminals</span>
                     <span className="text-neutral-300">{order.terminals_allowed || 2}</span>
                   </div>
+                    <div>
+                      <span className="text-neutral-500 block text-[10px] mb-0.5">Expiry Date</span>
+                      <span className="text-neutral-300">
+                        {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                      </span>
+                    </div>
                 </div>
 
                 <div className="flex justify-end gap-2 flex-wrap pt-3 border-t border-neutral-800/50">
