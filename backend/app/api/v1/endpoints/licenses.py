@@ -150,22 +150,9 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
         
         # Send Compiling notification to TG
         import os, httpx, asyncio
-        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com")
-        bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
-        bot_webhook_url += "/internal/compile-started" 
-            
-        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        try:
-            from app.models import User
-            u_res = await db.execute(select(User).filter(User.id == order.user_id))
-            u = u_res.scalar_one_or_none()
-            if u and u.telegram_id:
-                if bot_token:
-                    async def send_tg_compiling():
-                        async with httpx.AsyncClient(verify=False) as client:
-                            # trigger animation
-                            await client.post(bot_webhook_url, json={"license_id": db_license.id, "telegram_id": u.telegram_id})
-                    asyncio.create_task(send_tg_compiling())
+        if bot_token:
+                    from app.core.telegram_animator import animate_compiling
+                    asyncio.create_task(animate_compiling(bot_token, u.telegram_id))
         except Exception as e:
             logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
