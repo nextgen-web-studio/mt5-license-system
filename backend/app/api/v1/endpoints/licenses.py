@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
+import csv
+import io
 
 from app.db.database import get_db
-from app.models import License, Order, Product, CompileJob
+from app.models import License, Order, Product, CompileJob, User, Payment
 from pydantic import BaseModel
 from datetime import datetime
 from app.core.local_compiler import local_wine_compiler
@@ -30,7 +33,6 @@ class LicenseCreate(BaseModel):
     order_id: int
     mt5_id: str
 
-from typing import Optional
 
 class LicenseUpdate(BaseModel):
     mt5_id: Optional[str] = None
@@ -163,11 +165,8 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
             logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
         
-        from app.models import User
-        user_res = await db.execute(select(User).filter(User.id == order.user_id))
-        user = user_res.scalar_one_or_none()
         lic_dict = {c.name: getattr(db_license, c.name) for c in db_license.__table__.columns}
-        lic_dict["telegram_id"] = user.telegram_id if user else None
+        lic_dict["telegram_id"] = u.telegram_id if u else None
         return lic_dict
     except HTTPException:
         raise
@@ -323,25 +322,27 @@ async def recompile_license(license_id: int, background_tasks: BackgroundTasks, 
     else:
         await db.commit()
     
-    import os, httpx
-    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/compile-started")
-    if bot_webhook_url.endswith("/delivery"):
-        bot_webhook_url = bot_webhook_url.replace("/delivery", "/compile-started")
-        
+    # Get job_id safely
+    job_result = await db.execute(
+        select(CompileJob).filter(
+            CompileJob.license_id == lic.id,
+            CompileJob.status.in_(["pending", "processing"])
+        ).order_by(CompileJob.id.desc())
+    )
+    latest_job = job_result.scalars().first()
+    
+    import os, httpx, asyncio
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     try:
-        from app.models import User
         user_res = await db.execute(select(User).filter(User.id == lic.user_id))
         user = user_res.scalar_one_or_none()
-        if user and user.telegram_id:
-            async def notify_compile():
-                async with httpx.AsyncClient(verify=False, timeout=5.0) as client:
-                    await client.post(bot_webhook_url, json={"license_id": lic.id, "telegram_id": user.telegram_id})
-            import asyncio
-            asyncio.create_task(notify_compile())
+        if user and user.telegram_id and bot_token:
+            from app.core.telegram_animator import animate_compiling
+            asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
     except Exception as e:
         print(f"Failed to send recompile notification: {e}")
     
-    return {"status": "success", "message": "Recompilation triggered", "job_id": job.id}
+    return {"status": "success", "message": "Recompilation triggered", "job_id": latest_job.id if latest_job else None}
 
 @router.get("/{license_id}/delivery-info")
 async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db)):
@@ -384,10 +385,6 @@ async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db))
     }
 
 from datetime import timedelta
-import csv
-import io
-from fastapi.responses import StreamingResponse
-from app.models import User, Payment
 
 @router.delete("/{license_id}")
 async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):

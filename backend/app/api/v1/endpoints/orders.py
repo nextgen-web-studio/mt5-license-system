@@ -166,26 +166,8 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         pass
     
-    if order.order_type in ["EA", "EA_RENEWAL"] and user.telegram_id and order.mt5_id:
-        import os
-        import httpx
-        import asyncio
-        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        if bot_token:
-            msg = f"✅ *YOUR ORDER HAS BEEN APPROVED*\n\nYour EA order (ORD-{order_id}) has been approved.\n\nYour EA is being prepared and will be delivered to you shortly."
-            async def send_tg_ea():
-                async with httpx.AsyncClient() as client:
-                    await client.post(
-                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                        json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
-                    )
-            asyncio.create_task(send_tg_ea())
-    
     # Send Telegram notification automatically if it's a VPS order
     if order.order_type == "VPS" and user.telegram_id:
-        import os
-        import httpx
-        import asyncio
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if bot_token:
             if is_renewal:

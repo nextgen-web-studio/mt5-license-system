@@ -32,7 +32,9 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int):
             )
             
             # Use localhost to fetch queue position - same server
-            base_url = "http://127.0.0.1:10000/api/v1"
+            import os as _os
+            _port = _os.environ.get("PORT", "10000")
+            base_url = f"http://127.0.0.1:{_port}/api/v1"
             
             for i in range(25):  # 25 * 4s = 100 seconds
                 await asyncio.sleep(4)

@@ -59,6 +59,20 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
     else:
         order.status = "compiling"
         await db.commit()
+    
+    # Notify customer with animated compiling spinner
+    import os, asyncio
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if bot_token:
+        try:
+            u_res = await db.execute(select(User).filter(User.id == order.user_id))
+            u = u_res.scalar_one_or_none()
+            if u and u.telegram_id:
+                from app.core.telegram_animator import animate_compiling
+                asyncio.create_task(animate_compiling(bot_token, u.telegram_id, lic.id))
+        except Exception as e:
+            print(f"Failed to send compiling notification: {e}")
+    
     return {"status": "success", "message": "Installment arrangement created and first payment recorded"}
 
 @router.post("/pay")
@@ -120,26 +134,27 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
             background_tasks.add_task(local_wine_compiler, job.id)
         
         # Notify the user via Telegram that their payment was recorded and the EA is compiling
-        import os, httpx
+        import os, httpx, asyncio
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if bot_token:
             try:
-                # Need to find user telegram id
                 user_res = await db.execute(select(User).filter(User.id == order.user_id))
                 user = user_res.scalar_one_or_none()
                 if user and user.telegram_id:
+                    # First send a text confirmation of payment
                     msg = (
                         f"✅ *Installment Payment Recorded*\n\n"
                         f"Amount Paid: ₹{payload.amount}\n"
-                        f"Next Due: {order.next_due_date.strftime('%d %b %Y') if not is_final else 'Fully Paid!'}\n\n"
-                        f"⏳ *Compiling your updated EA...*\n"
-                        f"Your EA is being updated with the new license period and will be sent to you automatically in a few minutes."
+                        f"Next Due: {order.next_due_date.strftime('%d %b %Y') if not is_final else 'Fully Paid!'}"
                     )
                     async with httpx.AsyncClient(verify=False) as client:
                         await client.post(
                             f"https://api.telegram.org/bot{bot_token}/sendMessage",
                             json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                         )
+                    # Then trigger the animated compiling spinner
+                    from app.core.telegram_animator import animate_compiling
+                    asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
             except Exception as e:
                 print(f"Failed to send payment notification: {e}")
 
@@ -186,29 +201,22 @@ async def full_settle_installment(order_id: int, background_tasks: BackgroundTas
             background_tasks.add_task(local_wine_compiler, job.id)
         
         # Settle notification
-        import os, httpx
-        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/compile-started")
-        if bot_webhook_url.endswith("/delivery"):
-            bot_webhook_url = bot_webhook_url.replace("/delivery", "/compile-started")
-            
+        import os, httpx, asyncio
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:
             u_res = await db.execute(select(User).filter(User.id == order.user_id))
             u = u_res.scalar_one_or_none()
-            if u and u.telegram_id:
-                if bot_token:
-                    msg = f"✅ *FULL SETTLEMENT RECORDED!*\n\nAll payments complete! Your lifetime EA is being compiled."
-                    async with httpx.AsyncClient(verify=False) as client:
-                        await client.post(
-                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                            json={"chat_id": u.telegram_id, "text": msg, "parse_mode": "Markdown"}
-                        )
-                
-                async def notify_compile():
-                    async with httpx.AsyncClient(verify=False, timeout=5.0) as client:
-                        await client.post(bot_webhook_url, json={"license_id": lic.id, "telegram_id": u.telegram_id})
-                import asyncio
-                asyncio.create_task(notify_compile())
+            if u and u.telegram_id and bot_token:
+                # Send confirmation message
+                msg = f"✅ *FULL SETTLEMENT RECORDED!*\n\nAll payments complete! Your lifetime EA is being compiled."
+                async with httpx.AsyncClient(verify=False) as client:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={"chat_id": u.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                    )
+                # Trigger animated compiling spinner
+                from app.core.telegram_animator import animate_compiling
+                asyncio.create_task(animate_compiling(bot_token, u.telegram_id, lic.id))
         except Exception as e:
             print(f"Failed to send settlement notification: {e}")
 
