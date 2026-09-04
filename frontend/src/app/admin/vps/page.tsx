@@ -426,7 +426,7 @@ export default function VpsOrdersPage() {
       {/* Provisioning Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
             <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center">
                 <Server size={18} className="mr-2 text-blue-400" />
@@ -440,7 +440,7 @@ export default function VpsOrdersPage() {
               </button>
             </div>
             
-            <form onSubmit={handleProvision} className="p-6 space-y-4">
+            <form onSubmit={handleProvision} className="p-6 space-y-4 overflow-y-auto">
               <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 text-xs flex justify-between items-center mb-4">
                 <span className="text-neutral-400">Product Plan:</span>
                 <span className="text-white font-medium">{selectedOrder?.plan_name}</span>
@@ -548,7 +548,7 @@ export default function VpsOrdersPage() {
       {/* Send Message Modal */}
       {msgModalOpen && msgOrder && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
             <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
               <h3 className="text-lg font-bold text-white flex items-center">
                 <MessageSquare size={18} className="mr-2 text-blue-400" />
@@ -562,7 +562,7 @@ export default function VpsOrdersPage() {
               </button>
             </div>
             
-            <form onSubmit={handleSendMessage} className="p-6 space-y-4">
+            <form onSubmit={handleSendMessage} className="p-6 space-y-4 overflow-y-auto">
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">Direct Message to {msgOrder.customer}</label>
                 <textarea 
