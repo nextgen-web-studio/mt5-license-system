@@ -153,6 +153,19 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
         
     await db.commit()
     
+    # Notify bot to clear admin buttons
+    import os, httpx, asyncio
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/order-approved")
+    if bot_webhook_url.endswith("/delivery") or bot_webhook_url.endswith("/compile-started"):
+        bot_webhook_url = bot_webhook_url.replace("/delivery", "/order-approved").replace("/compile-started", "/order-approved")
+    try:
+        async def trigger_clear_buttons():
+            async with httpx.AsyncClient(verify=False) as client:
+                await client.post(bot_webhook_url, json={"order_id": order_id})
+        asyncio.create_task(trigger_clear_buttons())
+    except Exception as e:
+        pass
+    
     if order.order_type in ["EA", "EA_RENEWAL"] and user.telegram_id and order.mt5_id:
         import os
         import httpx

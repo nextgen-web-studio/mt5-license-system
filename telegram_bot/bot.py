@@ -1428,7 +1428,9 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup = InlineKeyboardMarkup(kb) if kb else None
             
             try:
-                await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown", reply_markup=reply_markup)
+                sent = await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown", reply_markup=reply_markup)
+                global ADMIN_MESSAGES
+                ADMIN_MESSAGES[vps_order_id] = sent.message_id
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin: {e}")
             
@@ -1545,12 +1547,14 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             ]
         ]
         try:
-            await context.bot.send_message(
+            sent = await context.bot.send_message(
                 chat_id=admin_chat_id,
                 text=admin_msg,
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup(admin_kb)
             )
+            global ADMIN_MESSAGES
+            ADMIN_MESSAGES[order['id']] = sent.message_id
         except Exception as e:
             logging.error(f"Failed to notify admin: {e}")
             
@@ -2076,6 +2080,8 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 import json
 
+ADMIN_MESSAGES = {}
+
 class DummyHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         self.send_response(200)
@@ -2112,6 +2118,22 @@ class DummyHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(b"Error")
+        elif self.path == "/internal/order-approved":
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                order_id = data.get('order_id')
+                if order_id:
+                    threading.Thread(target=self.clear_admin_buttons, args=(order_id,), daemon=True).start()
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"Error")
         elif self.path == "/internal/compile-started":
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
@@ -2134,6 +2156,34 @@ class DummyHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+
+    def clear_admin_buttons(self, order_id):
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.async_clear_admin_buttons(order_id))
+        
+    async def async_clear_admin_buttons(self, order_id):
+        import httpx
+        global ADMIN_MESSAGES
+        msg_id = ADMIN_MESSAGES.get(int(order_id))
+        if msg_id:
+            bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            admin_chat_id = os.getenv("ADMIN_CHAT_ID")
+            try:
+                HTTPX_VERIFY = False
+                async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                        json={
+                            "chat_id": admin_chat_id,
+                            "message_id": msg_id,
+                            "text": f"✅ *ORDER #{order_id} APPROVED FROM WEB DASHBOARD*",
+                            "parse_mode": "Markdown"
+                        }
+                    )
+            except Exception as e:
+                pass
 
     def start_compile_animation(self, license_id, telegram_id):
         import asyncio
