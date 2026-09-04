@@ -150,7 +150,8 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
             "amount": amount,
             "status": order.status,
             "date": order.created_at,
-            "is_renewal": bool(order.vps_id) and product.type == "VPS"
+            "is_renewal": bool(order.vps_id) and product.type == "VPS",
+            "mt5_id": getattr(order, 'mt5_id', None)
         })
     return orders
 
