@@ -282,12 +282,12 @@ export default function VpsOrdersPage() {
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       <div className="flex items-center gap-2">
                         {order.is_renewal ? (
-                          <span className={`px-2 py-1 rounded text-xs font-medium border capitalize whitespace-nowrap ${
-                            order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                          }`}>
-                            {(order.status || 'Unknown').replace(/_/g, ' ')}
-                          </span>
+                          <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
+                              order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                            }`}>
+                              {(order.status || 'Unknown').replace(/_/g, ' ')}
+                            </span>
                         ) : (
                           <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
                         )}
@@ -351,12 +351,12 @@ export default function VpsOrdersPage() {
                   <span className="font-medium text-white text-xs">#{order.id}</span>
                   <div className="flex flex-col items-end gap-1">
                     {order.is_renewal ? (
-                          <span className={`px-2 py-1 rounded text-xs font-medium border capitalize whitespace-nowrap ${
-                            order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                          }`}>
-                            {(order.status || 'Unknown').replace(/_/g, ' ')}
-                          </span>
+                          <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
+                              order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                            }`}>
+                              {(order.status || 'Unknown').replace(/_/g, ' ')}
+                            </span>
                         ) : (
                           <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
                         )}

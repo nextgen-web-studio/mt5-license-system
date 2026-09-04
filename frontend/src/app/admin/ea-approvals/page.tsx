@@ -14,6 +14,12 @@ export default function EaApprovalsPage() {
 
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [installmentMode, setInstallmentMode] = useState(false);
+  const [totalAmount, setTotalAmount] = useState('');
+  const [installmentAmount, setInstallmentAmount] = useState('');
+  const [installmentCount, setInstallmentCount] = useState('');
+  const [firstPayment, setFirstPayment] = useState('');
+  const [licenseDays, setLicenseDays] = useState('30');
 
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['admin-ea-orders'],
@@ -47,8 +53,37 @@ export default function EaApprovalsPage() {
     }
   };
 
+  const createInstallmentMutation = useMutation({
+    mutationFn: async () => {
+      if (selectedOrder.status === 'pending_admin_approval') {
+        await api.post(`/api/v1/orders/${selectedOrder.id}/approve`);
+      }
+      const { data } = await api.post(`/api/v1/installments/create`, {
+        order_id: selectedOrder.id,
+        total_amount: parseFloat(totalAmount),
+        installment_amount: parseFloat(installmentAmount),
+        installment_count: parseInt(installmentCount, 10),
+        first_payment_amount: parseFloat(firstPayment || installmentAmount),
+        license_period_days: parseInt(licenseDays, 10)
+      });
+      return data;
+    },
+    onSuccess: () => {
+      toast("Installment arrangement created successfully!", "success");
+      setApproveModalOpen(false);
+      setInstallmentMode(false);
+      queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+    },
+    onError: (err: any) => {
+      toast("Error creating installment: " + (err.response?.data?.detail || err.message), "error");
+    }
+  });
+
   const generateMutation = useMutation({
     mutationFn: async (order: any) => {
+      if (order.status === 'pending_admin_approval') {
+        await api.post(`/api/v1/orders/${order.id}/approve`);
+      }
       const { data } = await api.post(`/api/v1/licenses/generate`, {
         order_id: order.id,
         mt5_id: order.mt5_id
@@ -85,7 +120,8 @@ export default function EaApprovalsPage() {
   const otherOrders = orders.filter((o: any) => o.status !== 'pending_admin_approval' && o.status !== 'approved_waiting_for_mt5_id' && o.status !== 'approved');
 
   const renderTable = (tableOrders: any[]) => (
-    <div className="overflow-x-auto">
+    <>
+    <div className="hidden md:block overflow-x-auto min-h-[150px]">
       <table className="min-w-full text-sm text-left">
         <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
           <tr>
@@ -121,6 +157,7 @@ export default function EaApprovalsPage() {
                     <button 
                       onClick={() => {
                         setSelectedOrder(order);
+                        setInstallmentMode(false);
                         setApproveModalOpen(true);
                       }}
                       className="px-3 py-1.5 text-xs font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"
@@ -135,6 +172,57 @@ export default function EaApprovalsPage() {
         </tbody>
       </table>
     </div>
+    
+    {/* Mobile Card View */}
+    <div className="md:hidden divide-y divide-neutral-800">
+      {tableOrders.length === 0 ? (
+        <div className="p-8 text-center text-neutral-500">No EA orders found.</div>
+      ) : (
+        tableOrders.map((order: any) => (
+          <div key={order.id} className="p-3 space-y-2">
+            <div className="flex justify-between items-start">
+              <span className="font-medium text-white text-xs">#{order.id}</span>
+              {getStatusBadge(order.status)}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 text-xs mt-1">
+              <div>
+                <span className="text-neutral-500 block text-[10px] mb-0.5">Product</span>
+                <span className="text-neutral-300">{order.product}</span>
+              </div>
+              <div>
+                <span className="text-neutral-500 block text-[10px] mb-0.5">Customer</span>
+                <span className="text-neutral-300">{order.customer}</span>
+              </div>
+              <div>
+                <span className="text-neutral-500 block text-[10px] mb-0.5">MT5 ID</span>
+                <span className="text-white font-mono">{order.mt5_id || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-neutral-500 block text-[10px] mb-0.5">Date</span>
+                <span className="text-neutral-300">{new Date(order.date || Date.now()).toLocaleDateString('en-GB')}</span>
+              </div>
+            </div>
+
+            {(order.status === 'pending_admin_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
+              <div className="flex justify-end gap-2 flex-wrap pt-3 border-t border-neutral-800/50">
+                <button 
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setInstallmentMode(false);
+                    setApproveModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"
+                >
+                  <ShieldCheck size={14} /> Process Approval
+                </button>
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+    </>
   );
 
   return (
@@ -194,6 +282,77 @@ export default function EaApprovalsPage() {
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400 text-sm text-center">
                   Cannot process license until customer provides their MT5 ID.
                 </div>
+              ) : installmentMode ? (
+                <div className="space-y-4 mt-2">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-400 mb-1">Total Amount (₹)</label>
+                    <input 
+                      type="number" 
+                      value={totalAmount}
+                      onChange={(e) => setTotalAmount(e.target.value)}
+                      placeholder="e.g. 50000"
+                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">Installment Amount (₹)</label>
+                      <input 
+                        type="number" 
+                        value={installmentAmount}
+                        onChange={(e) => { setInstallmentAmount(e.target.value); if(!firstPayment) setFirstPayment(e.target.value); }}
+                        placeholder="e.g. 5000"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">No. of Installments</label>
+                      <input 
+                        type="number" 
+                        value={installmentCount}
+                        onChange={(e) => setInstallmentCount(e.target.value)}
+                        placeholder="e.g. 10"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">First Payment Recv (₹)</label>
+                      <input 
+                        type="number" 
+                        value={firstPayment}
+                        onChange={(e) => setFirstPayment(e.target.value)}
+                        placeholder="e.g. 5000"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">License Days</label>
+                      <input 
+                        type="number" 
+                        value={licenseDays}
+                        onChange={(e) => setLicenseDays(e.target.value)}
+                        placeholder="e.g. 30"
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => setInstallmentMode(false)}
+                      className="flex-1 py-2 text-neutral-400 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      disabled={createInstallmentMutation.isPending || !totalAmount || !installmentAmount || !installmentCount || !licenseDays}
+                      onClick={() => createInstallmentMutation.mutate()}
+                      className="flex-1 flex items-center justify-center py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                    >
+                      {createInstallmentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : "Save & Create"}
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-neutral-300 text-center mb-4">How would you like to process this EA?</p>
@@ -221,8 +380,10 @@ export default function EaApprovalsPage() {
 
                   <button
                     onClick={() => {
-                      setApproveModalOpen(false);
-                      router.push('/admin/installments');
+                      setInstallmentMode(true);
+                      setTotalAmount('50000');
+                      setInstallmentAmount('5000');
+                      setInstallmentCount('10');
                     }}
                     className="w-full flex items-center justify-center p-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 rounded-lg font-medium transition-colors"
                   >
