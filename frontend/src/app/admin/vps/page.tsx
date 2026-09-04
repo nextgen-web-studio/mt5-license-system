@@ -281,7 +281,16 @@ export default function VpsOrdersPage() {
                     <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       <div className="flex items-center gap-2">
-                        <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                        {order.is_renewal ? (
+                          <span className={`px-2 py-1 rounded text-xs font-medium border capitalize whitespace-nowrap ${
+                            order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                          }`}>
+                            {(order.status || 'Unknown').replace(/_/g, ' ')}
+                          </span>
+                        ) : (
+                          <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                        )}
                         {order.screenshot_received && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
                             📸 SS Received
@@ -338,7 +347,16 @@ export default function VpsOrdersPage() {
                 <div className="flex justify-between items-start">
                   <span className="font-medium text-white text-xs">#{order.id}</span>
                   <div className="flex flex-col items-end gap-1">
-                    <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                    {order.is_renewal ? (
+                          <span className={`px-2 py-1 rounded text-xs font-medium border capitalize whitespace-nowrap ${
+                            order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                          }`}>
+                            {(order.status || 'Unknown').replace(/_/g, ' ')}
+                          </span>
+                        ) : (
+                          <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                        )}
                     {order.screenshot_received && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
                         📸 SS Received
