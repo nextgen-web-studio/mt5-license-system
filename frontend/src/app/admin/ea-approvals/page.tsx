@@ -23,7 +23,7 @@ export default function EaApprovalsPage() {
 
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['admin-ea-orders'],
-    refetchInterval: 5000,
+    refetchInterval: 15000,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/all_orders');
       return data.filter((o: any) => o.product?.includes('EA'));
