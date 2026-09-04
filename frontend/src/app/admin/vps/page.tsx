@@ -439,6 +439,11 @@ export default function VpsOrdersPage() {
             </div>
             
             <form onSubmit={handleProvision} className="p-6 space-y-4">
+              <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800 text-xs flex justify-between items-center mb-4">
+                <span className="text-neutral-400">Product Plan:</span>
+                <span className="text-white font-medium">{selectedOrder?.plan_name}</span>
+              </div>
+              
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">Hostname / Server Name</label>
                 <input 
@@ -481,6 +486,29 @@ export default function VpsOrdersPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Purchased Date</label>
+                  <input 
+                    type="datetime-local" 
+                    required
+                    value={purchasedDate}
+                    onChange={(e) => setPurchasedDate(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-400 mb-1">Expiry Date & Time</label>
+                  <input 
+                    type="datetime-local" 
+                    required
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               
