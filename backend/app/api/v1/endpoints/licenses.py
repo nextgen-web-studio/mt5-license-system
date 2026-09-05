@@ -580,9 +580,7 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
         import os
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if bot_token:
-            msg = f"❌ *BROKER CHANGE REJECTED*
-
-Unfortunately, your request to change your MT5 ID to `{req.new_mt5_id}` has been rejected by the admin. Please contact support for more details."
+            msg = f"❌ *BROKER CHANGE REJECTED*\n\nUnfortunately, your request to change your MT5 ID to `{req.new_mt5_id}` has been rejected by the admin. Please contact support for more details."
             try:
                 async def send_user_tg():
                     async with httpx.AsyncClient() as client:
