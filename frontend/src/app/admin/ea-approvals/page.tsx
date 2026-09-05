@@ -210,7 +210,7 @@ export default function EaApprovalsPage() {
                 <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
                 <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleDateString('en-GB')}</td>
                 <td className="px-6 py-4 text-right">
-                  {(order.status === 'pending_admin_approval' || order.status === 'pending_broker_change_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
+                  {(order.status === 'pending_admin_approval' || order.status === 'pending_broker_change_approval' || order.status === 'approved_waiting_for_mt5_id') && (
                     <button 
                       onClick={() => {
                         setSelectedOrder(order);
@@ -261,7 +261,7 @@ export default function EaApprovalsPage() {
               </div>
             </div>
 
-            {(order.status === 'pending_admin_approval' || order.status === 'pending_broker_change_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
+            {(order.status === 'pending_admin_approval' || order.status === 'pending_broker_change_approval' || order.status === 'approved_waiting_for_mt5_id') && (
               <div className="flex justify-end gap-2 flex-wrap pt-3 border-t border-neutral-800/50">
                 <button 
                   onClick={() => {
