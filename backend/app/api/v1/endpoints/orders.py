@@ -124,7 +124,7 @@ async def get_telegram_vps(telegram_id: str, db: AsyncSession = Depends(get_db))
             "order_id": vps.order_id,
             "status": vps.status,
             "hostname": vps.hostname,
-            "ip_address": vps.ip_address,
+            "ip_address": vps.ip,
             "username": vps.username,
             "password": vps.password,
             "expiry_date": vps.expiry_date.isoformat() if vps.expiry_date else None,
