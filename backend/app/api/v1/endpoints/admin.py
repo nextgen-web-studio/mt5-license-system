@@ -179,7 +179,8 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
             "is_broker_change": False
         })
         
-    # Fetch broker change requests    from app.models import BrokerChangeRequest, License, Order
+    # Fetch broker change requests
+    from app.models import BrokerChangeRequest, License, Order
     bc_result = await db.execute(
         select(BrokerChangeRequest, License, Product, User)
         .join(License, BrokerChangeRequest.license_id == License.id)
