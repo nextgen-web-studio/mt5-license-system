@@ -250,7 +250,7 @@ export default function VpsOrdersPage() {
             <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white">Pending Action</h3>
             </div>
-            <div className=" overflow-x-auto ">
+            <div className="overflow-visible">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -368,7 +368,7 @@ export default function VpsOrdersPage() {
             <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white">Completed / Other Orders</h3>
             </div>
-            <div className=" overflow-x-auto ">
+            <div className="overflow-visible">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
