@@ -35,8 +35,7 @@ const navigation = [
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [countdown, setCountdown] = useState(5);
-  const [utcTime, setUtcTime] = useState<string>('');
+    const [utcTime, setUtcTime] = useState<string>('');
 
   // IST live clock (UTC+5:30)
   useEffect(() => {
@@ -58,16 +57,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Auto-refresh countdown display
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) return 5;
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="fixed inset-0 bg-black text-white flex overflow-hidden w-full">
@@ -140,13 +129,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 md:p-4 border-t border-neutral-800 shrink-0 space-y-2 pb-8 md:pb-4">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs text-emerald-400 font-medium">Live · refreshes in {countdown}s</span>
-          </div>
+          
           <button 
             onClick={() => {
               document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';

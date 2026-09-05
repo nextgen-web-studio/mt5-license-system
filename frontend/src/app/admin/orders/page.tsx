@@ -18,7 +18,7 @@ export default function OrdersPage() {
   const { data: orders = [], isLoading, error } = useQuery({
     
     queryKey: ['admin-orders'],
-    refetchInterval: 15000,
+    refetchInterval: 5000,
     refetchIntervalInBackground: true,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/all_orders');
