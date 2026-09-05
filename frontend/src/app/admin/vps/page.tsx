@@ -241,7 +241,13 @@ export default function VpsOrdersPage() {
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         {/* Desktop Table */}
-        <div className="hidden md:block overflow-x-auto min-h-[300px]">
+        
+        <div className="hidden md:flex flex-col gap-6">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-800">
+              <h3 className="font-semibold text-white">Pending Action</h3>
+            </div>
+            <div className=" overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -255,14 +261,14 @@ export default function VpsOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
-              {vpsOrders.length === 0 ? (
+              {pendingOrders.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-neutral-500">
-                    No VPS orders found.
+                    No pending action required.
                   </td>
                 </tr>
               ) : (
-                vpsOrders.map((order: any) => (
+                pendingOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
                     <td className="px-6 py-4 text-white">{order.customer || 'Guest'}</td>
@@ -352,12 +358,139 @@ export default function VpsOrdersPage() {
           </table>
         </div>
 
+
+          </div>
+          
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-800">
+              <h3 className="font-semibold text-white">Completed / Other Orders</h3>
+            </div>
+            <div className=" overflow-x-auto min-h-[300px]">
+          <table className="min-w-full text-sm text-left">
+            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+              <tr>
+                <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Plan</th>
+                <th className="px-6 py-4">Terminals</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Expiry</th>
+                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-800">
+              {completedOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-neutral-500">
+                    No completed orders.
+                  </td>
+                </tr>
+              ) : (
+                completedOrders.map((order: any) => (
+                  <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
+                    <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
+                    <td className="px-6 py-4 text-white">{order.customer || 'Guest'}</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
+                      <span className="flex items-center gap-2">
+                        {order.plan_name || 'Standard'}
+                        {order.is_renewal && (
+                          <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
+                            🔄 Renewal
+                          </span>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {order.is_renewal ? (
+                          <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
+                            order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                          }`}>
+                            {(order.status || 'Unknown').replace(/_/g, ' ')}
+                          </span>
+                        ) : (
+                          <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                        )}
+                        {order.screenshot_received && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
+                            📸 SS Received
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
+                      {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
+                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
+                          title="Send Message"
+                        >
+                          <MessageSquare size={16} />
+                        </button>
+                        {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                          order.is_renewal ? (
+                            <>
+                              <button 
+                                onClick={() => {
+                                  api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
+                                    toast("Renewal Approved!", "success");
+                                    queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                                  }).catch(() => toast("Failed to approve", "error"));
+                                }}
+                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
+                              >
+                                Approve
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
+                                    toast("Renewal Rejected", "success");
+                                    queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                                  }).catch(() => toast("Failed to reject", "error"));
+                                }}
+                                className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded text-xs font-medium transition-colors"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          ) : (
+                            <button 
+                              onClick={() => openModal(order)}
+                              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
+                            >
+                              Provision
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+
+          </div>
+        </div>
         {/* Mobile Card Layout */}
-        <div className="md:hidden flex flex-col divide-y divide-neutral-800">
-          {vpsOrders.length === 0 ? (
-            <div className="p-8 text-center text-neutral-500">No VPS orders found.</div>
+        
+        <div className="md:hidden flex flex-col gap-6">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-neutral-800">
+              <h3 className="font-semibold text-white text-sm">Pending Action</h3>
+            </div>
+            <div className="flex flex-col divide-y divide-neutral-800">
+          {pendingOrders.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No pending action required.</div>
           ) : (
-            vpsOrders.map((order: any) => (
+            pendingOrders.map((order: any) => (
               <div key={order.id} className="p-3 space-y-2">
                 <div className="flex justify-between items-start">
                   <span className="font-medium text-white text-xs">#{order.order_id || order.id}</span>
@@ -450,7 +583,114 @@ export default function VpsOrdersPage() {
             ))
           )}
         </div>
-      </div>
+      
+          </div>
+          
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-neutral-800">
+              <h3 className="font-semibold text-white text-sm">Completed / Other Orders</h3>
+            </div>
+            <div className="flex flex-col divide-y divide-neutral-800">
+          {completedOrders.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No completed orders.</div>
+          ) : (
+            completedOrders.map((order: any) => (
+              <div key={order.id} className="p-3 space-y-2">
+                <div className="flex justify-between items-start">
+                  <span className="font-medium text-white text-xs">#{order.order_id || order.id}</span>
+                  <div className="flex flex-col items-end gap-1">
+                    {order.is_renewal ? (
+                      <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
+                        order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        order.status === 'rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                      }`}>
+                        {STATUS_LABELS[order.status] || (order.status || 'Unknown').replace(/_/g, ' ')}
+                      </span>
+                    ) : (
+                      <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                    )}
+                    {order.screenshot_received && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
+                        📸 SS
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs mt-1">
+                  <div>
+                    <span className="text-neutral-500 block text-[10px]">Customer</span>
+                    <span className="text-neutral-300">{order.customer_name || order.customer || 'Guest'}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-[10px]">Plan</span>
+                    <span className="text-white font-medium flex items-center gap-1 flex-wrap">
+                      {order.plan_name}
+                      {order.is_renewal && (
+                        <span className="px-1 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[9px] font-bold uppercase">🔄 RENEWAL</span>
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-[10px]">Terminals</span>
+                    <span className="text-neutral-300">{order.terminals_allowed || 2}</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 block text-[10px]">Expiry Date</span>
+                    <span className="text-neutral-300">
+                      {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 flex-wrap pt-2 border-t border-neutral-800/50">
+                  <button 
+                    onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors">
+                    <MessageSquare size={13} /> Message
+                  </button>
+                  {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                    order.is_renewal ? (
+                      <>
+                        <button 
+                          onClick={() => {
+                            api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
+                              toast("Renewal Approved!", "success");
+                              queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                            }).catch(() => toast("Failed to approve", "error"));
+                          }}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
+                          <Check size={13} /> Approve
+                        </button>
+                        <button 
+                          onClick={() => {
+                            api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
+                              toast("Renewal Rejected", "success");
+                              queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                            }).catch(() => toast("Failed to reject", "error"));
+                          }}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors">
+                          <XCircle size={13} /> Reject
+                        </button>
+                      </>
+                    ) : (
+                      <button 
+                        onClick={() => openModal(order)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
+                        <Check size={13} /> Provision
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      
+          </div>
+        </div>
+</div>
 
       {/* Provisioning Modal */}
       {selectedOrder && (
