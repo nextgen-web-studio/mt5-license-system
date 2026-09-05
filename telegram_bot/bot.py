@@ -2092,26 +2092,27 @@ class DummyHandler(BaseHTTPRequestHandler):
             try:
                 HTTPX_VERIFY = False
                 action_text = "APPROVED" if action == "approved" else "REJECTED"
+                icon = "✅" if action == "approved" else "❌"
                 async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                     await client.post(
                         f"https://api.telegram.org/bot{bot_token}/editMessageText",
                         json={
                             "chat_id": admin_chat_id,
                             "message_id": msg_id,
-                            "text": f"✅ *BROKER CHANGE #{request_id} {action_text} FROM WEB DASHBOARD*",
+                            "text": f"{icon} *BROKER CHANGE #{request_id} {action_text} FROM WEB DASHBOARD*",
                             "parse_mode": "Markdown"
                         }
                     )
             except Exception as e:
                 logging.error(f"Failed to clear admin buttons for BC {request_id}: {e}")
 
-    def clear_admin_buttons(self, order_id):
+    def clear_admin_buttons(self, order_id, action="approved"):
         import asyncio
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.async_clear_admin_buttons(order_id))
+        loop.run_until_complete(self.async_clear_admin_buttons(order_id, action))
         
-    async def async_clear_admin_buttons(self, order_id):
+    async def async_clear_admin_buttons(self, order_id, action):
         global ADMIN_MESSAGES
         import httpx
         msg_id = ADMIN_MESSAGES.get(int(order_id))
@@ -2120,13 +2121,15 @@ class DummyHandler(BaseHTTPRequestHandler):
             admin_chat_id = os.getenv("ADMIN_CHAT_ID")
             try:
                 HTTPX_VERIFY = False
+                icon = "✅" if action == "approved" else "❌"
+                text = f"{icon} *ORDER #{order_id} {action.upper()} FROM WEB DASHBOARD*"
                 async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                     await client.post(
                         f"https://api.telegram.org/bot{bot_token}/editMessageText",
                         json={
                             "chat_id": admin_chat_id,
                             "message_id": msg_id,
-                            "text": f"✅ *ORDER #{order_id} APPROVED FROM WEB DASHBOARD*",
+                            "text": text,
                             "parse_mode": "Markdown"
                         }
                     )

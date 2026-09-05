@@ -576,6 +576,24 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
     user_result = await db.execute(select(User).filter(User.id == req.user_id))
     user = user_result.scalar_one_or_none()
     
+    if user and user.telegram_id:
+        import os
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if bot_token:
+            msg = f"❌ *BROKER CHANGE REJECTED*
+
+Unfortunately, your request to change your MT5 ID to `{req.new_mt5_id}` has been rejected by the admin. Please contact support for more details."
+            try:
+                async def send_user_tg():
+                    async with httpx.AsyncClient() as client:
+                        await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                            json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                        )
+                asyncio.create_task(send_user_tg())
+            except Exception as e:
+                pass
+
     return {"status": "success", "telegram_id": user.telegram_id if user else None}
 
 

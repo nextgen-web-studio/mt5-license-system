@@ -284,7 +284,7 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
             "is_renewal": True
         })
         
-    orders.sort(key=lambda x: x["created_at"], reverse=True)
+    orders.sort(key=lambda x: x["order_id"], reverse=True)
     return orders
 
 @router.post("/vps-orders/{vps_id}/provision")
