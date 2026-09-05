@@ -542,7 +542,8 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     try:
         async def call_webhook():
             async with httpx.AsyncClient() as client:
-                await client.post("http://127.0.0.1:8080/internal/bc-approved", json={"request_id": request_id, "action": "approved"})
+                bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").rstrip("/")
+                await client.post(f"{bot_url}/internal/bc-approved", json={"request_id": request_id, "action": "approved"})
         asyncio.create_task(call_webhook())
     except:
         pass
@@ -566,7 +567,8 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
     try:
         async def call_webhook_reject():
             async with httpx.AsyncClient() as client:
-                await client.post("http://127.0.0.1:8080/internal/bc-rejected", json={"request_id": request_id, "action": "rejected"})
+                bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").rstrip("/")
+                await client.post(f"{bot_url}/internal/bc-rejected", json={"request_id": request_id, "action": "rejected"})
         asyncio.create_task(call_webhook_reject())
     except:
         pass

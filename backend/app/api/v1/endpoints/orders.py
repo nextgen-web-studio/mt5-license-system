@@ -155,7 +155,7 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     
     # Notify bot to clear admin buttons
     import os, httpx, asyncio
-    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com")
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
     bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
     bot_webhook_url += "/internal/order-approved" 
     try:

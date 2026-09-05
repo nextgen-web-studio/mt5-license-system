@@ -146,7 +146,7 @@ export default function EaTemplatePage() {
   if (loading) return <div className="text-white">Loading EA template versions...</div>;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-3 md:space-y-4 md:space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -179,13 +179,13 @@ export default function EaTemplatePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Upload Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
+          <h2 className="text-base md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <UploadCloud size={20} className="text-blue-400" />
             Upload New EA File
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <div>
               <label className="text-sm font-medium text-white block mb-1">EA Source File (.mq5)</label>
               <input
@@ -274,12 +274,12 @@ export default function EaTemplatePage() {
         </div>
 
         {/* How it works Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
+          <h2 className="text-base md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <FileCode2 size={20} className="text-indigo-400" />
             How This Works
           </h2>
-          <ol className="space-y-4 text-sm text-neutral-400 list-decimal list-inside">
+          <ol className="space-y-3 md:space-y-4 text-sm text-neutral-400 list-decimal list-inside">
             <li>Upload the new <code className="text-neutral-300">.mq5</code> source file the client sends you.</li>
             <li>It's saved as a new version here — nothing is overwritten, old versions stay available.</li>
             <li>Mark it "Active" (or check the box on upload) to make it the live template.</li>
@@ -292,8 +292,8 @@ export default function EaTemplatePage() {
       {/* Version History */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="p-4 md:p-6 pb-0">
-          <h2 className="text-lg md:text-xl font-semibold text-white mb-1 flex items-center gap-2">
-            <History size={20} className="text-neutral-400" />
+          <h2 className="text-base md:text-xl font-semibold text-white mb-1 flex items-center gap-2">
+            <History size={20} className="text-sm md:text-base text-neutral-400" />
             Version History
           </h2>
           <p className="text-neutral-500 text-sm mb-4">All uploaded EA source versions, most recent first.</p>

@@ -64,7 +64,7 @@ export default function TrialAdminPage() {
   if (!settings) return <div className="text-red-500">Failed to load settings.</div>;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-3 md:space-y-4 md:space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -77,7 +77,7 @@ export default function TrialAdminPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Settings Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
           <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <ShieldAlert size={20} className="text-blue-400" />
             Global Settings
@@ -86,7 +86,7 @@ export default function TrialAdminPage() {
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-white block">Trial Status</label>
+                <label className="text-xs md:text-sm font-medium text-white block">Trial Status</label>
                 <span className="text-xs text-neutral-400">Enable or disable trials globally</span>
               </div>
               <button
@@ -138,7 +138,7 @@ export default function TrialAdminPage() {
 
             <div className="flex items-center justify-between pt-2">
               <div>
-                <label className="text-sm font-medium text-white block">Allow Existing Customers</label>
+                <label className="text-xs md:text-sm font-medium text-white block">Allow Existing Customers</label>
                 <span className="text-xs text-neutral-400">Can paid users claim trials?</span>
               </div>
               <button
@@ -171,7 +171,7 @@ export default function TrialAdminPage() {
         </div>
 
         {/* Manual Grant Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
           <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <Gift size={20} className="text-green-400" />
             Manual Trial Grant
@@ -180,7 +180,7 @@ export default function TrialAdminPage() {
             Bypass monthly limits to manually grant a trial for customer support purposes.
           </p>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <div>
               <label className="text-sm font-medium text-white block mb-1">Telegram User ID</label>
               <input 
@@ -218,7 +218,7 @@ export default function TrialAdminPage() {
           <p className="text-neutral-400 text-sm mb-4">
             If a user has exhausted their free trial limit (e.g. for testing purposes), you can completely wipe their trial history here so they can claim a trial again.
           </p>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <input 
                 type="text" 
@@ -246,7 +246,7 @@ export default function TrialAdminPage() {
         </h2>
         <div className="bg-neutral-950 rounded-lg border border-neutral-800 p-8 text-center">
           <Clock size={40} className="text-neutral-600 mx-auto mb-3" />
-          <p className="text-neutral-400">Trial statistics and active licenses will appear here.</p>
+          <p className="text-sm md:text-base text-neutral-400">Trial statistics and active licenses will appear here.</p>
         </div>
       </div>
     
