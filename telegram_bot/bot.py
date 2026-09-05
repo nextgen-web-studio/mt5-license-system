@@ -36,85 +36,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 compiling_messages: dict = {}
 
 async def animate_compiling_message(token: str, chat_id: str, message_id: int, license_id_str: str):
-    # Clock emoji forms a spinning ring (12 frames = smooth circle)
-    ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
-    base_tail = "\n\nThe file will be sent here automatically once ready.\n\n_Usually takes 2-5 minutes. Please wait._"
-    
-    i = 0
-    import asyncio as _asyncio
-    max_iterations = 300  # Max 7.5 minutes (300 * 1.5s) to prevent endless looping if compilation crashes
-    
-    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
-    queue_msg = "\n\nYour EA file is being built right now."
-    
-    while i < max_iterations:
-        info = compiling_messages.get(license_id_str)
-        if not info or info.get("stop"):
-            break
-        
-        # If a newer animation task replaced this one in the dict, kill this old task
-        if info.get("message_id") != message_id:
-            break
-            
-        # Check specific queue position every 3 seconds
-        if i % 2 == 0:
-            try:
-                async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
-                    resp = await client.get(f"{base_url}/jobs/queue-position/{license_id_str}", timeout=2.0)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        pos = data.get("position", 0)
-                        status = data.get("status", "completed")
-                        
-                        if pos > 1:
-                            queue_msg = f"\n\n👥 *You are in queue position: #{pos}*\n_Your EA will start compiling when it's your turn._"
-                        elif pos == 1 and status == "processing":
-                            queue_msg = "\n\n🔨 *Your EA is being compiled right now!*"
-                        elif pos == 1 and status == "pending":
-                            queue_msg = "\n\n👥 *You are next in line!*\n_Your EA will start compiling shortly._"
-            except Exception as e:
-                logging.error(f'Queue Error: {e}')
-
-        ring = ring_frames[i % len(ring_frames)]
-        text = f"{ring}⚙️ *Compiling your EA...*" + queue_msg + base_tail
-        
-        try:
-            async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
-                await client.post(
-                    f"https://api.telegram.org/bot{token}/editMessageText",
-                    json={
-                        "chat_id": chat_id,
-                        "message_id": message_id,
-                        "text": text,
-                        "parse_mode": "Markdown"
-                    }
-                )
-        except Exception:
-            pass
-        i += 1
-        await _asyncio.sleep(1.5)
-
-
-
-        
-    # If it timed out, clean up
-    if i >= max_iterations:
-        stored = compiling_messages.pop(license_id_str, None)
-        if stored:
-            timeout_msg = "⚠️ *Compilation is taking longer than expected.*\n\nYou are in the queue. Your file will be delivered automatically as soon as it finishes."
-            try:
-                async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
-                    await client.post(
-                        f"https://api.telegram.org/bot{token}/editMessageText",
-                        json={
-                            "chat_id": chat_id,
-                            "message_id": message_id,
-                            "text": timeout_msg,
-                            "parse_mode": "Markdown"
-                        }
-                    )
-            except Exception as e:
-                logging.error(f'Queue Error: {e}')
+    pass # Delegated to backend
 
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
@@ -354,11 +276,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"_Usually takes 2–5 minutes. Please wait._"
             )
             try:
-                sent = await context.bot.send_message(
-                    chat_id=telegram_id,
-                    text=initial_msg,
-                    parse_mode="Markdown"
-                )
+                sent = type('DummyMsg', (), {'message_id': 0})()
                 lid_str = str(license_id)
                 bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
                 compiling_messages[lid_str] = {
@@ -564,7 +482,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             f"The file will be sent here automatically once ready.\n\n"
                             f"_Usually takes 2-5 minutes. Please wait._"
                         )
-                        sent = await context.bot.send_message(chat_id=telegram_id, text=spinner_msg, parse_mode="Markdown")
+                        sent = type('DummyMsg', (), {'message_id': 0})()
                         
                         license_id = settle_data.get("license_id")
                         if license_id:
@@ -658,11 +576,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                         f"_Usually takes 2-5 minutes. Please wait._"
                                     )
                                     try:
-                                        sent = await context.bot.send_message(
-                                            chat_id=telegram_id,
-                                            text=spinner_msg,
-                                            parse_mode="Markdown"
-                                        )
+                                        sent = type('DummyMsg', (), {'message_id': 0})()
                                         # Get license_id from pay response
                                         pay_data = pay_resp.json()
                                         license_id = pay_data.get("license_id") or pay_data.get("id")
@@ -1649,7 +1563,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                         f"_Usually takes 2-5 minutes. Please wait._"
                                     )
                                     try:
-                                        sent = await context.bot.send_message(chat_id=telegram_id, text=spinner_msg, parse_mode="Markdown")
+                                        sent = type('DummyMsg', (), {'message_id': 0})()
                                         # Fetch license_id for this order to register animation
                                         lic_resp = await client.get(f"{base_url}/licenses/user/{user_id}")
                                         if lic_resp.status_code == 200:
@@ -1865,7 +1779,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"_Usually takes 2-5 minutes. Please wait._"
         )
         try:
-            sent = await update.message.reply_text(initial_compiling, parse_mode="Markdown")
+            sent = type('DummyMsg', (), {'message_id': 0})()
             # Store and start animation task
             license_id = resp.get("license_id") or resp.get("id")
             if license_id:

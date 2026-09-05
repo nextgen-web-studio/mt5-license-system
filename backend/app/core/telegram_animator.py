@@ -8,7 +8,7 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int):
         return
         
     initial_msg = (
-        f"⏳ *Compiling your EA...*\n\n"
+        f"🕛⚙️ *Compiling your EA...*\n\n"
         f"Your EA file is being built right now.\n"
         f"The file will be sent here automatically once ready.\n\n"
         f"_Usually takes 2-5 minutes. Please wait._"
@@ -24,41 +24,38 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int):
             data = resp.json()
             message_id = data['result']['message_id']
             
-            ring_frames = ["⏱️", "⏳", "⌛"]
-            base_tail = (
-                "\n\nYour EA file is being built right now.\n"
-                "The file will be sent here automatically once ready.\n\n"
-                "_Usually takes 2-5 minutes. Please wait._"
-            )
+            ring_frames = ["🕛","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚"]
+            base_tail = "\n\nThe file will be sent here automatically once ready.\n\n_Usually takes 2-5 minutes. Please wait._"
             
             # Use localhost to fetch queue position - same server
             import os as _os
             _port = _os.environ.get("PORT", "10000")
             base_url = f"http://127.0.0.1:{_port}/api/v1"
+            queue_msg = "\n\nYour EA file is being built right now."
             
-            for i in range(25):  # 25 * 4s = 100 seconds
-                await asyncio.sleep(4)
+            for i in range(150):  # 150 * 2s = 300 seconds
+                await asyncio.sleep(2)
                 
-                queue_msg = "\n\n🔨 *Your EA is being compiled right now!*"
-                
-                try:
-                    job_resp = await client.get(f"{base_url}/jobs/queue-position/{license_id}")
-                    if job_resp.status_code == 200:
-                        jdata = job_resp.json()
-                        pos = jdata.get("position", 0)
-                        status = jdata.get("status", "completed")
-                        
-                        if pos > 1:
-                            queue_msg = f"\n\n👥 *You are in queue position: #{pos}*\n_Your EA will start compiling when it's your turn._"
-                        elif pos == 1 and status == "processing":
-                            queue_msg = "\n\n🔨 *Your EA is being compiled right now!*"
-                        elif pos == 1 and status == "pending":
-                            queue_msg = "\n\n🚀 *You are next in line!*\n_Your EA will start compiling shortly._"
-                        elif pos == 0:
-                            # Job done, stop animating
-                            break
-                except Exception:
-                    pass
+                # Check specific queue position every 4 seconds (every 2nd tick)
+                if i % 2 == 0:
+                    try:
+                        job_resp = await client.get(f"{base_url}/jobs/queue-position/{license_id}")
+                        if job_resp.status_code == 200:
+                            jdata = job_resp.json()
+                            pos = jdata.get("position", 0)
+                            status = jdata.get("status", "completed")
+                            
+                            if pos > 1:
+                                queue_msg = f"\n\n👥 *You are in queue position: #{pos}*\n_Your EA will start compiling when it's your turn._"
+                            elif pos == 1 and status == "processing":
+                                queue_msg = "\n\n🔨 *Your EA is being compiled right now!*"
+                            elif pos == 1 and status == "pending":
+                                queue_msg = "\n\n⏳ *You are next in line!*\n_Your EA will start compiling shortly._"
+                            elif pos == 0:
+                                # Job done, stop animating
+                                break
+                    except Exception:
+                        pass
                 
                 ring = ring_frames[i % len(ring_frames)]
                 text = f"{ring}⚙️ *Compiling your EA...*" + queue_msg + base_tail
