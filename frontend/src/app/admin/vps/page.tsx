@@ -735,8 +735,20 @@ export default function VpsOrdersPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">Root Password</label>
-                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                <input type="text" required value={password} onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                
+                {password && username && (
+                  <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <p className="text-[10px] text-blue-400 mb-1.5 uppercase font-bold tracking-wider">VPS Password Setup Command</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 bg-black/40 px-2 py-1.5 rounded text-xs font-mono text-emerald-400 select-all border border-neutral-800">
+                        net user {username} "{password}"
+                      </code>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 mt-1.5">Copy and run this in the VPS Command Prompt or PowerShell to easily update the password before delivering to the customer.</p>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-2">
