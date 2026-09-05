@@ -31,7 +31,18 @@ export default function EaApprovalsPage() {
   });
 
   const getStatusBadge = (status: string) => {
-    const formattedStatus = (status || 'Unknown').replace(/_/g, ' ');
+    const shortLabels: Record<string, string> = {
+      pending_admin_approval: 'Pending',
+      pending_broker_change_approval: 'Broker Change',
+      approved_waiting_for_mt5_id: 'Waiting MT5',
+      approved: 'Approved',
+      compiling: 'Compiling',
+      generating: 'Generating',
+      delivered: 'Delivered',
+      provisioned: 'Provisioned',
+      rejected: 'Rejected',
+    };
+    const formattedStatus = shortLabels[status?.toLowerCase()] || (status || 'Unknown').replace(/_/g, ' ');
     switch (status?.toLowerCase()) {
       case 'paid':
       case 'approved':

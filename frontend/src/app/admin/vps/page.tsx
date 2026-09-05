@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Server, Check, X, Loader2, MessageSquare, Send } from 'lucide-react';
+import { Server, Check, X, Loader2, MessageSquare, Send, XCircle } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
 
@@ -12,6 +12,7 @@ const getStatusColor = (status: string) => {
     case 'contacted': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
     case 'paid': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
     case 'provisioned': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    case 'rejected': return 'bg-red-500/10 text-red-400 border-red-500/20';
     default: return 'bg-neutral-800 text-neutral-400 border-neutral-700';
   }
 };
@@ -21,6 +22,7 @@ const STATUS_LABELS: Record<string, string> = {
   contacted: 'Contacted',
   paid: 'Paid',
   provisioned: 'Provisioned',
+  rejected: 'Rejected',
 };
 
 
@@ -39,23 +41,23 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isLocked = order.status === 'provisioned' || order.status === 'rejected';
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
-        onClick={() => {
-            if(order.status !== 'provisioned') setIsOpen(!isOpen);
-        }}
-        disabled={order.status === 'provisioned'}
-        className={`flex items-center justify-between w-32 border text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none transition-colors ${statusColor} ${order.status === 'provisioned' ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
+        onClick={() => { if(!isLocked) setIsOpen(!isOpen); }}
+        disabled={isLocked}
+        className={`flex items-center justify-between w-32 border text-xs rounded-full px-3 py-1.5 font-medium focus:outline-none transition-colors ${statusColor} ${isLocked ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
       >
         <span>{STATUS_LABELS[order.status] ?? order.status}</span>
-        {order.status !== 'provisioned' && (
+        {!isLocked && (
           <svg className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         )}
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-32 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-36 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl z-50 overflow-hidden">
           {['pending', 'contacted', 'paid', 'provisioned'].map(s => (
             <div 
               key={s} 
@@ -66,6 +68,12 @@ const StatusDropdown = ({ order, onStatusChange }: { order: any, onStatusChange:
               {STATUS_LABELS[s] ?? s}
             </div>
           ))}
+          <div 
+            onClick={() => { onStatusChange(order.id, 'rejected'); setIsOpen(false); }} 
+            className="px-4 py-2 text-xs cursor-pointer transition-colors hover:bg-red-500/10 flex items-center text-red-400 border-t border-neutral-800"
+          >
+            <span className="mr-2">✕</span> Reject Order
+          </div>
         </div>
       )}
     </div>
@@ -123,21 +131,15 @@ export default function VpsOrdersPage() {
       return data;
     },
     onMutate: async (newStatus) => {
-      // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['admin-vps-orders'] });
       await queryClient.cancelQueries({ queryKey: ['admin-orders'] });
-      
-      // Snapshot the previous value
       const previousOrders = queryClient.getQueryData(['admin-vps-orders']);
-      
-      // Optimistically update to the new value
       queryClient.setQueryData(['admin-vps-orders'], (old: any) => {
         if (!old) return old;
         return old.map((order: any) => 
           order.id === newStatus.id ? { ...order, status: newStatus.status } : order
         );
       });
-      
       return { previousOrders };
     },
     onError: (err, newStatus, context: any) => {
@@ -164,7 +166,7 @@ export default function VpsOrdersPage() {
       toast("Message sent to customer!", 'success');
     },
     onError: (err: any) => {
-      toast("Failed to send message: " + (err.response?.data?.detail || err.message, 'error'));
+      toast("Failed to send message: " + (err.response?.data?.detail || err.message), 'error');
     }
   });
 
@@ -174,11 +176,9 @@ export default function VpsOrdersPage() {
     setIp('');
     setUsername('Administrator');
     setPassword('');
-    // Auto-fill purchased date to today
     const now = new Date();
     const localNowISO = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
     setPurchasedDate(localNowISO);
-    // Auto-fill expiry date based on plan duration
     if (order.duration) {
       const expiry = new Date(now);
       expiry.setMonth(expiry.getMonth() + order.duration);
@@ -233,26 +233,24 @@ export default function VpsOrdersPage() {
   }
 
   return (
-    <div className="space-y-6 relative">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">VPS Provisioning</h1>
-          <p className="text-neutral-400 mt-1">Manage and provision VPS servers for customers.</p>
-        </div>
+    <div className="space-y-4 relative">
+      <div>
+        <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">VPS Provisioning</h1>
+        <p className="text-sm text-neutral-400 mt-0.5">Manage and provision VPS servers for customers.</p>
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
+        {/* Desktop Table */}
         <div className="hidden md:block overflow-x-auto min-h-[300px]">
-<div className="overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-4 whitespace-nowrap">Order ID</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Customer</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Plan</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Terminals</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Status</th>
-                <th className="px-3 py-2 md:px-6 md:py-4">Expiry</th>
+                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Plan</th>
+                <th className="px-6 py-4">Terminals</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Expiry</th>
                 <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
@@ -266,28 +264,28 @@ export default function VpsOrdersPage() {
               ) : (
                 vpsOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-3 py-2 md:px-6 md:py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-white">{order.customer || 'Guest'}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
-                    <span className="flex items-center gap-2">
-                      {order.plan_name || 'Standard'}
-                      {order.is_renewal && (
-                        <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
-                          🔄 Renewal
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4">
+                    <td className="px-6 py-4 font-medium text-neutral-300 whitespace-nowrap">#{order.order_id || order.id}</td>
+                    <td className="px-6 py-4 text-white">{order.customer || 'Guest'}</td>
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
+                      <span className="flex items-center gap-2">
+                        {order.plan_name || 'Standard'}
+                        {order.is_renewal && (
+                          <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
+                            🔄 Renewal
+                          </span>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {order.is_renewal ? (
                           <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
-                              order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                              'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                            }`}>
-                              {(order.status || 'Unknown').replace(/_/g, ' ')}
-                            </span>
+                            order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                            'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                          }`}>
+                            {(order.status || 'Unknown').replace(/_/g, ' ')}
+                          </span>
                         ) : (
                           <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
                         )}
@@ -298,30 +296,44 @@ export default function VpsOrdersPage() {
                         )}
                       </div>
                     </td>
-                      <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
-                        {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
-                      <button 
-                        onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
-                        className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
-                        title="Send Message"
-                      >
-                        <MessageSquare size={16} />
-                      </button>
-                      {order.status !== 'provisioned' && order.status !== 'delivered' && (
+                    <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">
+                      {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
+                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
+                          title="Send Message"
+                        >
+                          <MessageSquare size={16} />
+                        </button>
+                        {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
                           order.is_renewal ? (
-                            <button 
-                              onClick={() => {
-                                api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
-                                  toast("Renewal Approved!", "success");
-                                  queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
-                                }).catch(() => toast("Failed to approve", "error"));
-                              }}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
-                            >
-                              Approve
-                            </button>
+                            <>
+                              <button 
+                                onClick={() => {
+                                  api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
+                                    toast("Renewal Approved!", "success");
+                                    queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                                  }).catch(() => toast("Failed to approve", "error"));
+                                }}
+                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
+                              >
+                                Approve
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
+                                    toast("Renewal Rejected", "success");
+                                    queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                                  }).catch(() => toast("Failed to reject", "error"));
+                                }}
+                                className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded text-xs font-medium transition-colors"
+                              >
+                                Reject
+                              </button>
+                            </>
                           ) : (
                             <button 
                               onClick={() => openModal(order)}
@@ -331,13 +343,13 @@ export default function VpsOrdersPage() {
                             </button>
                           )
                         )}
+                      </div>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
-        </div>
         </div>
 
         {/* Mobile Card Layout */}
@@ -351,57 +363,59 @@ export default function VpsOrdersPage() {
                   <span className="font-medium text-white text-xs">#{order.order_id || order.id}</span>
                   <div className="flex flex-col items-end gap-1">
                     {order.is_renewal ? (
-                          <span className={`inline-flex items-center justify-center w-32 border text-xs rounded-full px-3 py-1.5 font-medium capitalize whitespace-nowrap ${
-                              order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                              'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                            }`}>
-                              {(order.status || 'Unknown').replace(/_/g, ' ')}
-                            </span>
-                        ) : (
-                          <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
-                        )}
+                      <span className={`inline-flex items-center justify-center border text-xs rounded-full px-2.5 py-1 font-medium capitalize whitespace-nowrap ${
+                        order.status === 'delivered' || order.status === 'provisioned' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                        order.status === 'rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                        'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                      }`}>
+                        {(order.status || 'Unknown').replace(/_/g, ' ')}
+                      </span>
+                    ) : (
+                      <StatusDropdown order={order} onStatusChange={(id, st) => statusMutation.mutate({ id, status: st })} />
+                    )}
                     {order.screenshot_received && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse whitespace-nowrap">
-                        📸 SS Received
+                        📸 SS
                       </span>
                     )}
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2 text-xs mt-1">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs mt-1">
                   <div>
-                    <span className="text-neutral-500 block text-[10px] mb-0.5">Customer</span>
-                    <span className="text-neutral-300">{order.customer_name}</span>
+                    <span className="text-neutral-500 block text-[10px]">Customer</span>
+                    <span className="text-neutral-300">{order.customer_name || order.customer || 'Guest'}</span>
                   </div>
                   <div>
-                    <span className="text-neutral-500 block text-[10px] mb-0.5">Plan</span>
-                    <span className="text-white font-medium flex items-center gap-2">
+                    <span className="text-neutral-500 block text-[10px]">Plan</span>
+                    <span className="text-white font-medium flex items-center gap-1 flex-wrap">
                       {order.plan_name}
                       {order.is_renewal && (
-                        <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[10px] font-bold uppercase tracking-wider">
-                          🔄 Renewal
-                        </span>
+                        <span className="px-1 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-[9px] font-bold uppercase">🔄 RENEWAL</span>
                       )}
                     </span>
                   </div>
                   <div>
-                    <span className="text-neutral-500 block text-[10px] mb-0.5">Terminals</span>
+                    <span className="text-neutral-500 block text-[10px]">Terminals</span>
                     <span className="text-neutral-300">{order.terminals_allowed || 2}</span>
                   </div>
-                    <div>
-                      <span className="text-neutral-500 block text-[10px] mb-0.5">Expiry Date</span>
-                      <span className="text-neutral-300">
-                        {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
-                      </span>
-                    </div>
+                  <div>
+                    <span className="text-neutral-500 block text-[10px]">Expiry Date</span>
+                    <span className="text-neutral-300">
+                      {order.expiry_date ? new Date(order.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex justify-end gap-2 flex-wrap pt-3 border-t border-neutral-800/50">
+                <div className="flex justify-end gap-2 flex-wrap pt-2 border-t border-neutral-800/50">
                   <button 
                     onClick={() => { setMsgOrder(order); setMsgModalOpen(true); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors"><MessageSquare size={14} /> Message</button>
-                  {order.status !== 'provisioned' && order.status !== 'delivered' && (
-                      order.is_renewal ? (
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors">
+                    <MessageSquare size={13} /> Message
+                  </button>
+                  {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                    order.is_renewal ? (
+                      <>
                         <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
@@ -409,13 +423,28 @@ export default function VpsOrdersPage() {
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
                             }).catch(() => toast("Failed to approve", "error"));
                           }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Approve</button>
-                      ) : (
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
+                          <Check size={13} /> Approve
+                        </button>
                         <button 
-                          onClick={() => { openModal(order); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors"><Check size={14} /> Provision</button>
-                      )
-                    )}
+                          onClick={() => {
+                            api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
+                              toast("Renewal Rejected", "success");
+                              queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+                            }).catch(() => toast("Failed to reject", "error"));
+                          }}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors">
+                          <XCircle size={13} /> Reject
+                        </button>
+                      </>
+                    ) : (
+                      <button 
+                        onClick={() => openModal(order)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
+                        <Check size={13} /> Provision
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
             ))
@@ -432,10 +461,7 @@ export default function VpsOrdersPage() {
                 <Server size={18} className="mr-2 text-blue-400" />
                 Provision VPS #{selectedOrder.id}
               </h3>
-              <button 
-                onClick={closeModal}
-                className="text-neutral-500 hover:text-white transition-colors"
-              >
+              <button onClick={closeModal} className="text-neutral-500 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -448,95 +474,50 @@ export default function VpsOrdersPage() {
               
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">Hostname / Server Name</label>
-                <input 
-                  type="text" 
-                  value={hostname}
-                  onChange={(e) => setHostname(e.target.value)}
+                <input type="text" value={hostname} onChange={(e) => setHostname(e.target.value)}
                   placeholder="e.g. VPS-Node-01"
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-medium text-neutral-400 mb-1">Main IP Address</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={ip}
-                    onChange={(e) => setIp(e.target.value)}
+                  <input type="text" required value={ip} onChange={(e) => setIp(e.target.value)}
                     placeholder="e.g. 192.168.1.100"
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-neutral-400 mb-1">Username</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
+                  <input type="text" required value={username} onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">Root Password</label>
-                <input 
-                  type="password" 
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
+                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-medium text-neutral-400 mb-1">Purchased Date</label>
-                  <input 
-                    type="datetime-local" 
-                    required
-                    value={purchasedDate}
-                    onChange={(e) => setPurchasedDate(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
+                  <input type="datetime-local" required value={purchasedDate} onChange={(e) => setPurchasedDate(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-neutral-400 mb-1">Expiry Date & Time</label>
-                  <input 
-                    type="datetime-local" 
-                    required
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  />
+                  <input type="datetime-local" required value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                 </div>
               </div>
 
-              
               <div className="pt-4 flex justify-end space-x-3">
-                <button 
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 text-neutral-400 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  disabled={provisionMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium flex items-center transition-colors"
-                >
+                <button type="button" onClick={closeModal} className="px-4 py-2 text-neutral-400 hover:text-white transition-colors">Cancel</button>
+                <button type="submit" disabled={provisionMutation.isPending}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium flex items-center transition-colors">
                   {provisionMutation.isPending ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin mr-2" />
-                      Provisioning...
-                    </>
+                    <><Loader2 size={16} className="animate-spin mr-2" />Provisioning...</>
                   ) : (
-                    <>
-                      <Check size={16} className="mr-2" />
-                      Complete Provisioning
-                    </>
+                    <><Check size={16} className="mr-2" />Complete Provisioning</>
                   )}
                 </button>
               </div>
@@ -554,10 +535,7 @@ export default function VpsOrdersPage() {
                 <MessageSquare size={18} className="mr-2 text-blue-400" />
                 Message Customer
               </h3>
-              <button 
-                onClick={() => setMsgModalOpen(false)}
-                className="text-neutral-500 hover:text-white transition-colors"
-              >
+              <button onClick={() => setMsgModalOpen(false)} className="text-neutral-500 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -565,37 +543,15 @@ export default function VpsOrdersPage() {
             <form onSubmit={handleSendMessage} className="p-6 space-y-4 overflow-y-auto">
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">Direct Message to {msgOrder.customer}</label>
-                <textarea 
-                  required
-                  rows={4}
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
+                <textarea required rows={4} value={messageText} onChange={(e) => setMessageText(e.target.value)}
                   placeholder="Type your message to the customer here..."
-                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
+                  className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
               </div>
-              
               <div className="pt-4 flex justify-end space-x-3">
-                <button 
-                  type="button"
-                  onClick={() => setMsgModalOpen(false)}
-                  className="px-4 py-2 text-neutral-400 hover:text-white transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  disabled={messageMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium flex items-center transition-colors"
-                >
-                  {messageMutation.isPending ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <>
-                      <Send size={16} className="mr-2" />
-                      Send Message
-                    </>
-                  )}
+                <button type="button" onClick={() => setMsgModalOpen(false)} className="px-4 py-2 text-neutral-400 hover:text-white transition-colors">Cancel</button>
+                <button type="submit" disabled={messageMutation.isPending}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium flex items-center transition-colors">
+                  {messageMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <><Send size={16} className="mr-2" />Send Message</>}
                 </button>
               </div>
             </form>
@@ -606,4 +562,3 @@ export default function VpsOrdersPage() {
     </div>
   );
 }
-

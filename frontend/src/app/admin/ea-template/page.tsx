@@ -299,9 +299,10 @@ export default function EaTemplatePage() {
           <p className="text-neutral-500 text-sm mb-4">All uploaded EA source versions, most recent first.</p>
         </div>
 
-        <div className="overflow-x-auto min-h-[300px]">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto min-h-[300px]">
           <table className="w-full text-sm text-left">
-            <thead className="text-[10px] md:text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+            <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
                 <th className="px-6 py-3">Version</th>
                 <th className="px-6 py-3">File</th>
@@ -313,59 +314,31 @@ export default function EaTemplatePage() {
             </thead>
             <tbody className="divide-y divide-neutral-800">
               {versions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
-                    No EA template versions uploaded yet.
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="px-6 py-8 text-center text-neutral-500">No EA template versions uploaded yet.</td></tr>
               ) : (
                 versions.map(v => (
                   <tr key={v.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300">
+                    <td className="px-6 py-4 text-neutral-300">
                       {v.version_label || `#${v.id}`}
                       {v.notes && <p className="text-xs text-neutral-500 mt-0.5 max-w-xs truncate">{v.notes}</p>}
                     </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-neutral-400 font-mono text-xs">{v.filename}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{formatSize(v.file_size)}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4">
+                    <td className="px-6 py-4 text-neutral-400 font-mono text-xs">{v.filename}</td>
+                    <td className="px-6 py-4 text-neutral-400">{formatSize(v.file_size)}</td>
+                    <td className="px-6 py-4">
                       {v.is_active ? (
-                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
-                          <CheckCircle2 size={14} /> Active
-                        </span>
+                        <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium"><CheckCircle2 size={14} /> Active</span>
                       ) : (
                         <span className="text-neutral-500 text-xs">Inactive</span>
                       )}
                     </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-neutral-400 text-xs flex items-center gap-1">
-                      <Clock size={12} />
-                      {v.created_at ? new Date(v.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
+                    <td className="px-6 py-4 text-neutral-400 text-xs">
+                      <span className="flex items-center gap-1"><Clock size={12} />{v.created_at ? new Date(v.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}</span>
                     </td>
-                    <td className="px-3 py-2 md:px-6 md:py-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        {!v.is_active && (
-                          <button
-                            onClick={() => handleActivate(v.id)}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 transition-colors"
-                          >
-                            Activate
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDownload(v.id, v.filename)}
-                          className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
-                          title="Download"
-                        >
-                          <Download size={16} />
-                        </button>
-                        {!v.is_active && (
-                          <button
-                            onClick={() => { setDeletingId(v.id); setDeleteModalOpen(true); }}
-                            className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
+                        {!v.is_active && (<button onClick={() => handleActivate(v.id)} className="text-xs px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 transition-colors">Activate</button>)}
+                        <button onClick={() => handleDownload(v.id, v.filename)} className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors" title="Download"><Download size={16} /></button>
+                        {!v.is_active && (<button onClick={() => { setDeletingId(v.id); setDeleteModalOpen(true); }} className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Delete"><Trash2 size={16} /></button>)}
                       </div>
                     </td>
                   </tr>
@@ -373,6 +346,38 @@ export default function EaTemplatePage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden divide-y divide-neutral-800">
+          {versions.length === 0 ? (
+            <div className="px-4 py-8 text-center text-neutral-500 text-sm">No EA template versions uploaded yet.</div>
+          ) : (
+            versions.map(v => (
+              <div key={v.id} className="p-3 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-white text-xs font-medium">{v.version_label || `Version #${v.id}`}</p>
+                    {v.notes && <p className="text-neutral-500 text-[11px] mt-0.5 line-clamp-2">{v.notes}</p>}
+                    <p className="text-neutral-500 font-mono text-[11px] mt-0.5">{v.filename}</p>
+                  </div>
+                  {v.is_active ? (
+                    <span className="flex items-center gap-1 text-emerald-400 text-[11px] font-medium shrink-0 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2 py-0.5"><CheckCircle2 size={12} /> Active</span>
+                  ) : (
+                    <span className="text-neutral-500 text-[11px] shrink-0">Inactive</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-500 text-[11px] flex items-center gap-1"><Clock size={11} />{v.created_at ? new Date(v.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }) : '—'} · {formatSize(v.file_size)}</span>
+                  <div className="flex items-center gap-1.5">
+                    {!v.is_active && (<button onClick={() => handleActivate(v.id)} className="text-[11px] px-2 py-1 rounded-lg bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 transition-colors">Activate</button>)}
+                    <button onClick={() => handleDownload(v.id, v.filename)} className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"><Download size={14} /></button>
+                    {!v.is_active && (<button onClick={() => { setDeletingId(v.id); setDeleteModalOpen(true); }} className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 size={14} /></button>)}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     
