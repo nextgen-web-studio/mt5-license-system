@@ -106,6 +106,10 @@ export default function VpsOrdersPage() {
     }
   });
 
+  const pendingStatuses = ['pending', 'contacted', 'paid'];
+  const pendingOrders = Array.isArray(vpsOrders) ? vpsOrders.filter((o: any) => pendingStatuses.includes(o.status)) : [];
+  const completedOrders = Array.isArray(vpsOrders) ? vpsOrders.filter((o: any) => !pendingStatuses.includes(o.status)) : [];
+
   const provisionMutation = useMutation({
     mutationFn: async (payload: any) => {
       const { data } = await api.post(`/api/v1/admin/vps-orders/${selectedOrder.id}/provision`, payload);
