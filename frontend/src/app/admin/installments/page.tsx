@@ -227,7 +227,7 @@ export default function InstallmentsPage() {
       <ConfirmModal
         isOpen={payModalOpen}
         title="Record Payment"
-        message={`Are you sure you want to record a payment of ?${payAmount} for Order #${selectedOrder?.order_id}? This will automatically extend their license and push back the due date.`}
+        message={`Are you sure you want to record a payment of ₹${payAmount} for Order #${selectedOrder?.order_id}? This will automatically extend their license and push back the due date.`}
         confirmText={processing ? "Processing..." : "Record Payment"}
         cancelText="Cancel"
         isDestructive={false}

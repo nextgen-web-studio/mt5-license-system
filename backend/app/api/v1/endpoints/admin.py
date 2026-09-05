@@ -95,8 +95,20 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
 
 @router.get("/compiler_jobs")
 async def get_compiler_jobs(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CompileJob).order_by(CompileJob.created_at.desc()))
-    jobs = result.scalars().all()
+    from app.models import License
+    query = (
+        select(CompileJob, License.order_id)
+        .outerjoin(License, CompileJob.license_id == License.id)
+        .order_by(CompileJob.created_at.desc())
+    )
+    result = await db.execute(query)
+    rows = result.all()
+    
+    jobs = []
+    for job, order_id in rows:
+        job_dict = {c.name: getattr(job, c.name) for c in job.__table__.columns}
+        job_dict["order_id"] = order_id
+        jobs.append(job_dict)
     return jobs
 
 @router.post("/jobs/{job_id}/retry")

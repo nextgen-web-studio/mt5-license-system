@@ -222,7 +222,15 @@ async def get_telegram_licenses(telegram_id: str, db: AsyncSession = Depends(get
         trial_lic_res = await db.execute(select(License).filter(License.id.in_(trial_ids)))
         licenses.extend(trial_lic_res.scalars().all())
         
-    return licenses
+    # Deduplicate by ID
+    seen = set()
+    unique_licenses = []
+    for l in licenses:
+        if l.id not in seen:
+            seen.add(l.id)
+            unique_licenses.append(l)
+    
+    return unique_licenses
 
 from fastapi.responses import FileResponse
 import os
