@@ -6,7 +6,7 @@ def get_main_menu_keyboard(show_installment: bool = False, show_free_trial: bool
         [InlineKeyboardButton("🛒 Buy EA", callback_data="buy_ea"), InlineKeyboardButton("🖥️ Buy VPS", callback_data="buy_vps")]
     ]
     
-    row2 = [InlineKeyboardButton("🔄 Broker Change", callback_data="broker_change"), InlineKeyboardButton("🖥️ My VPS", callback_data="my_vps")]
+    row2 = [InlineKeyboardButton("🔄 Broker Change", callback_data="broker_change")]
     if show_free_trial:
         row2.append(InlineKeyboardButton("🆓 Free Trial", callback_data="free_trial"))
     keyboard.append(row2)
