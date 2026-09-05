@@ -212,6 +212,21 @@ async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
         
     order.status = "rejected"
     await db.commit()
+    
+    # Notify user
+    if user.telegram_id:
+        import os, httpx, asyncio
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+        if bot_token:
+            msg = f"❌ *YOUR ORDER HAS BEEN REJECTED*\n\nUnfortunately, your recent order (ORD-{order_id}) was rejected by the admin. Please contact support for more details."
+            async def send_tg():
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                        json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
+                    )
+            asyncio.create_task(send_tg())
+            
     return {"status": "success", "message": f"Order {order_id} rejected", "telegram_id": user.telegram_id}
 
 @router.delete("/{order_id}")

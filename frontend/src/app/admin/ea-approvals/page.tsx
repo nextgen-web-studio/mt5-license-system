@@ -110,6 +110,21 @@ export default function EaApprovalsPage() {
     }
   });
 
+  const rejectEaMutation = useMutation({
+    mutationFn: async (order: any) => {
+      const { data } = await api.post(`/api/v1/orders/${order.id}/reject`);
+      return data;
+    },
+    onSuccess: () => {
+      toast("Order Rejected", "success");
+      setApproveModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+    },
+    onError: (err: any) => {
+      toast("Error rejecting order: " + (err.response?.data?.detail || err.message), "error");
+    }
+  });
+
   const generateMutation = useMutation({
     mutationFn: async (order: any) => {
       if (order.status === 'pending_admin_approval') {
@@ -147,8 +162,8 @@ export default function EaApprovalsPage() {
     );
   }
 
-  const pendingOrders = orders.filter((o: any) => o.status === 'pending_admin_approval' || o.status === 'approved_waiting_for_mt5_id' || o.status === 'approved');
-  const otherOrders = orders.filter((o: any) => o.status !== 'pending_admin_approval' && o.status !== 'approved_waiting_for_mt5_id' && o.status !== 'approved');
+  const pendingOrders = orders.filter((o: any) => o.status === 'pending_admin_approval' || o.status === 'pending_broker_change_approval' || o.status === 'approved_waiting_for_mt5_id' || o.status === 'approved');
+  const otherOrders = orders.filter((o: any) => o.status !== 'pending_admin_approval' && o.status !== 'pending_broker_change_approval' && o.status !== 'approved_waiting_for_mt5_id' && o.status !== 'approved');
 
   const renderTable = (tableOrders: any[]) => (
     <>

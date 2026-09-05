@@ -523,7 +523,8 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     # 5. Update request status
     req.status = "approved"
     
-    # 6. Queue compile job    job = CompileJob(license_id=lic.id, status="pending")
+    # 6. Queue compile job
+    job = CompileJob(license_id=lic.id, status="pending")
     db.add(job)
     
     await db.commit()

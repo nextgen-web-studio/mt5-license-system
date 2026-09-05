@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="h-[100dvh] bg-black text-white flex overflow-hidden w-full">
+    <div className="fixed inset-0 bg-black text-white flex overflow-hidden w-full">
       {/* Mobile Top Bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-3">
