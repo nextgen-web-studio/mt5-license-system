@@ -243,8 +243,7 @@ export default function VpsOrdersPage() {
         <p className="text-sm text-neutral-400 mt-0.5">Manage and provision VPS servers for customers.</p>
       </div>
 
-      <div>
-        {/* Desktop Table */}
+              {/* Desktop Table */}
         
         <div className="hidden md:flex flex-col gap-6">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
