@@ -106,7 +106,7 @@ export default function VpsOrdersPage() {
     }
   });
 
-  const pendingStatuses = ['pending', 'contacted', 'paid'];
+  const pendingStatuses = ['pending', 'contacted', 'paid', 'pending_admin_approval'];
   const pendingOrders = Array.isArray(vpsOrders) ? vpsOrders.filter((o: any) => pendingStatuses.includes(o.status)) : [];
   const completedOrders = Array.isArray(vpsOrders) ? vpsOrders.filter((o: any) => !pendingStatuses.includes(o.status)) : [];
 
