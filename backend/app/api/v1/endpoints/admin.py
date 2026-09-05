@@ -19,24 +19,25 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.count()).select_from(Order))
     total_orders = result.scalar() or 0
 
-    # Fetch live USD to INR rate
-    global _cached_usd_inr, _last_usd_fetch
-    import time
+    # Fetch live USD to INR rate    global _cached_usd_inr, _last_usd_fetch
+    import time, asyncio, httpx
     if '_cached_usd_inr' not in globals():
         _cached_usd_inr = 84.0
         _last_usd_fetch = 0
     
     # Only fetch once per hour to avoid lagging the dashboard
     if time.time() - _last_usd_fetch > 3600:
-        try:
-            import httpx
-            async with httpx.AsyncClient(timeout=1.0) as client:
-                res = await client.get("https://open.er-api.com/v6/latest/USD")
-                if res.status_code == 200:
-                    _cached_usd_inr = float(res.json()["rates"]["INR"])
-                    _last_usd_fetch = time.time()
-        except Exception:
-            pass
+        _last_usd_fetch = time.time() # Immediately mark as fetched to prevent stampede
+        async def fetch_usd():
+            global _cached_usd_inr
+            try:
+                async with httpx.AsyncClient(timeout=3.0) as client:
+                    res = await client.get("https://open.er-api.com/v6/latest/USD")
+                    if res.status_code == 200:
+                        _cached_usd_inr = float(res.json()["rates"]["INR"])
+            except Exception:
+                pass
+        asyncio.create_task(fetch_usd())
             
     usd_inr = _cached_usd_inr
 
@@ -134,22 +135,24 @@ async def retry_job(job_id: int, db: AsyncSession = Depends(get_db)):
 @router.get("/all_orders")
 async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
     global _cached_usd_inr, _last_usd_fetch
-    import time
+    import time, asyncio, httpx
     if '_cached_usd_inr' not in globals():
         _cached_usd_inr = 84.0
         _last_usd_fetch = 0
     
     # Only fetch once per hour to avoid lagging the dashboard
     if time.time() - _last_usd_fetch > 3600:
-        try:
-            import httpx
-            async with httpx.AsyncClient(timeout=1.0) as client:
-                res = await client.get("https://open.er-api.com/v6/latest/USD")
-                if res.status_code == 200:
-                    _cached_usd_inr = float(res.json()["rates"]["INR"])
-                    _last_usd_fetch = time.time()
-        except Exception:
-            pass
+        _last_usd_fetch = time.time() # Immediately mark as fetched to prevent stampede
+        async def fetch_usd():
+            global _cached_usd_inr
+            try:
+                async with httpx.AsyncClient(timeout=3.0) as client:
+                    res = await client.get("https://open.er-api.com/v6/latest/USD")
+                    if res.status_code == 200:
+                        _cached_usd_inr = float(res.json()["rates"]["INR"])
+            except Exception:
+                pass
+        asyncio.create_task(fetch_usd())
             
     usd_inr = _cached_usd_inr
 

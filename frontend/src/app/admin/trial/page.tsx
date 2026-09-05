@@ -77,7 +77,7 @@ export default function TrialAdminPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Settings Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
           <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <ShieldAlert size={20} className="text-blue-400" />
             Global Settings
@@ -171,7 +171,7 @@ export default function TrialAdminPage() {
         </div>
 
         {/* Manual Grant Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
           <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <Gift size={20} className="text-green-400" />
             Manual Trial Grant

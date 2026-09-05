@@ -119,14 +119,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
         
-        <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto py-3 md:py-6 px-3 space-y-0.5 md:space-y-1 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                className={`flex items-center space-x-3 px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg transition-colors ${
                   isActive 
                     ? 'bg-blue-600/10 text-blue-400' 
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'

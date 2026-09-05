@@ -179,8 +179,8 @@ export default function EaTemplatePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Upload Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <UploadCloud size={20} className="text-blue-400" />
             Upload New EA File
           </h2>
@@ -274,8 +274,8 @@ export default function EaTemplatePage() {
         </div>
 
         {/* How it works Card */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 md:p-6">
+          <h2 className="text-lg md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
             <FileCode2 size={20} className="text-indigo-400" />
             How This Works
           </h2>
@@ -291,8 +291,8 @@ export default function EaTemplatePage() {
 
       {/* Version History */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="p-6 pb-0">
-          <h2 className="text-xl font-semibold text-white mb-1 flex items-center gap-2">
+        <div className="p-4 md:p-6 pb-0">
+          <h2 className="text-lg md:text-xl font-semibold text-white mb-1 flex items-center gap-2">
             <History size={20} className="text-neutral-400" />
             Version History
           </h2>
@@ -325,7 +325,7 @@ export default function EaTemplatePage() {
                       {v.version_label || `#${v.id}`}
                       {v.notes && <p className="text-xs text-neutral-500 mt-0.5 max-w-xs truncate">{v.notes}</p>}
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 font-mono text-xs">{v.filename}</td>
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-neutral-400 font-mono text-xs">{v.filename}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400">{formatSize(v.file_size)}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       {v.is_active ? (
@@ -336,7 +336,7 @@ export default function EaTemplatePage() {
                         <span className="text-neutral-500 text-xs">Inactive</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-neutral-400 text-xs flex items-center gap-1">
+                    <td className="px-4 md:px-6 py-3 md:py-4 text-neutral-400 text-xs flex items-center gap-1">
                       <Clock size={12} />
                       {v.created_at ? new Date(v.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '—'}
                     </td>
