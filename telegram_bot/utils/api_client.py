@@ -365,3 +365,13 @@ async def get_vps_info(vps_id: int):
         import logging
         logging.error(f"Error fetching VPS info: {e}")
     return None
+
+async def get_user_vps(telegram_id: str):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(f"{BASE_URL}/orders/telegram/{telegram_id}/vps")
+            if response.status_code == 200:
+                return response.json()
+        except Exception:
+            pass
+    return []

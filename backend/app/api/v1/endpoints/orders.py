@@ -102,6 +102,36 @@ async def get_telegram_orders(telegram_id: str, db: AsyncSession = Depends(get_d
         })
     return orders
 
+
+@router.get("/telegram/{telegram_id}/vps")
+async def get_telegram_vps(telegram_id: str, db: AsyncSession = Depends(get_db)):
+    from app.models import User, VpsOrder, Product, Order
+    query = (
+        select(VpsOrder, Product)
+        .join(User, VpsOrder.user_id == User.id)
+        .join(Order, VpsOrder.order_id == Order.id)
+        .join(Product, Order.product_id == Product.id)
+        .filter(User.telegram_id == telegram_id)
+        .order_by(VpsOrder.created_at.desc())
+    )
+    result = await db.execute(query)
+    rows = result.all()
+    
+    vps_list = []
+    for vps, product in rows:
+        vps_list.append({
+            "id": vps.id,
+            "order_id": vps.order_id,
+            "status": vps.status,
+            "hostname": vps.hostname,
+            "ip_address": vps.ip_address,
+            "username": vps.username,
+            "password": vps.password,
+            "expiry_date": vps.expiry_date.isoformat() if vps.expiry_date else None,
+            "product_name": product.name,
+        })
+    return vps_list
+
 @router.get("/{order_id}", response_model=OrderResponse)
 async def get_order_by_id(order_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Order).filter(Order.id == order_id))

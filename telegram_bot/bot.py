@@ -691,6 +691,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await render_orders(update, context)
         return
         
+    if data == "my_vps":
+        await render_vps(update, context)
+        return
+    
     if data == "downloads":
         await render_downloads(update, context)
         return
@@ -1944,6 +1948,56 @@ async def orders_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def licenses_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await render_licenses(update, context)
 
+
+async def render_vps(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    if query:
+        await query.answer()
+    
+    telegram_id = update.effective_user.id
+    from utils.api_client import get_user_vps
+    vps_list = await get_user_vps(str(telegram_id))
+    
+    if not vps_list:
+        text = "🖥️ <b>MY VPS</b>
+
+You do not have any VPS orders."
+    else:
+        text = "🖥️ <b>MY VPS</b>
+
+Here are your VPS nodes:
+
+"
+        for v in vps_list:
+            status_icon = "✅" if v['status'] in ['delivered', 'provisioned'] else "⌛" if v['status'] in ['pending', 'paid', 'contacted', 'pending_admin_approval'] else "❌"
+            text += f"<b>{v.get('product_name', 'VPS Node')}</b> {status_icon}
+"
+            text += f"Status: {str(v['status']).replace('_', ' ').title()}
+"
+            if v['status'] in ['delivered', 'provisioned']:
+                text += f"IP Address: <code>{v.get('ip_address', 'N/A')}</code>
+"
+                text += f"Username: <code>{v.get('username', 'Administrator')}</code>
+"
+                text += f"Password: <span class="tg-spoiler">{v.get('password', 'N/A')}</span>
+"
+                if v.get('expiry_date'):
+                    text += f"Expiry Date: {v['expiry_date'][:10]}
+"
+            text += "
+"
+            
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Back to Menu", callback_data="main_menu")]])
+    
+    if query:
+        await query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
+    else:
+        await update.message.reply_text(text, parse_mode="HTML", reply_markup=kb)
+
+async def vps_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await render_vps(update, context)
+
 async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tid = str(update.effective_user.id)
     base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
@@ -2285,7 +2339,8 @@ async def post_init(application):
     commands = [
         BotCommand("start", "Start the bot and see the main menu"),
         BotCommand("installment", "View your installment plan status"),
-        BotCommand("licenses", "View your License Details")
+        BotCommand("licenses", "View your License Details"),
+        BotCommand("vps", "View your VPS Details")
     ]
     await application.bot.set_my_commands(commands)
 
@@ -2338,6 +2393,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("licenses", licenses_command))
     application.add_handler(CommandHandler("downloads", downloads_command))
+    application.add_handler(CommandHandler("vps", vps_command))
     application.add_handler(CommandHandler("orders", orders_command))
     application.add_handler(CommandHandler("installment", installment_command))
     application.add_handler(CommandHandler("myid", myid_command))
