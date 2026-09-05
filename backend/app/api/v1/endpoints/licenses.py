@@ -532,11 +532,20 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     background_tasks.add_task(local_wine_compiler, job.id)
     
     # Trigger compiling animation
-    import os, asyncio
+    import os, asyncio, httpx
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token and user and user.telegram_id:
         from app.core.telegram_animator import animate_compiling
         asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
+        
+    # Trigger webhook to clear admin bot buttons
+    try:
+        async def call_webhook():
+            async with httpx.AsyncClient() as client:
+                await client.post("http://127.0.0.1:8080/internal/bc-approved", json={"request_id": request_id, "action": "approved"})
+        asyncio.create_task(call_webhook())
+    except:
+        pass
         
     return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
 
@@ -551,6 +560,16 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
         
     req.status = "rejected"
     await db.commit()
+    
+    # Trigger webhook to clear admin bot buttons
+    import asyncio, httpx
+    try:
+        async def call_webhook_reject():
+            async with httpx.AsyncClient() as client:
+                await client.post("http://127.0.0.1:8080/internal/bc-rejected", json={"request_id": request_id, "action": "rejected"})
+        asyncio.create_task(call_webhook_reject())
+    except:
+        pass
     
     user_result = await db.execute(select(User).filter(User.id == req.user_id))
     user = user_result.scalar_one_or_none()

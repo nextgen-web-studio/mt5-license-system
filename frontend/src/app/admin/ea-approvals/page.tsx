@@ -162,8 +162,8 @@ export default function EaApprovalsPage() {
     );
   }
 
-  const pendingOrders = orders.filter((o: any) => o.status === 'pending_admin_approval' || o.status === 'pending_broker_change_approval' || o.status === 'approved_waiting_for_mt5_id' || o.status === 'approved');
-  const otherOrders = orders.filter((o: any) => o.status !== 'pending_admin_approval' && o.status !== 'pending_broker_change_approval' && o.status !== 'approved_waiting_for_mt5_id' && o.status !== 'approved');
+  const pendingOrders = orders.filter((o: any) => o.status === 'pending_admin_approval' || o.status === 'pending_broker_change_approval' || o.status === 'approved_waiting_for_mt5_id' || (o.status === 'approved' && !o.is_broker_change));
+  const otherOrders = orders.filter((o: any) => !(o.status === 'pending_admin_approval' || o.status === 'pending_broker_change_approval' || o.status === 'approved_waiting_for_mt5_id' || (o.status === 'approved' && !o.is_broker_change)));
 
   const renderTable = (tableOrders: any[]) => (
     <>

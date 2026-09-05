@@ -133,7 +133,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # PREVENT RACE CONDITION: The backend sends a webhook to clear admin buttons when an order is approved.
         # Since we are approving this from Telegram itself, we must remove it from ADMIN_MESSAGES
         # before calling approve_order() so the webhook ignores this message and doesn't overwrite our new buttons!
-        global ADMIN_MESSAGES
         ADMIN_MESSAGES.pop(order_id, None)
         
         from utils.api_client import approve_order, reject_order
@@ -856,7 +855,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  InlineKeyboardButton("❌ REJECT", callback_data=f"reject_change_{request_id}")]
             ]
             try:
-                await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+                sent = await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+                ADMIN_MESSAGES[f"BC_{request_id}"] = sent.message_id
             except Exception as e:
                 logging.error(f"Failed to notify admin: {e}")
                 
@@ -870,6 +870,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data.startswith("approve_change_") or data.startswith("reject_change_"):
         admin_id = os.getenv("ADMIN_CHAT_ID")
+        action = data.split("_")[0]
+        request_id = int(data.split("_")[2])
+        ADMIN_MESSAGES.pop(f"BC_{request_id}", None)
         if str(update.effective_user.id) != str(admin_id):
             await query.answer("You are not authorized to perform this action.", show_alert=True)
             return
@@ -1331,7 +1334,6 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             try:
                 sent = await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown", reply_markup=reply_markup)
-                global ADMIN_MESSAGES
                 ADMIN_MESSAGES[vps_order_id] = sent.message_id
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin: {e}")
@@ -1455,7 +1457,6 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup(admin_kb)
             )
-            global ADMIN_MESSAGES
             ADMIN_MESSAGES[order['id']] = sent.message_id
         except Exception as e:
             logging.error(f"Failed to notify admin: {e}")
@@ -2020,6 +2021,22 @@ class DummyHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(b"Error")
+        elif self.path == "/internal/bc-approved" or self.path == "/internal/bc-rejected":
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                request_id = data.get('request_id')
+                action = data.get('action', 'approved')
+                if request_id:
+                    threading.Thread(target=self.clear_bc_admin_buttons, args=(request_id, action,), daemon=True).start()
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
         elif self.path == "/internal/order-approved":
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
@@ -2059,6 +2076,35 @@ class DummyHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
 
+    def clear_bc_admin_buttons(self, request_id, action):
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(self.async_clear_bc_admin_buttons(request_id, action))
+        
+    async def async_clear_bc_admin_buttons(self, request_id, action):
+        global ADMIN_MESSAGES
+        import httpx
+        msg_id = ADMIN_MESSAGES.get(f"BC_{request_id}")
+        if msg_id:
+            bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            admin_chat_id = os.getenv("ADMIN_CHAT_ID")
+            try:
+                HTTPX_VERIFY = False
+                action_text = "APPROVED" if action == "approved" else "REJECTED"
+                async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
+                    await client.post(
+                        f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                        json={
+                            "chat_id": admin_chat_id,
+                            "message_id": msg_id,
+                            "text": f"✅ *BROKER CHANGE #{request_id} {action_text} FROM WEB DASHBOARD*",
+                            "parse_mode": "Markdown"
+                        }
+                    )
+            except Exception as e:
+                logging.error(f"Failed to clear admin buttons for BC {request_id}: {e}")
+
     def clear_admin_buttons(self, order_id):
         import asyncio
         loop = asyncio.new_event_loop()
@@ -2066,8 +2112,8 @@ class DummyHandler(BaseHTTPRequestHandler):
         loop.run_until_complete(self.async_clear_admin_buttons(order_id))
         
     async def async_clear_admin_buttons(self, order_id):
-        import httpx
         global ADMIN_MESSAGES
+        import httpx
         msg_id = ADMIN_MESSAGES.get(int(order_id))
         if msg_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
