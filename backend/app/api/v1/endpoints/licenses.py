@@ -537,7 +537,7 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
         from app.core.telegram_animator import animate_compiling
         asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
         
-    return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
+    return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id} {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
 
 @router.post("/broker-change/{request_id}/reject")
 async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_db)):
