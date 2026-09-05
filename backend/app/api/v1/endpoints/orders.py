@@ -227,6 +227,19 @@ async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
                     )
             asyncio.create_task(send_tg())
             
+    # Notify bot to clear admin buttons
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
+    bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    bot_webhook_url += "/internal/order-rejected"
+    try:
+        async def trigger_clear_buttons():
+            import httpx
+            async with httpx.AsyncClient(verify=False) as client:
+                await client.post(bot_webhook_url, json={"order_id": order_id})
+        asyncio.create_task(trigger_clear_buttons())
+    except Exception as e:
+        print(f"Error triggering telegram webhook: {e}")
+
     return {"status": "success", "message": f"Order {order_id} rejected", "telegram_id": user.telegram_id}
 
 @router.delete("/{order_id}")
