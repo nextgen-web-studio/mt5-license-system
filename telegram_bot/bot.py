@@ -208,6 +208,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         order_id = int(data.split("_")[1])
         
+        # PREVENT RACE CONDITION: The backend sends a webhook to clear admin buttons when an order is approved.
+        # Since we are approving this from Telegram itself, we must remove it from ADMIN_MESSAGES
+        # before calling approve_order() so the webhook ignores this message and doesn't overwrite our new buttons!
+        global ADMIN_MESSAGES
+        ADMIN_MESSAGES.pop(order_id, None)
+        
         from utils.api_client import approve_order, reject_order
         
         resp = await approve_order(order_id)

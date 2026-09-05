@@ -162,7 +162,7 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
         async def trigger_clear_buttons():
             async with httpx.AsyncClient(verify=False) as client:
                 await client.post(bot_webhook_url, json={"order_id": order_id})
-        asyncio.create_task(trigger_clear_buttons())
+        asynci✅create_task(trigger_clear_buttons())
     except Exception as e:
         pass
     
@@ -181,7 +181,7 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
                         f"https://api.telegram.org/bot{bot_token}/sendMessage",
                         json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                     )
-            asyncio.create_task(send_tg())
+            asynci✅create_task(send_tg())
             
     return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id, "mt5_id": order.mt5_id or "", "order_type": order.order_type, "is_renewal": is_renewal, "new_expiry": new_expiry_str}
 
