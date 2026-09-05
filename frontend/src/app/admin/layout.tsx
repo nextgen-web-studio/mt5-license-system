@@ -104,7 +104,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-800">
+        <div className="h-12 md:h-16 flex items-center justify-between px-4 md:px-6 border-b border-neutral-800">
           <div className="flex items-center gap-3">
             <img src="/logo.jpg" alt="Logo" className="w-8 h-8 object-contain" />
             <h1 className="text-xl font-bold text-white">
@@ -119,14 +119,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
         
-        <nav className="flex-1 overflow-y-auto py-3 md:py-6 px-3 space-y-0.5 md:space-y-1 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
+        <nav className="flex-1 overflow-y-auto py-2 md:py-6 px-2 md:px-3 space-y-0 md:space-y-1 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center space-x-3 px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg transition-colors ${
+                className={`flex items-center space-x-2 md:space-x-3 px-2 md:px-3 py-1.5 md:py-2.5 text-xs md:text-base rounded-lg transition-colors ${
                   isActive 
                     ? 'bg-blue-600/10 text-blue-400' 
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
@@ -139,7 +139,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-neutral-800 shrink-0 space-y-2">
+        <div className="p-2 md:p-4 border-t border-neutral-800 shrink-0 space-y-1.5 md:space-y-2">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
