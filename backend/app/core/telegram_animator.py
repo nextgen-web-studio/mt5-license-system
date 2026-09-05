@@ -73,5 +73,15 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int):
                 except Exception:
                     pass
 
+            # Once the loop is finished (either job completed or timed out)
+            # Delete the compiling message so it disappears when the file arrives
+            try:
+                await client.post(
+                    f"https://api.telegram.org/bot{bot_token}/deleteMessage",
+                    json={"chat_id": chat_id, "message_id": message_id}
+                )
+            except Exception:
+                pass
+
     except Exception as e:
         logging.error(f"Failed to animate compile message: {e}")
