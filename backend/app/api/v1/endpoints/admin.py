@@ -416,7 +416,53 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
             
     await db.commit()
     
+    if old_status != "rejected" and data.status == "rejected":
+        import os, httpx, asyncio
+        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
+        bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+        bot_webhook_url += "/internal/order-rejected"
+        try:
+            async def trigger_clear_buttons():
+                async with httpx.AsyncClient(verify=False) as client:
+                    await client.post(bot_webhook_url, json={"order_id": vps_order.order_id})
+            asyncio.create_task(trigger_clear_buttons())
+        except Exception:
+            pass
+
+        # Send rejection notification
+        user_result = await db.execute(select(User).filter(User.id == vps_order.user_id))
+        user = user_result.scalar_one_or_none()
+        if user and user.telegram_id:
+            bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+            if bot_token:
+                try:
+                    async def notify_user():
+                        async with httpx.AsyncClient(verify=False) as client:
+                            await client.post(
+                                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                                json={
+                                    "chat_id": user.telegram_id,
+                                    "text": f"❌ <b>VPS ORDER REJECTED</b>\n\nUnfortunately, your VPS order (ORD-{vps_order.order_id}) has been rejected by the admin. Please contact support for more details.",
+                                    "parse_mode": "HTML"
+                                }
+                            )
+                    asyncio.create_task(notify_user())
+                except Exception:
+                    pass
+
     if old_status != "paid" and data.status == "paid":
+        import os, httpx, asyncio
+        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
+        bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+        bot_webhook_url += "/internal/order-approved"
+        try:
+            async def trigger_clear_buttons():
+                async with httpx.AsyncClient(verify=False) as client:
+                    await client.post(bot_webhook_url, json={"order_id": vps_order.order_id})
+            asyncio.create_task(trigger_clear_buttons())
+        except Exception:
+            pass
+
         user_result = await db.execute(select(User).filter(User.id == vps_order.user_id))
         user = user_result.scalar_one_or_none()
         if user and user.telegram_id:
@@ -438,9 +484,9 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
                         json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                     )
                     if res.status_code != 200:
-                        raise HTTPException(status_code=500, detail=f"Telegram API Error: {res.text}")
+                        print(f"Telegram error: {res.text}")
                 except Exception as e:
-                    raise HTTPException(status_code=500, detail=f"Failed to reach Telegram API: {str(e)}")
+                    print(f"Telegram error: {e}")
                         
     return {"status": "success", "new_status": vps_order.status}
 

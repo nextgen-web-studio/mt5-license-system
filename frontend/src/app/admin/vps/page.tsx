@@ -246,7 +246,7 @@ export default function VpsOrdersPage() {
               {/* Desktop Table */}
         
         <div className="hidden md:flex flex-col gap-6">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
             <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white">Pending Action</h3>
             </div>
@@ -364,7 +364,7 @@ export default function VpsOrdersPage() {
 
           </div>
           
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
             <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white">Completed / Other Orders</h3>
             </div>
@@ -485,7 +485,7 @@ export default function VpsOrdersPage() {
         {/* Mobile Card Layout */}
         
         <div className="md:hidden flex flex-col gap-6">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
             <div className="px-4 py-3 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white text-sm">Pending Action</h3>
             </div>
@@ -589,7 +589,7 @@ export default function VpsOrdersPage() {
       
           </div>
           
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
             <div className="px-4 py-3 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white text-sm">Completed / Other Orders</h3>
             </div>
