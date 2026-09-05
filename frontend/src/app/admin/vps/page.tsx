@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, FormEvent, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { Server, Check, X, Loader2, MessageSquare, Send, XCircle } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
@@ -97,10 +97,11 @@ export default function VpsOrdersPage() {
   const [msgOrder, setMsgOrder] = useState<any>(null);
   const [messageText, setMessageText] = useState('');
 
-  const { data: vpsOrders = [], isLoading, error } = useQuery({
+  const { data: vpsOrders = [], isLoading, isFetching, error } = useQuery({
     queryKey: ['admin-vps-orders'],
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/vps-orders');
       return data;

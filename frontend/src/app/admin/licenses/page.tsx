@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { Key, Shield, ShieldAlert, Loader2, Copy, Trash2, Download, Edit2, X, RefreshCcw } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
@@ -14,11 +14,12 @@ export default function LicensesPage() {
 
   const queryClient = useQueryClient();
   const [editingLicense, setEditingLicense] = useState<any>(null);
-  const { data: licenses = [], isLoading, error } = useQuery({
+  const { data: licenses = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-licenses'],
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/licenses');
       return data;

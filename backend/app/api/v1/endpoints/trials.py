@@ -9,6 +9,9 @@ from app.db.database import get_db
 from app.models import TrialSetting, TrialActivation, License, CompileJob
 from pydantic import BaseModel
 from app.core.local_compiler import local_wine_compiler
+import os
+import httpx
+import asyncio
 
 router = APIRouter()
 
@@ -184,7 +187,6 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
         await db.commit()
     
     # Trigger compiling animation
-    import os, asyncio
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token and req.telegram_user_id:
         from app.core.telegram_animator import animate_compiling

@@ -9,6 +9,9 @@ from app.db.database import get_db
 from app.models import Order, InstallmentPayment, License, Product, User, CompileJob
 from app.schemas.installments import InstallmentCreate, InstallmentCustomerResponse, InstallmentPaymentRecord, InstallmentPayRequest
 from app.core.local_compiler import local_wine_compiler
+import os
+import httpx
+import asyncio
 
 router = APIRouter()
 
@@ -61,7 +64,6 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
         await db.commit()
     
     # Notify customer with animated compiling spinner
-    import os, asyncio
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token:
         try:

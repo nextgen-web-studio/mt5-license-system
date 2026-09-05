@@ -1,6 +1,6 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import {
   FileCode2,

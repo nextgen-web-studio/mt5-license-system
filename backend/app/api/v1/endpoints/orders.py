@@ -10,6 +10,9 @@ from app.models import Order, Product, License, CompileJob, VpsOrder, AdminNotif
 from app.schemas import OrderCreate, OrderResponse, OrderFulfillmentRequest
 from app.core.azure_vm import start_azure_vm_if_needed
 from pydantic import BaseModel
+import os
+import httpx
+import asyncio
 
 class OrderMt5Update(BaseModel):
     mt5_id: str
@@ -184,7 +187,6 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
     await db.commit()
     
     # Notify bot to clear admin buttons
-    import os, httpx, asyncio
     bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
     bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
     bot_webhook_url += "/internal/order-approved" 
@@ -228,7 +230,6 @@ async def update_order_mt5(order_id: int, payload: OrderMt5Update, db: AsyncSess
 
 @router.post("/{order_id}/reject")
 async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
-    import os, httpx, asyncio
     from app.models import User
     result = await db.execute(select(Order, User).join(User, Order.user_id == User.id).filter(Order.id == order_id))
     row = result.first()

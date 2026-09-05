@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { Check, X, ShieldCheck, CreditCard, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
@@ -21,10 +21,11 @@ export default function EaApprovalsPage() {
   const [firstPayment, setFirstPayment] = useState('');
   const [licenseDays, setLicenseDays] = useState('30');
 
-  const { data: orders = [], isLoading, error } = useQuery({
+  const { data: orders = [], isLoading, isFetching, error } = useQuery({
     queryKey: ['admin-ea-orders'],
     refetchInterval: 5000,
       refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/all_orders');
       return data.filter((o: any) => o.product?.includes('EA'));

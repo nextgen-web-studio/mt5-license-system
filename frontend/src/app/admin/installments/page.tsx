@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData} from '@tanstack/react-query';
 import { Loader2, CheckCircle, Ban, DollarSign } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
@@ -16,11 +16,12 @@ export default function InstallmentsPage() {
   const [payAmount, setPayAmount] = useState<number>(0);
   const [processing, setProcessing] = useState(false);
 
-  const { data: installments = [], isLoading, error, refetch } = useQuery({
+  const { data: installments = [], isLoading, isFetching, error, refetch } = useQuery({
     
     queryKey: ['admin-installments'],
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/installments/admin/all');
       return data;

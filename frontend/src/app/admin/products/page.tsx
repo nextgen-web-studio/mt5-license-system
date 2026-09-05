@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { Package, Plus, Loader2, Edit, Trash2, X, Check } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
@@ -23,11 +23,12 @@ export default function ProductsPage() {
   const [duration, setDuration] = useState('1');
   const [description, setDescription] = useState('');
 
-  const { data: products = [], isLoading, error } = useQuery({
+  const { data: products = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-products'],
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/products');
       return data;

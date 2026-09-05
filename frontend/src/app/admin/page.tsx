@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData} from '@tanstack/react-query';
 import { 
   Users, 
   ShoppingCart, 
@@ -34,11 +34,12 @@ const StatCard = ({ title, value, icon: Icon, trend }: { title: string, value: s
 );
 
 export default function DashboardPage() {
-  const { data: stats, isLoading, error } = useQuery({
+  const { data: stats, isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-stats'],
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/stats');
       return data;

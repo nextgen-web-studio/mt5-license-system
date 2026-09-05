@@ -339,7 +339,6 @@ async def recompile_license(license_id: int, background_tasks: BackgroundTasks, 
     )
     latest_job = job_result.scalars().first()
     
-    import os, httpx, asyncio
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     try:
         user_res = await db.execute(select(User).filter(User.id == lic.user_id))
@@ -393,6 +392,8 @@ async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db))
     }
 
 from datetime import timedelta
+import httpx
+import asyncio
 
 @router.delete("/{license_id}")
 async def delete_license(license_id: int, db: AsyncSession = Depends(get_db)):
@@ -560,7 +561,6 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
 
 @router.post("/broker-change/{request_id}/reject")
 async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_db)):
-    import os, httpx, asyncio
     from app.models import BrokerChangeRequest, User
     result = await db.execute(select(BrokerChangeRequest).filter(BrokerChangeRequest.id == request_id))
     req = result.scalar_one_or_none()
@@ -572,7 +572,6 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
     await db.commit()
     
     # Trigger webhook to clear admin bot buttons
-    import asyncio, httpx
     try:
         async def call_webhook_reject():
             async with httpx.AsyncClient() as client:

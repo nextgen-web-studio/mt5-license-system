@@ -551,14 +551,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     # Send payment confirmation first (permanent)
                                     confirm_msg = (
                                         f"✅ *INSTALLMENT PAYMENT CONFIRMED*\n\n"
-                                        f"Payment of ₹{amount:,.0f} has been received\.\n\n"
+                                        f"Payment of ₹{amount:,.0f} has been received\\.\n\n"
                                         f"Remaining balance: ₹{remaining:,.0f}\n"
                                         f"Next payment due: {next_due_str}"
                                     )
                                     if is_final:
                                         confirm_msg = (
-                                            f"🎉 *FINAL PAYMENT CONFIRMED\!*\n\n"
-                                            f"All payments complete\! Your lifetime EA is being compiled\.\n\n"
+                                            f"🎉 *FINAL PAYMENT CONFIRMED\\!*\n\n"
+                                            f"All payments complete! Your lifetime EA is being compiled.\n\n"
                                             f"Remaining balance: ₹0"
                                         )
                                     await context.bot.send_message(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
@@ -15,11 +15,12 @@ export default function OrdersPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
-  const { data: orders = [], isLoading, error } = useQuery({
+  const { data: orders = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-orders'],
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
+      placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/admin/all_orders');
       return data;
