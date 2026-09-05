@@ -2061,14 +2061,15 @@ class DummyHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self.send_response(500)
                 self.end_headers()
-        elif self.path == "/internal/order-approved":
+        elif self.path == "/internal/order-approved" or self.path == "/internal/order-rejected":
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
             try:
                 data = json.loads(post_data.decode('utf-8'))
                 order_id = data.get('order_id')
                 if order_id:
-                    threading.Thread(target=self.clear_admin_buttons, args=(order_id,), daemon=True).start()
+                    action = "approved" if self.path == "/internal/order-approved" else "rejected"
+                    threading.Thread(target=self.clear_admin_buttons, args=(order_id, action), daemon=True).start()
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
                 self.end_headers()
@@ -2139,7 +2140,7 @@ class DummyHandler(BaseHTTPRequestHandler):
     async def async_clear_admin_buttons(self, order_id, action):
         global ADMIN_MESSAGES
         import httpx
-        msg_id = ADMIN_MESSAGES.get(int(order_id))
+        msg_id = ADMIN_MESSAGES.get(str(order_id)) or ADMIN_MESSAGES.get(int(order_id))
         if msg_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
             admin_chat_id = os.getenv("ADMIN_CHAT_ID")

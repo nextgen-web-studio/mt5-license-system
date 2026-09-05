@@ -198,6 +198,7 @@ async def update_order_mt5(order_id: int, payload: OrderMt5Update, db: AsyncSess
 
 @router.post("/{order_id}/reject")
 async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
+    import os, httpx, asyncio
     from app.models import User
     result = await db.execute(select(Order, User).join(User, Order.user_id == User.id).filter(Order.id == order_id))
     row = result.first()

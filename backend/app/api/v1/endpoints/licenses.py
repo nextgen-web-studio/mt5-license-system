@@ -552,6 +552,7 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
 
 @router.post("/broker-change/{request_id}/reject")
 async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_db)):
+    import os, httpx, asyncio
     from app.models import BrokerChangeRequest, User
     result = await db.execute(select(BrokerChangeRequest).filter(BrokerChangeRequest.id == request_id))
     req = result.scalar_one_or_none()
