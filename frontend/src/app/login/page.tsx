@@ -27,6 +27,15 @@ export default function LoginPage() {
         // Setup default auth header for future api calls
         api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
         
+        // Native Android Bridge: Securely store token for background service
+        try {
+          const AdminNative = (await import('@/lib/nativeBridge')).default;
+          await AdminNative.saveSecureToken({ token: data.access_token });
+          await AdminNative.startBackgroundService();
+        } catch (e) {
+          console.log("Native bridge not available, running in standard web mode.");
+        }
+        
         router.push('/admin/orders');
       }
     } catch (err: any) {

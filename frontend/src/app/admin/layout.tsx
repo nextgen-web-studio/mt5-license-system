@@ -130,7 +130,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         <div className="p-3 border-t border-neutral-800 shrink-0 pb-8 md:pb-4">
           <button 
-            onClick={() => {
+            onClick={async () => {
+              // Stop Android Native Background Service
+              try {
+                const AdminNative = (await import('@/lib/nativeBridge')).default;
+                await AdminNative.stopBackgroundService();
+              } catch(e) {}
+              
               document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
               window.location.href = '/login';
             }}
