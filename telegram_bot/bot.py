@@ -1959,33 +1959,20 @@ async def render_vps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     vps_list = await get_user_vps(str(telegram_id))
     
     if not vps_list:
-        text = "🖥️ <b>MY VPS</b>
-
-You do not have any VPS orders."
+        text = "🖥️ <b>MY VPS</b>\n\nYou do not have any VPS orders."
     else:
-        text = "🖥️ <b>MY VPS</b>
-
-Here are your VPS nodes:
-
-"
+        text = "🖥️ <b>MY VPS</b>\n\nHere are your VPS nodes:\n\n"
         for v in vps_list:
             status_icon = "✅" if v['status'] in ['delivered', 'provisioned'] else "⌛" if v['status'] in ['pending', 'paid', 'contacted', 'pending_admin_approval'] else "❌"
-            text += f"<b>{v.get('product_name', 'VPS Node')}</b> {status_icon}
-"
-            text += f"Status: {str(v['status']).replace('_', ' ').title()}
-"
+            text += f"<b>{v.get('product_name', 'VPS Node')}</b> {status_icon}\n"
+            text += f"Status: {str(v['status']).replace('_', ' ').title()}\n"
             if v['status'] in ['delivered', 'provisioned']:
-                text += f"IP Address: <code>{v.get('ip_address', 'N/A')}</code>
-"
-                text += f"Username: <code>{v.get('username', 'Administrator')}</code>
-"
-                text += f"Password: <span class="tg-spoiler">{v.get('password', 'N/A')}</span>
-"
+                text += f"IP Address: <code>{v.get('ip_address', 'N/A')}</code>\n"
+                text += f"Username: <code>{v.get('username', 'Administrator')}</code>\n"
+                text += f"Password: <span class=\"tg-spoiler\">{v.get('password', 'N/A')}</span>\n"
                 if v.get('expiry_date'):
-                    text += f"Expiry Date: {v['expiry_date'][:10]}
-"
-            text += "
-"
+                    text += f"Expiry Date: {v['expiry_date'][:10]}\n"
+            text += "\n"
             
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
     kb = InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Back to Menu", callback_data="main_menu")]])
