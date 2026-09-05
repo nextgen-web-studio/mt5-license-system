@@ -5,7 +5,7 @@ from sqlalchemy.future import select
 from sqlalchemy import func
 
 from app.db.database import get_db
-from app.models import User, Order, Payment, CompileJob, License, Product, VpsOrder
+from app.models import User, Order, Payment, CompileJob, License, Product, VpsOrder, BrokerChangeRequest
 
 router = APIRouter()
 
@@ -180,7 +180,7 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
         })
         
     # Fetch broker change requests
-    from app.models import BrokerChangeRequest, License, Order
+    
     bc_result = await db.execute(
         select(BrokerChangeRequest, License, Product, User)
         .join(License, BrokerChangeRequest.license_id == License.id)
