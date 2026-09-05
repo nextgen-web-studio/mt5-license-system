@@ -523,14 +523,20 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     # 5. Update request status
     req.status = "approved"
     
-    # 6. Queue compile job
-    job = CompileJob(license_id=lic.id, status="pending")
+    # 6. Queue compile job    job = CompileJob(license_id=lic.id, status="pending")
     db.add(job)
     
     await db.commit()
     
     background_tasks.add_task(local_wine_compiler, job.id)
     
+    # Trigger compiling animation
+    import os, asyncio
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if bot_token and user and user.telegram_id:
+        from app.core.telegram_animator import animate_compiling
+        asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
+        
     return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
 
 @router.post("/broker-change/{request_id}/reject")

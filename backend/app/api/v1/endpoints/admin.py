@@ -171,8 +171,35 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
             "status": order.status,
             "date": order.created_at,
             "is_renewal": bool(order.vps_id) and product.type == "VPS",
-            "mt5_id": getattr(order, 'mt5_id', None)
+            "mt5_id": getattr(order, 'mt5_id', None),
+            "is_broker_change": False
         })
+        
+    # Fetch broker change requests
+    from app.models import BrokerChangeRequest, License
+    bc_result = await db.execute(
+        select(BrokerChangeRequest, License, Product, User)
+        .join(License, BrokerChangeRequest.license_id == License.id)
+        .join(Product, License.product_id == Product.id)
+        .join(User, BrokerChangeRequest.user_id == User.id)
+        .order_by(BrokerChangeRequest.created_at.desc())
+    )
+    bc_rows = bc_result.all()
+    for req, lic, product, user in bc_rows:
+        orders.append({
+            "id": f"BC-{req.id}",
+            "real_id": req.id,
+            "product": f"BROKER CHANGE ({product.name})",
+            "customer": user.name or user.username or "Unknown",
+            "amount": 0,
+            "status": req.status,
+            "date": req.created_at,
+            "is_renewal": False,
+            "mt5_id": f"{lic.mt5_id} -> {req.new_mt5_id}",
+            "is_broker_change": True
+        })
+        
+    orders.sort(key=lambda x: x["date"], reverse=True)
     return orders
 
 from fastapi import HTTPException

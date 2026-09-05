@@ -40,6 +40,7 @@ export default function EaApprovalsPage() {
         return <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20 capitalize whitespace-nowrap">{formattedStatus}</span>;
       case 'pending':
       case 'pending_admin_approval':
+      case 'pending_broker_change_approval':
       case 'approved_waiting_for_mt5_id':
         return <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded text-xs font-medium border border-yellow-500/20 capitalize whitespace-nowrap">{formattedStatus}</span>;
       case 'compiling':
@@ -76,6 +77,36 @@ export default function EaApprovalsPage() {
     },
     onError: (err: any) => {
       toast("Error creating installment: " + (err.response?.data?.detail || err.message), "error");
+    }
+  });
+
+  const approveBrokerChangeMutation = useMutation({
+    mutationFn: async (order: any) => {
+      const { data } = await api.post(`/api/v1/licenses/broker-change/${order.real_id}/approve`);
+      return data;
+    },
+    onSuccess: () => {
+      toast("Broker Change Approved & Compiling!", "success");
+      setApproveModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+    },
+    onError: (err: any) => {
+      toast("Error approving broker change: " + (err.response?.data?.detail || err.message), "error");
+    }
+  });
+
+  const rejectBrokerChangeMutation = useMutation({
+    mutationFn: async (order: any) => {
+      const { data } = await api.post(`/api/v1/licenses/broker-change/${order.real_id}/reject`);
+      return data;
+    },
+    onSuccess: () => {
+      toast("Broker Change Rejected", "success");
+      setApproveModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+    },
+    onError: (err: any) => {
+      toast("Error rejecting broker change: " + (err.response?.data?.detail || err.message), "error");
     }
   });
 
@@ -153,7 +184,7 @@ export default function EaApprovalsPage() {
                 <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
                 <td className="px-6 py-4 text-neutral-400 whitespace-nowrap">{new Date(order.date || Date.now()).toLocaleDateString('en-GB')}</td>
                 <td className="px-6 py-4 text-right">
-                  {(order.status === 'pending_admin_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
+                  {(order.status === 'pending_admin_approval' || order.status === 'pending_broker_change_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
                     <button 
                       onClick={() => {
                         setSelectedOrder(order);
@@ -204,7 +235,7 @@ export default function EaApprovalsPage() {
               </div>
             </div>
 
-            {(order.status === 'pending_admin_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
+            {(order.status === 'pending_admin_approval' || order.status === 'pending_broker_change_approval' || order.status === 'approved' || order.status === 'approved_waiting_for_mt5_id') && (
               <div className="flex justify-end gap-2 flex-wrap pt-3 border-t border-neutral-800/50">
                 <button 
                   onClick={() => {
@@ -283,6 +314,39 @@ export default function EaApprovalsPage() {
               {!selectedOrder.mt5_id ? (
                 <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400 text-sm text-center">
                   Cannot process license until customer provides their MT5 ID.
+                </div>
+              ) : selectedOrder.is_broker_change ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-neutral-300 text-center mb-4">Would you like to approve this broker change?</p>
+                  
+                  <button
+                    disabled={approveBrokerChangeMutation.isPending}
+                    onClick={() => approveBrokerChangeMutation.mutate(selectedOrder)}
+                    className="w-full flex items-center justify-center p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    {approveBrokerChangeMutation.isPending ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <>
+                        <ShieldCheck size={18} className="mr-2" />
+                        Approve Broker Change
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    disabled={rejectBrokerChangeMutation.isPending}
+                    onClick={() => rejectBrokerChangeMutation.mutate(selectedOrder)}
+                    className="w-full flex items-center justify-center p-3 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    {rejectBrokerChangeMutation.isPending ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <>
+                        Reject Request
+                      </>
+                    )}
+                  </button>
                 </div>
               ) : installmentMode ? (
                 <div className="space-y-4 mt-2">
