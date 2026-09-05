@@ -64,21 +64,21 @@ export default function TrialAdminPage() {
   if (!settings) return <div className="text-red-500">Failed to load settings.</div>;
 
   return (
-    <div className="space-y-3 md:space-y-4 md:space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-3 md:space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <Gift className="text-purple-500" size={32} />
+          <h1 className="text-xl md:text-3xl font-bold text-white flex items-center gap-2">
+            <Gift className="text-purple-500" size={24} />
             Free Trial Configuration
           </h1>
-          <p className="text-neutral-400 mt-1">Manage rules, limits, and manual grants for the EA Trial system.</p>
+          <p className="text-sm text-neutral-400 mt-0.5">Manage rules, limits, and manual grants for the EA Trial system.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Settings Card */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-base md:text-xl font-semibold text-white mb-3 md:mb-6 flex items-center gap-2">
             <ShieldAlert size={20} className="text-blue-400" />
             Global Settings
           </h2>
@@ -104,7 +104,7 @@ export default function TrialAdminPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Duration (Days)</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Duration (Days)</label>
               <input 
                 type="number" 
                 disabled={!settings.enabled}
@@ -115,7 +115,7 @@ export default function TrialAdminPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Max Trials Per Month</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Max Trials Per Month</label>
               <input 
                 type="number" 
                 disabled={!settings.enabled}
@@ -126,7 +126,7 @@ export default function TrialAdminPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Trial Plan Name (For Compiler)</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Trial Plan Name (For Compiler)</label>
               <input 
                 type="text" 
                 disabled={!settings.enabled}
@@ -172,17 +172,17 @@ export default function TrialAdminPage() {
 
         {/* Manual Grant Card */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
-          <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-base md:text-xl font-semibold text-white mb-3 md:mb-6 flex items-center gap-2">
             <Gift size={20} className="text-green-400" />
             Manual Trial Grant
           </h2>
-          <p className="text-sm text-neutral-400 mb-6">
+          <p className="text-sm text-neutral-400 mb-3 md:mb-6">
             Bypass monthly limits to manually grant a trial for customer support purposes.
           </p>
 
           <div className="space-y-3 md:space-y-4">
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Telegram User ID</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Telegram User ID</label>
               <input 
                 type="text" 
                 placeholder="e.g. 123456789"
@@ -192,7 +192,7 @@ export default function TrialAdminPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-white block mb-1">MT5 ID</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">MT5 ID</label>
               <input 
                 type="text" 
                 placeholder="e.g. 5312698"

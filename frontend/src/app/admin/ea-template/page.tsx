@@ -146,11 +146,11 @@ export default function EaTemplatePage() {
   if (loading) return <div className="text-white">Loading EA template versions...</div>;
 
   return (
-    <div className="space-y-3 md:space-y-4 md:space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-3 md:space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <FileCode2 className="text-blue-500" size={32} />
+          <h1 className="text-xl md:text-3xl font-bold text-white flex items-center gap-2 md:gap-3">
+            <FileCode2 className="text-blue-500" size={24} />
             EA File / Version Management
           </h1>
           <p className="text-neutral-400 mt-1">
@@ -160,8 +160,8 @@ export default function EaTemplatePage() {
       </div>
 
       {activeVersion ? (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 flex items-center gap-4">
-          <ShieldCheck className="text-emerald-400 shrink-0" size={28} />
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 md:p-5 flex items-center gap-3 md:gap-4">
+          <ShieldCheck className="text-emerald-400 shrink-0" size={20} />
           <div>
             <p className="text-emerald-400 font-medium">
               Active version: {activeVersion.version_label || `#${activeVersion.id}`} ({activeVersion.filename})
@@ -177,23 +177,23 @@ export default function EaTemplatePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
         {/* Upload Card */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
-          <h2 className="text-base md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-base md:text-xl font-semibold text-white mb-3 md:mb-6 flex items-center gap-2">
             <UploadCloud size={20} className="text-blue-400" />
             Upload New EA File
           </h2>
 
           <div className="space-y-3 md:space-y-4">
             <div>
-              <label className="text-sm font-medium text-white block mb-1">EA Source File (.mq5)</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">EA Source File (.mq5)</label>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".mq5,.mqh,.txt"
                 onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-                className="w-full text-sm text-neutral-300 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-600 file:text-white file:text-sm hover:file:bg-blue-700 file:cursor-pointer"
+                className="w-full text-sm text-neutral-300 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-600 file:text-white file:text-sm hover:file:bg-blue-700 file:cursor-pointer"
               />
               {selectedFile && (
                 <p className="text-xs text-neutral-500 mt-1">
@@ -203,35 +203,35 @@ export default function EaTemplatePage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Version Label</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Version Label</label>
               <input
                 type="text"
                 placeholder="e.g. v2.3 - fixed trailing stop"
                 value={versionLabel}
                 onChange={e => setVersionLabel(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Notes</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Notes</label>
               <textarea
                 placeholder="What changed in this version?"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 rows={2}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-white block mb-1">Uploaded By</label>
+              <label className="text-xs md:text-sm font-medium text-white block mb-0.5">Uploaded By</label>
               <input
                 type="text"
                 placeholder="e.g. your name"
                 value={uploadedBy}
                 onChange={e => setUploadedBy(e.target.value)}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -254,7 +254,7 @@ export default function EaTemplatePage() {
               </button>
             </div>
 
-            <div className="pt-4 border-t border-neutral-800">
+            <div className="pt-2 md:pt-4 border-t border-neutral-800">
               <button
                 onClick={handleUpload}
                 disabled={uploading || !selectedFile}
@@ -275,7 +275,7 @@ export default function EaTemplatePage() {
 
         {/* How it works Card */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 md:p-6">
-          <h2 className="text-base md:text-xl font-semibold text-white mb-6 flex items-center gap-2">
+          <h2 className="text-base md:text-xl font-semibold text-white mb-3 md:mb-6 flex items-center gap-2">
             <FileCode2 size={20} className="text-indigo-400" />
             How This Works
           </h2>
@@ -292,8 +292,8 @@ export default function EaTemplatePage() {
       {/* Version History */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
         <div className="p-4 md:p-6 pb-0">
-          <h2 className="text-base md:text-xl font-semibold text-white mb-1 flex items-center gap-2">
-            <History size={20} className="text-sm md:text-base text-neutral-400" />
+          <h2 className="text-sm md:text-xl font-semibold text-white mb-0.5 flex items-center gap-2">
+            <History size={16} className="text-neutral-400" />
             Version History
           </h2>
           <p className="text-neutral-500 text-sm mb-4">All uploaded EA source versions, most recent first.</p>
