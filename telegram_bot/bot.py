@@ -857,6 +857,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 sent = await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
                 ADMIN_MESSAGES[f"BC_{request_id}"] = sent.message_id
+                save_admin_messages()
             except Exception as e:
                 logging.error(f"Failed to notify admin: {e}")
                 
@@ -1335,6 +1336,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 sent = await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown", reply_markup=reply_markup)
                 ADMIN_MESSAGES[vps_order_id] = sent.message_id
+                save_admin_messages()
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin: {e}")
             
@@ -1458,6 +1460,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 reply_markup=InlineKeyboardMarkup(admin_kb)
             )
             ADMIN_MESSAGES[order['id']] = sent.message_id
+            save_admin_messages()
         except Exception as e:
             logging.error(f"Failed to notify admin: {e}")
             
@@ -1983,7 +1986,28 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 import json
 
-ADMIN_MESSAGES = {}
+import json
+
+ADMIN_MESSAGES_FILE = "admin_messages.json"
+
+def load_admin_messages():
+    try:
+        if os.path.exists(ADMIN_MESSAGES_FILE):
+            with open(ADMIN_MESSAGES_FILE, "r") as f:
+                return json.load(f)
+    except:
+        pass
+    return {}
+
+def save_admin_messages():
+    try:
+        with open(ADMIN_MESSAGES_FILE, "w") as f:
+            json.dump(ADMIN_MESSAGES, f)
+    except:
+        pass
+
+ADMIN_MESSAGES = load_admin_messages()
+
 
 class DummyHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
