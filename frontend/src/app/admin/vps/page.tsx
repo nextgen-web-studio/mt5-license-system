@@ -248,10 +248,10 @@ export default function VpsOrdersPage() {
         
         <div className="hidden md:flex flex-col gap-6">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-neutral-800">
+            <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white">Pending Action</h3>
             </div>
-            <div className=" overflow-x-auto min-h-[300px]">
+            <div className=" overflow-x-auto ">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -366,10 +366,10 @@ export default function VpsOrdersPage() {
           </div>
           
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-neutral-800">
+            <div className="px-6 py-4 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white">Completed / Other Orders</h3>
             </div>
-            <div className=" overflow-x-auto min-h-[300px]">
+            <div className=" overflow-x-auto ">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -487,7 +487,7 @@ export default function VpsOrdersPage() {
         
         <div className="md:hidden flex flex-col gap-6">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-neutral-800">
+            <div className="px-4 py-3 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white text-sm">Pending Action</h3>
             </div>
             <div className="flex flex-col divide-y divide-neutral-800">
@@ -591,7 +591,7 @@ export default function VpsOrdersPage() {
           </div>
           
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-neutral-800">
+            <div className="px-4 py-3 border-b border-neutral-800 bg-neutral-900/50">
               <h3 className="font-semibold text-white text-sm">Completed / Other Orders</h3>
             </div>
             <div className="flex flex-col divide-y divide-neutral-800">
