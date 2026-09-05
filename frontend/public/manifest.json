@@ -19,5 +19,17 @@
       "type": "image/jpeg",
       "purpose": "any maskable"
     }
+  ],
+  "orientation": "portrait",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "scope": "/",
+  "prefer_related_applications": false,
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
   ]
 }

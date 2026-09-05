@@ -22,7 +22,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes lightning fast cache
+        staleTime: 5 * 60 * 1000,    // 5 minutes - data considered fresh, no refetch
+        gcTime: 10 * 60 * 1000,       // 10 minutes - keep data in memory after unused
+        retry: 2,                       // Retry failed requests twice
+        retryDelay: 500,                // Fast 500ms retry
         refetchOnWindowFocus: true,
       },
     },
