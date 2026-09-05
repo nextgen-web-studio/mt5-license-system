@@ -19,7 +19,8 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(func.count()).select_from(Order))
     total_orders = result.scalar() or 0
 
-    # Fetch live USD to INR rate    global _cached_usd_inr, _last_usd_fetch
+    # Fetch live USD to INR rate
+    global _cached_usd_inr, _last_usd_fetch
     import time, asyncio, httpx
     if '_cached_usd_inr' not in globals():
         _cached_usd_inr = 84.0
