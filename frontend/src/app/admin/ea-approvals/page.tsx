@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -338,8 +338,22 @@ export default function EaApprovalsPage() {
               </div>
 
               {!selectedOrder.mt5_id ? (
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400 text-sm text-center">
-                  Cannot process license until customer provides their MT5 ID.
+                <div className="space-y-3">
+                  <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-400 text-sm text-center">
+                    Cannot process license until customer provides their MT5 ID.
+                  </div>
+                  
+                  <button
+                    disabled={rejectEaMutation.isPending}
+                    onClick={() => rejectEaMutation.mutate(selectedOrder)}
+                    className="w-full flex items-center justify-center p-2.5 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm mt-2"
+                  >
+                    {rejectEaMutation.isPending ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      "❌ Reject Order"
+                    )}
+                  </button>
                 </div>
               ) : selectedOrder.is_broker_change ? (
                 <div className="space-y-3">
@@ -481,6 +495,24 @@ export default function EaApprovalsPage() {
                   >
                     <CreditCard size={18} className="mr-2" />
                     Create Installment Arrangement
+                  </button>
+
+                  <div className="relative flex items-center py-1">
+                    <div className="flex-grow border-t border-neutral-800"></div>
+                    <span className="flex-shrink-0 mx-4 text-xs text-neutral-600 uppercase">Or</span>
+                    <div className="flex-grow border-t border-neutral-800"></div>
+                  </div>
+
+                  <button
+                    disabled={rejectEaMutation.isPending}
+                    onClick={() => rejectEaMutation.mutate(selectedOrder)}
+                    className="w-full flex items-center justify-center p-2.5 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
+                  >
+                    {rejectEaMutation.isPending ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      "❌ Reject Order"
+                    )}
                   </button>
                 </div>
               )}
