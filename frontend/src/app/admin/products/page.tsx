@@ -43,7 +43,11 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       closeModal();
-    }
+      },
+      onError: (err: any) => {
+        alert('Failed: ' + (err.response?.data?.detail || err.response?.data || err.message));
+        console.error(err);
+      }
   });
 
   const updateProductMutation = useMutation({
@@ -54,7 +58,11 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       closeModal();
-    }
+      },
+      onError: (err: any) => {
+        alert('Failed: ' + (err.response?.data?.detail || err.response?.data || err.message));
+        console.error(err);
+      }
   });
 
   const deleteProductMutation = useMutation({
@@ -419,4 +427,6 @@ export default function ProductsPage() {
 </div>
   );
 }
+
+
 
