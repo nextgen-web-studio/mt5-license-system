@@ -146,7 +146,7 @@ export default function ProductsPage() {
           <p className="text-neutral-400 mt-1">Manage trading bots and VPS packages.</p>
         </div>
         <button 
-          onClick={openModal}
+          onClick={() => openModal()}
           className="w-full md:w-auto justify-center flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors"
         >
           <Plus size={18} className="mr-2" />
@@ -427,6 +427,7 @@ export default function ProductsPage() {
 </div>
   );
 }
+
 
 
 
