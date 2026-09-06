@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData} from '@tanstack/react-query';
@@ -37,7 +37,7 @@ export default function ProductsPage() {
 
   const createProductMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const { data } = await api.post('/api/v1/products/', payload);
+      const { data } = await api.post('/api/v1/products', payload);
       return data;
     },
     onSuccess: () => {
@@ -419,3 +419,4 @@ export default function ProductsPage() {
 </div>
   );
 }
+

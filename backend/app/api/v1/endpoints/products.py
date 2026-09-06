@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
@@ -9,15 +9,15 @@ from app.schemas import ProductResponse, ProductCreate, ProductUpdate
 
 router = APIRouter()
 
-@router.get("/", response_model=List[ProductResponse])
+@router.get("", response_model=List[ProductResponse])
 async def list_products(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Product).filter(Product.active == True))
     products = result.scalars().all()
     return products
 
-@router.post("/", response_model=ProductResponse)
+@router.post("", response_model=ProductResponse)
 async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_db)):
-    db_product = Product(**product.dict())
+    db_product = Product(**product.model_dump())
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
@@ -30,7 +30,7 @@ async def update_product(product_id: int, product_update: ProductUpdate, db: Asy
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
         
-    update_data = product_update.dict(exclude_unset=True)
+    update_data = product_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_product, key, value)
         
@@ -68,3 +68,5 @@ async def get_usd_inr_rate():
         pass
     # Fallback to a reasonable static rate
     return {"rate": 84.0, "source": "fallback", "base": "USD"}
+
+
