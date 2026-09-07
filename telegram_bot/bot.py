@@ -198,7 +198,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except Exception as e:
                     logging.error(f"Failed to notify user: {e}")
         else:
-            await query.answer(f"Failed: {resp['error']}", show_alert=True)
+            if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
+                await query.edit_message_text(f"⚠️ Order #{order_id} was already processed.")
+            else:
+                await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
     if data.startswith("reject_") and not data.startswith("reject_change_"):
@@ -225,7 +228,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except:
                 pass
         else:
-            await query.answer(f"Failed: {resp['error']}", show_alert=True)
+            if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
+                await query.edit_message_text(f"⚠️ Order #{order_id} was already processed.")
+            else:
+                await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
     if data.startswith("generate_lifetime_"):
@@ -904,7 +910,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except Exception as e:
                     logging.error(f"Failed to notify user: {e}")
             else:
-                await query.answer(f"Failed: {resp['error']}", show_alert=True)
+                if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
+                    await query.edit_message_text(f"⚠️ Broker Change Request #{request_id} was already processed.")
+                else:
+                    await query.answer(f"Failed: {resp['error']}", show_alert=True)
                 
         elif action == "reject":
             resp = await reject_broker_change(request_id)
@@ -922,7 +931,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except:
                     pass
             else:
-                await query.answer(f"Failed: {resp['error']}", show_alert=True)
+                if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
+                    await query.edit_message_text(f"⚠️ Broker Change Request #{request_id} was already processed.")
+                else:
+                    await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
 
     if data.startswith("admin_edit_"):
