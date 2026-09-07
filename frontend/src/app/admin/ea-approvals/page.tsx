@@ -23,7 +23,7 @@ export default function EaApprovalsPage() {
 
   const { data: orders = [], isLoading, isFetching, error } = useQuery({
     queryKey: ['admin-ea-orders'],
-    refetchInterval: 30000,
+    refetchInterval: 5000,
       
       placeholderData: keepPreviousData,
     queryFn: async () => {

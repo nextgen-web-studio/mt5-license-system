@@ -26,7 +26,7 @@ export default function ProductsPage() {
   const { data: products = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-products'],
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {

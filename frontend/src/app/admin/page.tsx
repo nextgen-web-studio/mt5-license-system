@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { data: stats, isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-stats'],
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {

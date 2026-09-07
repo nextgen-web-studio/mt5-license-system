@@ -18,7 +18,7 @@ export default function OrdersPage() {
   const { data: orders = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-orders'],
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {
