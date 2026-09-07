@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Header, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
@@ -215,8 +215,9 @@ async def claim_job(req: ClaimRequest, db: AsyncSession = Depends(get_db), api_k
     }
 
 async def notify_telegram_bot(license_id: int):
-    # Force the production URL, ignoring any potentially broken env vars on Render
-    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com/internal/delivery")
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-k6h3.onrender.com")
+    bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    bot_webhook_url += "/internal/delivery"
     try:
         import httpx
         async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
