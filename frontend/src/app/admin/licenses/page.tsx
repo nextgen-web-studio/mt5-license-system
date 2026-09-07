@@ -17,8 +17,8 @@ export default function LicensesPage() {
   const { data: licenses = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-licenses'],
-    refetchInterval: 5000,
-    refetchIntervalInBackground: true,
+    refetchInterval: 30000,
+    
       placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/licenses');
