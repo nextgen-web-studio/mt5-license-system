@@ -49,7 +49,7 @@ async def register_user(telegram_id, name, username, phone=None):
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
-                f"{BASE_URL}/users",
+                f"{BASE_URL}/users/",
                 json={
                     "telegram_id": str(telegram_id),
                     "name": name,
@@ -338,7 +338,7 @@ async def is_installment_eligible(telegram_id):
 async def get_settings():
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(f"{BASE_URL}/settings")
+            response = await client.get(f"{BASE_URL}/settings/")
             if response.status_code == 200:
                 return response.json()
             return {}
