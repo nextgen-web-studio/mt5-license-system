@@ -550,7 +550,7 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     # Trigger webhook to clear admin bot buttons
     try:
         async def call_webhook():
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(verify=False) as client:
                 bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
                 await client.post(f"{bot_url}/internal/bc-approved", json={"request_id": request_id, "action": "approved"})
         asyncio.create_task(call_webhook())
@@ -574,7 +574,7 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
     # Trigger webhook to clear admin bot buttons
     try:
         async def call_webhook_reject():
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(verify=False) as client:
                 bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
                 await client.post(f"{bot_url}/internal/bc-rejected", json={"request_id": request_id, "action": "rejected"})
         asyncio.create_task(call_webhook_reject())
@@ -591,7 +591,7 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
             msg = f"❌ *BROKER CHANGE REJECTED*\n\nUnfortunately, your request to change your MT5 ID to `{req.new_mt5_id}` has been rejected by the admin. Please contact support for more details."
             try:
                 async def send_user_tg():
-                    async with httpx.AsyncClient() as client:
+                    async with httpx.AsyncClient(verify=False) as client:
                         await client.post(
                             f"https://api.telegram.org/bot{bot_token}/sendMessage",
                             json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
