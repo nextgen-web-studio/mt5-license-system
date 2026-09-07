@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData} from '@tanstack/react-query';
@@ -26,8 +26,8 @@ export default function ProductsPage() {
   const { data: products = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-products'],
-    refetchInterval: 30000,
-    
+    refetchInterval: 5000,
+    refetchIntervalInBackground: true,
       placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/products');

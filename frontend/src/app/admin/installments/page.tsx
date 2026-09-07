@@ -19,8 +19,8 @@ export default function InstallmentsPage() {
   const { data: installments = [], isLoading, isFetching, error, refetch } = useQuery({
     
     queryKey: ['admin-installments'],
-    refetchInterval: 30000,
-    
+    refetchInterval: 5000,
+    refetchIntervalInBackground: true,
       placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.get('/api/v1/installments/admin/all');
