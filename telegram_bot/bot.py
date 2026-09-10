@@ -988,7 +988,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 plan_heading = (
                     f"📦 *{plan_name}*\n\n"
                     f"{label} — *Limited Time\\!*\n"
-                    f"💰 Price: ~\\${orig}~ → \\${sale}"
+                    f"💰 Price: ~\\${orig}~ ➡️ \\${sale}"
                 )
                 await query.edit_message_text(
                     f"{plan_heading}\n\nPlease enter your *MT5 ID* to continue:",
@@ -1128,7 +1128,7 @@ Press Proceed below to continue to payment.'''
                     orig = int(p['price'])
                     sale = int(p['offer_price'])
                     dur = "1 Month" if p.get('duration') == 1 else "1 Year"
-                    offer_lines += f"\n~₹{orig:,}~ → ₹{sale:,} 🔥 \\({dur}\\)"
+                    offer_lines += f"\n~₹{orig:,}~ ➡️ ₹{sale:,} 🔥 \\({dur}\\)"
             text += f"\n\n🔥 *Flash Sale Active\\!*{offer_lines}\n\n*Select your billing cycle below:*"
             try:
                 await query.edit_message_text(text, parse_mode="MarkdownV2", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -1441,7 +1441,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 f"🔑 MT5 ID: `{mt5_id}`\n"
                 f"📦 Plan: {_esc(product['name'] if product else 'Unknown')}\n\n"
                 f"{_esc(offer_label)} — *Limited Time\\!*\n"
-                f"💰 Price: ~\\${int(raw_price)}~ → \\${int(effective_price)}\n"
+                f"💰 Price: ~\\${int(raw_price)}~ ➡️ \\${int(effective_price)}\n"
                 f"ℹ️ _Today's rate: ₹{_esc(f'{usd_inr:.2f}')} \\= ₹{price_inr:,} \\(was ₹{orig_inr:,}\\)_\n\n"
                 f"Status: 🕐 Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order\\.\n"
@@ -1473,7 +1473,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
                 f"📦 Plan: {_esc(product['name'] if product else 'Unknown')}\n\n"
                 f"{_esc(offer_label)} — *Limited Time\\!*\n"
-                f"💰 Price: ~₹{int(raw_price):,}~ → ₹{int(effective_price):,}\n\n"
+                f"💰 Price: ~₹{int(raw_price):,}~ ➡️ ₹{int(effective_price):,}\n\n"
                 f"Status: 🕐 Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order\\."
             )
