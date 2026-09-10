@@ -201,6 +201,7 @@ export default function OrdersPage() {
             // Optimistic UI update for instant response
             queryClient.setQueryData(['admin-orders'], (old: any) => old?.filter((item: any) => item.id !== targetId));
             await api.delete(`/api/v1/orders/${targetId}`);
+            toast('Order deleted successfully', 'success');
             queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
             queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
             queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
