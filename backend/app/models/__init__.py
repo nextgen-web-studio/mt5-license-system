@@ -216,3 +216,15 @@ class EaTemplate(Base):
     notes = Column(Text, nullable=True)
     uploaded_by = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class Offer(Base):
+    __tablename__ = "offers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    offer_label = Column(String, nullable=False)  # e.g. "🔥 Flash Sale"
+    offer_price = Column(Float, nullable=False)    # discounted price
+    starts_at = Column(DateTime(timezone=True), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -1,19 +1,58 @@
-﻿from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import and_
 from typing import List
+from datetime import datetime, timezone
 
 from app.db.database import get_db
-from app.models import Product
-from app.schemas import ProductResponse, ProductCreate, ProductUpdate
+from app.models import Product, Offer
+from app.schemas import ProductResponse, ProductCreate, ProductUpdate, ProductWithOfferResponse
 
 router = APIRouter()
 
-@router.get("", response_model=List[ProductResponse])
+@router.get("", response_model=List[ProductWithOfferResponse])
 async def list_products(db: AsyncSession = Depends(get_db)):
+    """Return all active products, enriched with the current active offer if one exists."""
+    now = datetime.now(timezone.utc)
+
     result = await db.execute(select(Product).filter(Product.active == True))
     products = result.scalars().all()
-    return products
+
+    # Fetch all currently active offers in one query
+    offer_result = await db.execute(
+        select(Offer).where(
+            and_(
+                Offer.active == True,
+                Offer.starts_at <= now,
+                Offer.expires_at >= now,
+            )
+        )
+    )
+    active_offers = offer_result.scalars().all()
+    # Map product_id -> offer (latest one if multiple)
+    offer_map = {}
+    for o in active_offers:
+        offer_map[o.product_id] = o
+
+    response = []
+    for p in products:
+        offer = offer_map.get(p.id)
+        response.append(ProductWithOfferResponse(
+            id=p.id,
+            type=p.type,
+            name=p.name,
+            price=p.price,
+            duration=p.duration,
+            active=p.active,
+            description=p.description,
+            offer_id=offer.id if offer else None,
+            offer_label=offer.offer_label if offer else None,
+            offer_price=offer.offer_price if offer else None,
+            offer_expires_at=offer.expires_at if offer else None,
+        ))
+    return response
+
 
 @router.post("", response_model=ProductResponse)
 async def create_product(product: ProductCreate, db: AsyncSession = Depends(get_db)):

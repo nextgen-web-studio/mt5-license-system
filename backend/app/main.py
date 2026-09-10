@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from app.api.v1.endpoints import auth, products, users, licenses, orders, admin, jobs, trials, settings, installments, ea_templates
+from app.api.v1.endpoints import auth, products, users, licenses, orders, admin, jobs, trials, settings, installments, ea_templates, offers
 
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -25,10 +25,23 @@ async def lifespan(app: FastAPI):
                 await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR;"))
                 await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR;"))
                 await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation VARCHAR;"))
+                await session.execute(sa.text("""
+                    CREATE TABLE IF NOT EXISTS offers (
+                        id SERIAL PRIMARY KEY,
+                        product_id INTEGER NOT NULL REFERENCES products(id),
+                        offer_label VARCHAR NOT NULL,
+                        offer_price FLOAT NOT NULL,
+                        starts_at TIMESTAMPTZ NOT NULL,
+                        expires_at TIMESTAMPTZ NOT NULL,
+                        active BOOLEAN DEFAULT TRUE,
+                        created_at TIMESTAMPTZ DEFAULT NOW()
+                    );
+                """))
                 await session.commit()
-                print("Database columns verified/added successfully.")
+                print("Database columns/tables verified/added successfully.")
             except Exception as db_e:
                 print(f"Failed to run ALTER TABLE: {db_e}")
+
                 
             try:
                 await session.execute(update(Product).where(Product.type == "EA").values(price=500.0))
@@ -74,6 +87,7 @@ app.include_router(trials.router, prefix="/api/v1/trials", tags=["trials"])
 app.include_router(settings.router, prefix="/api/v1/settings", tags=["settings"])
 app.include_router(installments.router, prefix="/api/v1/installments", tags=["installments"])
 app.include_router(ea_templates.router, prefix="/api/v1/ea-templates", tags=["ea-templates"])
+app.include_router(offers.router, prefix="/api/v1/offers", tags=["offers"])
 
 @app.get("/")
 def read_root():

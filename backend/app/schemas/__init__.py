@@ -70,3 +70,49 @@ class CompileJobResponse(BaseModel):
 class OrderFulfillmentRequest(BaseModel):
     mt5_id: Optional[str] = None
     vps_id: Optional[int] = None
+
+class OfferCreate(BaseModel):
+    product_id: int
+    offer_label: str
+    offer_price: float
+    starts_at: datetime
+    expires_at: datetime
+    active: bool = True
+
+class OfferUpdate(BaseModel):
+    offer_label: Optional[str] = None
+    offer_price: Optional[float] = None
+    starts_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    active: Optional[bool] = None
+
+class OfferResponse(BaseModel):
+    id: int
+    product_id: int
+    offer_label: str
+    offer_price: float
+    starts_at: datetime
+    expires_at: datetime
+    active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ProductWithOfferResponse(BaseModel):
+    id: int
+    type: str
+    name: str
+    price: float
+    duration: int
+    active: bool
+    description: Optional[str] = None
+    # Offer fields — None if no active offer
+    offer_id: Optional[int] = None
+    offer_label: Optional[str] = None
+    offer_price: Optional[float] = None
+    offer_expires_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+

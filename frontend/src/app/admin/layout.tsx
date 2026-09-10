@@ -15,7 +15,8 @@ import { LayoutDashboard,
   Menu,
   X,
   History,
-  Clock, Settings
+  Clock, Settings,
+  Zap
 , ShieldCheck } from 'lucide-react';
 
 const navigation = [
@@ -26,11 +27,13 @@ const navigation = [
   { name: 'EA Approvals', href: '/admin/ea-approvals', icon: ShieldCheck },
   { name: 'Installments', href: '/admin/installments', icon: History },
   { name: 'VPS', href: '/admin/vps', icon: Server },
+  { name: 'Flash Sale Offers', href: '/admin/offers', icon: Zap },
   { name: 'Compiler', href: '/admin/compiler', icon: Terminal },
   { name: 'EA Template', href: '/admin/ea-template', icon: FileCode2 },
   { name: 'Free Trial', href: '/admin/trial', icon: Gift },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
+
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

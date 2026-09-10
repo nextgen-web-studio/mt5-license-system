@@ -967,22 +967,38 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lifetime_plans = [p for p in products if p.get('duration', 0) == 0]
         if not lifetime_plans:
             lifetime_plans = products  # fallback: show all if none are lifetime
-        
+
         if len(lifetime_plans) == 1:
             # Only one plan — skip selection, go straight to MT5 ID
             plan = lifetime_plans[0]
             context.user_data['pending_product_id'] = plan['id']
             context.user_data['pending_p_type'] = p_type
-            
+
             if not context.user_data.get('db_user_phone'):
                 await query.edit_message_text("Please enter your **Mobile Number** to continue:", parse_mode="Markdown")
                 context.user_data['awaiting_phone'] = True
                 return
-            
-            await query.edit_message_text(
-                f"📦 *{plan['name']}*\n\nPlease enter your **MT5 ID** to continue:",
-                parse_mode="Markdown"
-            )
+
+            # Show offer with strikethrough if active
+            if plan.get('offer_price') and plan.get('offer_label'):
+                orig = int(plan['price'])
+                sale = int(plan['offer_price'])
+                label = plan['offer_label'].replace('!', '\!').replace('.', '\.')
+                plan_name = plan['name'].replace('-', '\-').replace('(', '\(').replace(')', '\)')
+                plan_heading = (
+                    f"📦 *{plan_name}*\n\n"
+                    f"{label} — *Limited Time\!*\n"
+                    f"💰 Price: ~\${orig}~ → \${sale}"
+                )
+                await query.edit_message_text(
+                    f"{plan_heading}\n\nPlease enter your *MT5 ID* to continue:",
+                    parse_mode="MarkdownV2"
+                )
+            else:
+                await query.edit_message_text(
+                    f"📦 *{plan['name']}*\n\nPlease enter your **MT5 ID** to continue:",
+                    parse_mode="Markdown"
+                )
             context.user_data['awaiting_mt5_id'] = True
         else:
             # Multiple lifetime plans — show selection without price
@@ -993,7 +1009,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     callback_data=f"buy_product_{p['id']}_{p_type}"
                 )])
             keyboard.append([InlineKeyboardButton("« Back", callback_data="main_menu")])
-            
+
             await query.edit_message_text(
                 "🛒 *Select Your EA Plan*\n\nChoose a plan to continue:",
                 parse_mode="Markdown",
@@ -1086,25 +1102,44 @@ Press Proceed below to continue to payment.'''
         tier_products = [p for p in products if tier.lower() in p['name'].lower()]
 
         keyboard = []
+        any_offer = any(p.get('offer_price') for p in tier_products)
         for p in tier_products:
-            keyboard.append([InlineKeyboardButton(f"{p['name']} - ₹{p['price']:,.0f}", callback_data=f"buy_product_{p['id']}_{p_type}")])
+            if p.get('offer_price') and p.get('offer_label'):
+                btn_label = f"{p['name']} 🔥 ₹{int(p['offer_price']):,}"
+            else:
+                btn_label = f"{p['name']} - ₹{int(p['price']):,}"
+            keyboard.append([InlineKeyboardButton(btn_label, callback_data=f"buy_product_{p['id']}_{p_type}")])
         keyboard.append([InlineKeyboardButton("🔙 Back to Tiers", callback_data="buy_vps")])
 
-        details = {
-            "Basic": "🟢 *Basic Plan Details*\nUp to 2 MT4 or MT5 terminals (2 Accounts).\n\n*Hardware Specs:*\n• *RAM:* 2 GB\n• *vCPU:* 1\n• *Storage SSD:* 30 GB\n• *Bandwidth:* 300 GB\n• *OS:* Windows",
-            "Premium": "🔵 *Premium Plan Details*\nUp to 6 MT4 or MT5 terminals (6 Accounts).\n\n*Hardware Specs:*\n• *RAM:* 4 GB\n• *vCPU:* 2\n• *Storage SSD:* 60 GB\n• *Bandwidth:* 500 GB\n• *OS:* Windows",
-            "Gold": "🟡 *Gold Plan Details*\nUp to 12 MT4 or MT5 terminals (12 Accounts).\n\n*Hardware Specs:*\n• *RAM:* 8 GB\n• *vCPU:* 4\n• *Storage SSD:* 100 GB\n• *Bandwidth:* 700 GB\n• *OS:* Windows",
-            "Platinum": "⚪ *Platinum Plan Details*\nUp to 18 MT4 or MT5 terminals (18 Accounts).\n\n*Hardware Specs:*\n• *RAM:* 16 GB\n• *vCPU:* 4\n• *Storage SSD:* 200 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows",
-            "Diamond": "💎 *Diamond Plan Details*\nUp to 38 MT4 or MT5 terminals (38 Accounts).\n\n*Hardware Specs:*\n• *RAM:* 32 GB\n• *vCPU:* 8\n• *Storage SSD:* 500 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows"
+        details_mdv2 = {
+            "Basic": "🟢 *Basic Plan Details*\nUp to 2 MT4 or MT5 terminals \(2 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 2 GB\n• *vCPU:* 1\n• *Storage SSD:* 30 GB\n• *Bandwidth:* 300 GB\n• *OS:* Windows",
+            "Premium": "🔵 *Premium Plan Details*\nUp to 6 MT4 or MT5 terminals \(6 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 4 GB\n• *vCPU:* 2\n• *Storage SSD:* 60 GB\n• *Bandwidth:* 500 GB\n• *OS:* Windows",
+            "Gold": "🟡 *Gold Plan Details*\nUp to 12 MT4 or MT5 terminals \(12 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 8 GB\n• *vCPU:* 4\n• *Storage SSD:* 100 GB\n• *Bandwidth:* 700 GB\n• *OS:* Windows",
+            "Platinum": "⚪ *Platinum Plan Details*\nUp to 18 MT4 or MT5 terminals \(18 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 16 GB\n• *vCPU:* 4\n• *Storage SSD:* 200 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows",
+            "Diamond": "💎 *Diamond Plan Details*\nUp to 38 MT4 or MT5 terminals \(38 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 32 GB\n• *vCPU:* 8\n• *Storage SSD:* 500 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows"
         }
 
-        text = details.get(tier, f"{tier} Plan Details")
-        text += "\n\n*Select your billing cycle below to proceed:*"
+        text = details_mdv2.get(tier, f"{tier} Plan Details")
 
-        try:
-            await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
-        except Exception:
-            pass
+        if any_offer:
+            offer_lines = ""
+            for p in tier_products:
+                if p.get('offer_price'):
+                    orig = int(p['price'])
+                    sale = int(p['offer_price'])
+                    dur = "1 Month" if p.get('duration') == 1 else "1 Year"
+                    offer_lines += f"\n~₹{orig:,}~ → ₹{sale:,} 🔥 \({dur}\)"
+            text += f"\n\n🔥 *Flash Sale Active\!*{offer_lines}\n\n*Select your billing cycle below:*"
+            try:
+                await query.edit_message_text(text, parse_mode="MarkdownV2", reply_markup=InlineKeyboardMarkup(keyboard))
+            except Exception as e:
+                logging.error(f"VPS tier offer display error: {e}")
+        else:
+            text += "\n\n*Select your billing cycle below to proceed:*"
+            try:
+                await query.edit_message_text(text, parse_mode="MarkdownV2", reply_markup=InlineKeyboardMarkup(keyboard))
+            except Exception as e:
+                logging.error(f"VPS tier display error: {e}")
 
     elif data.startswith("buy_product_"):
         parts = data.split("_")
@@ -1379,37 +1414,89 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     if not admin_username.startswith("@"):
         admin_username = f"@{admin_username}"
 
-    # Resolve price — if product price is in USD (≤ 5000), convert to INR live
+    # Resolve price — EA is USD (≤ 5000), VPS is INR. Detect active offer for strikethrough.
     raw_price = product['price'] if product else 0
+    offer_price = product.get('offer_price') if product else None
+    offer_label = product.get('offer_label') if product else None
+    effective_price = offer_price if offer_price else raw_price
+    use_offer = bool(offer_price and offer_label)
+
+    def _esc(s):
+        """Escape MarkdownV2 special characters."""
+        for c in ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']:
+            s = str(s).replace(c, f'\\{c}')
+        return s
+
     if raw_price <= 5000:
+        # EA — USD pricing
         usd_inr = await get_usd_inr_rate()
-        price_inr = round(raw_price * usd_inr)
-        price_info = (
-            f"💰 Price: ${raw_price}\n"
-            f"ℹ️ _Note: The final INR amount will be calculated based on the live USD/INR exchange rate on the actual day you make your payment (Today's rate: ₹{usd_inr:.2f} = ₹{price_inr:,})._"
-        )
+        price_inr = round(effective_price * usd_inr)
+        if use_offer:
+            orig_inr = round(raw_price * usd_inr)
+            summary = (
+                f"📋 *ORDER SUMMARY*\n\n"
+                f"Order ID: \\#ORD\\-{order['id']}\n"
+                f"👤 Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
+                f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
+                f"🔑 MT5 ID: `{mt5_id}`\n"
+                f"📦 Plan: {_esc(product['name'] if product else 'Unknown')}\n\n"
+                f"{_esc(offer_label)} — *Limited Time\\!*\n"
+                f"💰 Price: ~\\${int(raw_price)}~ → \\${int(effective_price)}\n"
+                f"ℹ️ _Today's rate: ₹{_esc(f'{usd_inr:.2f}')} \\= ₹{price_inr:,} \\(was ₹{orig_inr:,}\\)_\n\n"
+                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"Please contact the admin to confirm your order\\.\n"
+                f"Your EA will only be generated after admin approval\\."
+            )
+            parse_mode_to_use = "MarkdownV2"
+        else:
+            summary = (
+                f"📋 *ORDER SUMMARY*\n\n"
+                f"Order ID: #ORD-{order['id']}\n"
+                f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+                f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+                f"🔑 MT5 ID: `{mt5_id}`\n"
+                f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
+                f"💰 Price: ${int(raw_price)}\n"
+                f"ℹ️ _Note: The final INR amount will be calculated based on the live USD/INR exchange rate on the actual day you make your payment (Today's rate: ₹{usd_inr:.2f} = ₹{price_inr:,})._\n\n"
+                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"Please contact the admin to discuss and confirm your order.\n"
+                f"Your EA will only be generated after admin approval."
+            )
+            parse_mode_to_use = "Markdown"
     else:
-        price_info = f"💰 Price: ₹{raw_price:,.0f}"
-    
-    summary = (
-        f"📋 *ORDER SUMMARY*\n\n"
-        f"Order ID: #ORD-{order['id']}\n"
-        f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
-        f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-        f"🔑 MT5 ID: `{mt5_id}`\n"
-        f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
-        f"{price_info}\n\n"
-        f"Status: 🕐 Pending Admin Approval\n\n"
-        f"Please contact the admin to discuss and confirm your order.\n"
-        f"Your EA will only be generated after admin approval."
-    )
-    
-    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
-    
+        # VPS — INR pricing
+        if use_offer:
+            summary = (
+                f"📋 *ORDER SUMMARY*\n\n"
+                f"Order ID: \\#ORD\\-{order['id']}\n"
+                f"👤 Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
+                f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
+                f"📦 Plan: {_esc(product['name'] if product else 'Unknown')}\n\n"
+                f"{_esc(offer_label)} — *Limited Time\\!*\n"
+                f"💰 Price: ~₹{int(raw_price):,}~ → ₹{int(effective_price):,}\n\n"
+                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"Please contact the admin to confirm your order\\."
+            )
+            parse_mode_to_use = "MarkdownV2"
+        else:
+            summary = (
+                f"📋 *ORDER SUMMARY*\n\n"
+                f"Order ID: #ORD-{order['id']}\n"
+                f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+                f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+                f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
+                f"💰 Price: ₹{int(raw_price):,}\n\n"
+                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"Please contact the admin to confirm your order."
+            )
+            parse_mode_to_use = "Markdown"
+
+    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}\")] ]
+
     if update.message:
-        await update.message.reply_text(summary, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.message.reply_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
     else:
-        await update.callback_query.edit_message_text(summary, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.callback_query.edit_message_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
         
     admin_chat_id = os.getenv("ADMIN_CHAT_ID")
     if admin_chat_id:
