@@ -2,6 +2,8 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, 
   ShoppingCart, 
@@ -38,7 +40,34 @@ const navigation = [
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [utcTime, setUtcTime] = useState<string>('');
+  const [utcTime, setUtcTime] = useState<string>('');
+
+  const { data: allOrders = [] } = useQuery({
+    queryKey: ['admin-orders'],
+    queryFn: async () => {
+      const { data } = await api.get('/api/v1/admin/all_orders');
+      return data;
+    },
+    refetchInterval: 2000
+  });
+
+  const { data: vpsOrders = [] } = useQuery({
+    queryKey: ['admin-vps-orders'],
+    queryFn: async () => {
+      const { data } = await api.get('/api/v1/admin/vps-orders');
+      return data;
+    },
+    refetchInterval: 2000
+  });
+
+  const pendingEaCount = allOrders.filter((o: any) => o.status === 'pending_admin_approval' && o.order_type === 'EA').length;
+  const pendingVpsCount = vpsOrders.filter((v: any) => v.status === 'pending').length;
+
+  const getBadgeCount = (name: string) => {
+    if (name === 'EA Approvals') return pendingEaCount;
+    if (name === 'VPS') return pendingVpsCount;
+    return 0;
+  };
 
   // IST live clock (UTC+5:30)
   useEffect(() => {
@@ -114,18 +143,26 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <nav className="flex-1 overflow-y-auto py-4 md:py-6 px-3 space-y-1 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent pb-10">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
+            const badgeCount = getBadgeCount(item.name);
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center space-x-3 px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg transition-colors ${
+                className={`flex items-center justify-between px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg transition-colors ${
                   isActive 
                     ? 'bg-blue-600/10 text-blue-400' 
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
                 }`}
               >
-                <item.icon size={20} />
-                <span className="font-medium">{item.name}</span>
+                <div className="flex items-center space-x-3">
+                  <item.icon size={20} />
+                  <span className="font-medium">{item.name}</span>
+                </div>
+                {badgeCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                    {badgeCount}
+                  </span>
+                )}
               </Link>
             );
           })}
