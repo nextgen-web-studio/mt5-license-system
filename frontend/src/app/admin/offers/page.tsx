@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Loader2, Plus, Trash2, ToggleLeft, ToggleRight, Tag } from 'lucide-react';
+import { Loader2, Plus, Trash2, ToggleLeft, ToggleRight, Tag, ArrowRight } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/app/providers';
 
@@ -174,7 +174,7 @@ export default function OffersPage() {
                   </p>
                   <div className="flex items-center gap-2 mt-0.5 text-sm">
                     <span className="line-through text-neutral-500">{product?.type === 'EA' ? `$${product?.price}` : `₹${product?.price?.toLocaleString('en-IN')}`}</span>
-                    <span className="text-neutral-500">→</span>
+                    <ArrowRight size={14} className="text-neutral-500" />
                     <span className="text-orange-400 font-bold">{product?.type === 'EA' ? `$${offer.offer_price}` : `₹${offer.offer_price?.toLocaleString('en-IN')}`}</span>
                   </div>
                   <p className="text-neutral-500 text-xs mt-2.5 font-mono bg-neutral-950/50 inline-block px-2 py-1 rounded border border-neutral-800/50">
