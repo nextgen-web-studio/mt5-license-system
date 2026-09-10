@@ -78,12 +78,12 @@ export default function OffersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2"><Tag size={24} className="text-orange-400" /> Flash Sale Offers</h1>
           <p className="text-neutral-400 text-sm mt-1">Create limited-time discounts on EA or VPS products. Offers appear automatically in the Telegram bot.</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-400 text-white rounded-lg font-medium transition-colors text-sm">
+        <button onClick={() => setShowForm(!showForm)} className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-400 text-white rounded-lg font-medium transition-colors text-sm w-full sm:w-auto shrink-0">
           <Plus size={16} /> New Offer
         </button>
       </div>
@@ -160,29 +160,37 @@ export default function OffersPage() {
             const active = isActive(offer);
             const expired = new Date(offer.expires_at) < new Date();
             return (
-              <div key={offer.id} className={`bg-neutral-900 border rounded-xl p-4 flex items-center justify-between gap-4 ${active ? 'border-orange-500/40' : expired ? 'border-neutral-800 opacity-60' : 'border-neutral-800'}`}>
+              <div key={offer.id} className={`bg-neutral-900 border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${active ? 'border-orange-500/40' : expired ? 'border-neutral-800 opacity-60' : 'border-neutral-800'}`}>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-white font-semibold text-sm">{offer.offer_label}</span>
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <span className="text-white font-semibold text-base">{offer.offer_label}</span>
                     {active && <span className="px-2 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded text-xs font-medium">🔥 LIVE</span>}
                     {expired && <span className="px-2 py-0.5 bg-neutral-700/50 text-neutral-500 border border-neutral-700 rounded text-xs font-medium">Expired</span>}
                     {!active && !expired && offer.active && <span className="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-xs font-medium">Scheduled</span>}
                     {!offer.active && <span className="px-2 py-0.5 bg-neutral-700/50 text-neutral-500 border border-neutral-700 rounded text-xs font-medium">Disabled</span>}
                   </div>
-                  <p className="text-neutral-400 text-xs mt-1">
-                    {product?.type} — {product?.name} &nbsp;|&nbsp;
-                    <span className="line-through text-neutral-500">{product?.type === 'EA' ? `$${product?.price}` : `₹${product?.price?.toLocaleString('en-IN')}`}</span>
-                    <span className="text-orange-400 font-semibold ml-1">→ {product?.type === 'EA' ? `$${offer.offer_price}` : `₹${offer.offer_price?.toLocaleString('en-IN')}`}</span>
+                  <p className="text-neutral-300 text-sm font-medium">
+                    {product?.type} — {product?.name}
                   </p>
-                  <p className="text-neutral-600 text-xs mt-0.5">{formatDate(offer.starts_at)} → {formatDate(offer.expires_at)}</p>
+                  <p className="text-neutral-400 text-sm mt-0.5">
+                    <span className="line-through text-neutral-500 mr-2">{product?.type === 'EA' ? `$${product?.price}` : `₹${product?.price?.toLocaleString('en-IN')}`}</span>
+                    <span className="text-orange-400 font-bold">→ {product?.type === 'EA' ? `$${offer.offer_price}` : `₹${offer.offer_price?.toLocaleString('en-IN')}`}</span>
+                  </p>
+                  <p className="text-neutral-500 text-xs mt-2.5 font-mono bg-neutral-950/50 inline-block px-2 py-1 rounded border border-neutral-800/50">
+                    {formatDate(offer.starts_at)} <span className="text-neutral-600 px-1">to</span> {formatDate(offer.expires_at)}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center justify-end sm:justify-start gap-4 shrink-0 border-t sm:border-t-0 border-neutral-800 pt-3 sm:pt-0 mt-1 sm:mt-0">
                   <button onClick={() => toggleMutation.mutate({ id: offer.id, active: !offer.active })}
-                    className={`transition-colors ${offer.active ? 'text-orange-400 hover:text-orange-300' : 'text-neutral-500 hover:text-white'}`}
+                    className={`flex items-center gap-2 transition-colors ${offer.active ? 'text-orange-400 hover:text-orange-300' : 'text-neutral-500 hover:text-white'}`}
                     title={offer.active ? 'Disable' : 'Enable'}>
-                    {offer.active ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                    <span className="text-xs font-medium sm:hidden">{offer.active ? 'Active' : 'Disabled'}</span>
+                    {offer.active ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
                   </button>
-                  <button onClick={() => deleteMutation.mutate(offer.id)} className="text-red-500/60 hover:text-red-400 transition-colors"><Trash2 size={16} /></button>
+                  <div className="w-px h-6 bg-neutral-800 hidden sm:block"></div>
+                  <button onClick={() => deleteMutation.mutate(offer.id)} className="flex items-center gap-2 text-red-500/60 hover:text-red-400 transition-colors p-1 rounded-md hover:bg-red-500/10">
+                    <Trash2 size={18} />
+                  </button>
                 </div>
               </div>
             );
