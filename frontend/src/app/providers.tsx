@@ -52,9 +52,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         {children}
         
         {toastState.visible && (
-          <div className="fixed bottom-6 right-6 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300">
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border ${
-              toastState.type === 'error' ? 'bg-red-950/90 border-red-900/50 text-red-200' :
+            <div className="fixed z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300 bottom-4 left-4 right-4 sm:left-auto sm:bottom-6 sm:right-6 sm:w-auto">
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border ${
+                toastState.type === 'error' ? 'bg-red-950/90 border-red-900/50 text-red-200' :
               toastState.type === 'success' ? 'bg-emerald-950/90 border-emerald-900/50 text-emerald-200' :
               'bg-neutral-900/90 border-neutral-800 text-neutral-200'
             } backdrop-blur-md`}>
