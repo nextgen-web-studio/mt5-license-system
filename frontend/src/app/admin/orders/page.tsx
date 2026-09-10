@@ -205,8 +205,8 @@ export default function OrdersPage() {
             queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
             queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
             queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
-          } catch(e) {
-            toast('Failed to delete. Make sure your API is fully deployed!', 'error');
+          } catch(e: any) {
+            toast('Failed to delete: ' + (e.response?.data?.detail || e.message), 'error');
           }
         }}
         onCancel={() => {
