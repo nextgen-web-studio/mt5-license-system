@@ -375,3 +375,27 @@ async def get_user_vps(telegram_id: str):
         except Exception:
             pass
     return []
+
+async def save_admin_message(key: str, message_id: int):
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.post(f"${BASE_URL}/admin/bot-message-map", json={"key": str(key), "message_id": message_id}, headers=_admin_headers())
+        except:
+            pass
+
+async def get_admin_message(key: str):
+    async with httpx.AsyncClient() as client:
+        try:
+            res = await client.get(f"${BASE_URL}/admin/bot-message-map/{key}", headers=_admin_headers())
+            if res.status_code == 200:
+                return res.json().get("message_id")
+        except:
+            pass
+    return None
+
+async def delete_admin_message(key: str):
+    async with httpx.AsyncClient() as client:
+        try:
+            await client.delete(f"${BASE_URL}/admin/bot-message-map/{key}", headers=_admin_headers())
+        except:
+            pass
