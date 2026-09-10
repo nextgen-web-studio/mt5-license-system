@@ -172,10 +172,11 @@ export default function OffersPage() {
                   <p className="text-neutral-300 text-sm font-medium">
                     {product?.type} — {product?.name}
                   </p>
-                  <p className="text-neutral-400 text-sm mt-0.5">
-                    <span className="line-through text-neutral-500 mr-2">{product?.type === 'EA' ? `$${product?.price}` : `₹${product?.price?.toLocaleString('en-IN')}`}</span>
-                    <span className="text-orange-400 font-bold">→ {product?.type === 'EA' ? `$${offer.offer_price}` : `₹${offer.offer_price?.toLocaleString('en-IN')}`}</span>
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5 text-sm">
+                    <span className="line-through text-neutral-500">{product?.type === 'EA' ? `$${product?.price}` : `₹${product?.price?.toLocaleString('en-IN')}`}</span>
+                    <span className="text-neutral-500">→</span>
+                    <span className="text-orange-400 font-bold">{product?.type === 'EA' ? `$${offer.offer_price}` : `₹${offer.offer_price?.toLocaleString('en-IN')}`}</span>
+                  </div>
                   <p className="text-neutral-500 text-xs mt-2.5 font-mono bg-neutral-950/50 inline-block px-2 py-1 rounded border border-neutral-800/50">
                     {formatDate(offer.starts_at)} <span className="text-neutral-600 px-1">to</span> {formatDate(offer.expires_at)}
                   </p>
