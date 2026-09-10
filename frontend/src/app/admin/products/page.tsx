@@ -413,7 +413,7 @@ export default function ProductsPage() {
             // Optimistic UI update for instant response
             queryClient.setQueryData(['admin-products'], (old: any) => old?.filter((item: any) => item.id !== targetId));
             await api.delete(`/api/v1/products/${targetId}`);
-            toast('Product deleted successfully', 'success');
+            toast('Product deleted successfully', 'delete');
             queryClient.invalidateQueries({ queryKey: ['admin-products'] });
           } catch(e: any) {
             toast('Failed to delete: ' + (e.response?.data?.detail || e.message), 'error');

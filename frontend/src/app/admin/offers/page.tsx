@@ -67,7 +67,7 @@ export default function OffersPage() {
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => { await api.delete(`/api/v1/offers/${id}`); },
     onSuccess: () => {
-      toast('Offer deleted', 'success');
+      toast('Offer deleted', 'delete');
       queryClient.invalidateQueries({ queryKey: ['admin-offers'] });
     },
     onError: (err: any) => toast('Error: ' + (err.response?.data?.detail || err.message), 'error'),
