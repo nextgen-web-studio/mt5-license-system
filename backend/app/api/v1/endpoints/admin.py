@@ -706,3 +706,32 @@ async def get_vps_info(vps_id: int, db: AsyncSession = Depends(get_db)):
         "product_name": prod.name,
         "product_price": prod.price
     }
+class BotMessageMapData(BaseModel):
+    key: str
+    message_id: int
+
+@router.post("/bot-message-map")
+async def save_bot_message_map(data: BotMessageMapData, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import text
+    await db.execute(
+        text("INSERT INTO bot_message_map (key, message_id) VALUES (:key, :message_id) ON CONFLICT (key) DO UPDATE SET message_id = EXCLUDED.message_id"),
+        {"key": data.key, "message_id": data.message_id}
+    )
+    await db.commit()
+    return {"status": "success"}
+
+@router.get("/bot-message-map/{key}")
+async def get_bot_message_map(key: str, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import text
+    res = await db.execute(text("SELECT message_id FROM bot_message_map WHERE key = :key"), {"key": key})
+    row = res.fetchone()
+    if row:
+        return {"message_id": row[0]}
+    return {"message_id": None}
+
+@router.delete("/bot-message-map/{key}")
+async def delete_bot_message_map(key: str, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import text
+    await db.execute(text("DELETE FROM bot_message_map WHERE key = :key"), {"key": key})
+    await db.commit()
+    return {"status": "success"}

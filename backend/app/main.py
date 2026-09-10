@@ -26,6 +26,13 @@ async def lifespan(app: FastAPI):
                 await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR;"))
                 await session.execute(sa.text("ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation VARCHAR;"))
                 await session.execute(sa.text("""
+                    CREATE TABLE IF NOT EXISTS bot_message_map (
+                        key VARCHAR PRIMARY KEY,
+                        message_id BIGINT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                await session.execute(sa.text("""
                     CREATE TABLE IF NOT EXISTS offers (
                         id SERIAL PRIMARY KEY,
                         product_id INTEGER NOT NULL REFERENCES products(id),

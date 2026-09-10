@@ -133,7 +133,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # PREVENT RACE CONDITION: The backend sends a webhook to clear admin buttons when an order is approved.
         # Since we are approving this from Telegram itself, we must remove it from ADMIN_MESSAGES
         # before calling approve_order() so the webhook ignores this message and doesn't overwrite our new buttons!
-        ADMIN_MESSAGES.pop(order_id, None)
+        await delete_admin_message(str(order_id))
         
         from utils.api_client import approve_order, reject_order
         
@@ -866,8 +866,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
             try:
                 sent = await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
-                ADMIN_MESSAGES[f"BC_{request_id}"] = sent.message_id
-                save_admin_messages()
+                await save_admin_message(f"BC_{request_id}", sent.message_id)
             except Exception as e:
                 logging.error(f"Failed to notify admin: {e}")
                 
@@ -883,7 +882,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         admin_id = os.getenv("ADMIN_CHAT_ID")
         action = data.split("_")[0]
         request_id = int(data.split("_")[2])
-        ADMIN_MESSAGES.pop(f"BC_{request_id}", None)
+        await delete_admin_message(f"BC_{request_id}")
         if str(update.effective_user.id) != str(admin_id):
             await query.answer("You are not authorized to perform this action.", show_alert=True)
             return
@@ -1351,8 +1350,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             try:
                 sent = await context.bot.send_photo(chat_id=vps_admin_id, photo=photo_file_id, caption=caption, parse_mode="Markdown", reply_markup=reply_markup)
-                ADMIN_MESSAGES[vps_order_id] = sent.message_id
-                save_admin_messages()
+                await save_admin_message(str(vps_order_id), sent.message_id)
             except Exception as e:
                 logging.error(f"Failed to send photo to VPS admin: {e}")
             
@@ -1527,8 +1525,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup(admin_kb)
             )
-            ADMIN_MESSAGES[order['id']] = sent.message_id
-            save_admin_messages()
+            await save_admin_message(str(order['id']), sent.message_id)
         except Exception as e:
             logging.error(f"Failed to notify admin: {e}")
             
@@ -2091,27 +2088,7 @@ async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 import json
 
-import json
-
-ADMIN_MESSAGES_FILE = "admin_messages.json"
-
-def load_admin_messages():
-    try:
-        if os.path.exists(ADMIN_MESSAGES_FILE):
-            with open(ADMIN_MESSAGES_FILE, "r") as f:
-                return json.load(f)
-    except:
-        pass
-    return {}
-
-def save_admin_messages():
-    try:
-        with open(ADMIN_MESSAGES_FILE, "w") as f:
-            json.dump(ADMIN_MESSAGES, f)
-    except:
-        pass
-
-ADMIN_MESSAGES = load_admin_messages()
+from utils.api_client import save_admin_message, get_admin_message, delete_admin_message
 
 
 class DummyHandler(BaseHTTPRequestHandler):
@@ -2213,9 +2190,8 @@ class DummyHandler(BaseHTTPRequestHandler):
         loop.run_until_complete(self.async_clear_bc_admin_buttons(request_id, action))
         
     async def async_clear_bc_admin_buttons(self, request_id, action):
-        global ADMIN_MESSAGES
         import httpx
-        msg_id = ADMIN_MESSAGES.get(f"BC_{request_id}")
+        msg_id = await get_admin_message(f"BC_{request_id}")
         if msg_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
             admin_chat_id = os.getenv("ADMIN_CHAT_ID")
@@ -2243,9 +2219,8 @@ class DummyHandler(BaseHTTPRequestHandler):
         loop.run_until_complete(self.async_clear_admin_buttons(order_id, action))
         
     async def async_clear_admin_buttons(self, order_id, action):
-        global ADMIN_MESSAGES
         import httpx
-        msg_id = ADMIN_MESSAGES.get(str(order_id)) or ADMIN_MESSAGES.get(int(order_id))
+        msg_id = await get_admin_message(str(order_id))
         if msg_id:
             bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
             admin_chat_id = os.getenv("ADMIN_CHAT_ID")
