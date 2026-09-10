@@ -983,12 +983,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if plan.get('offer_price') and plan.get('offer_label'):
                 orig = int(plan['price'])
                 sale = int(plan['offer_price'])
-                label = plan['offer_label'].replace('!', '\!').replace('.', '\.')
-                plan_name = plan['name'].replace('-', '\-').replace('(', '\(').replace(')', '\)')
+                label = plan['offer_label'].replace('!', '\\!').replace('.', '\\.').replace('-', '\\-')
+                plan_name = plan['name'].replace('-', '\\-').replace('(', '\\(').replace(')', '\\)')
                 plan_heading = (
                     f"📦 *{plan_name}*\n\n"
-                    f"{label} — *Limited Time\!*\n"
-                    f"💰 Price: ~\${orig}~ → \${sale}"
+                    f"{label} — *Limited Time\\!*\n"
+                    f"💰 Price: ~\\${orig}~ → \\${sale}"
                 )
                 await query.edit_message_text(
                     f"{plan_heading}\n\nPlease enter your *MT5 ID* to continue:",
@@ -1112,11 +1112,11 @@ Press Proceed below to continue to payment.'''
         keyboard.append([InlineKeyboardButton("🔙 Back to Tiers", callback_data="buy_vps")])
 
         details_mdv2 = {
-            "Basic": "🟢 *Basic Plan Details*\nUp to 2 MT4 or MT5 terminals \(2 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 2 GB\n• *vCPU:* 1\n• *Storage SSD:* 30 GB\n• *Bandwidth:* 300 GB\n• *OS:* Windows",
-            "Premium": "🔵 *Premium Plan Details*\nUp to 6 MT4 or MT5 terminals \(6 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 4 GB\n• *vCPU:* 2\n• *Storage SSD:* 60 GB\n• *Bandwidth:* 500 GB\n• *OS:* Windows",
-            "Gold": "🟡 *Gold Plan Details*\nUp to 12 MT4 or MT5 terminals \(12 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 8 GB\n• *vCPU:* 4\n• *Storage SSD:* 100 GB\n• *Bandwidth:* 700 GB\n• *OS:* Windows",
-            "Platinum": "⚪ *Platinum Plan Details*\nUp to 18 MT4 or MT5 terminals \(18 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 16 GB\n• *vCPU:* 4\n• *Storage SSD:* 200 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows",
-            "Diamond": "💎 *Diamond Plan Details*\nUp to 38 MT4 or MT5 terminals \(38 Accounts\)\.\n\n*Hardware Specs:*\n• *RAM:* 32 GB\n• *vCPU:* 8\n• *Storage SSD:* 500 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows"
+            "Basic": "🟢 *Basic Plan Details*\nUp to 2 MT4 or MT5 terminals \\(2 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 2 GB\n• *vCPU:* 1\n• *Storage SSD:* 30 GB\n• *Bandwidth:* 300 GB\n• *OS:* Windows",
+            "Premium": "🔵 *Premium Plan Details*\nUp to 6 MT4 or MT5 terminals \\(6 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 4 GB\n• *vCPU:* 2\n• *Storage SSD:* 60 GB\n• *Bandwidth:* 500 GB\n• *OS:* Windows",
+            "Gold": "🟡 *Gold Plan Details*\nUp to 12 MT4 or MT5 terminals \\(12 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 8 GB\n• *vCPU:* 4\n• *Storage SSD:* 100 GB\n• *Bandwidth:* 700 GB\n• *OS:* Windows",
+            "Platinum": "⚪ *Platinum Plan Details*\nUp to 18 MT4 or MT5 terminals \\(18 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 16 GB\n• *vCPU:* 4\n• *Storage SSD:* 200 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows",
+            "Diamond": "💎 *Diamond Plan Details*\nUp to 38 MT4 or MT5 terminals \\(38 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 32 GB\n• *vCPU:* 8\n• *Storage SSD:* 500 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows"
         }
 
         text = details_mdv2.get(tier, f"{tier} Plan Details")
@@ -1128,8 +1128,8 @@ Press Proceed below to continue to payment.'''
                     orig = int(p['price'])
                     sale = int(p['offer_price'])
                     dur = "1 Month" if p.get('duration') == 1 else "1 Year"
-                    offer_lines += f"\n~₹{orig:,}~ → ₹{sale:,} 🔥 \({dur}\)"
-            text += f"\n\n🔥 *Flash Sale Active\!*{offer_lines}\n\n*Select your billing cycle below:*"
+                    offer_lines += f"\n~₹{orig:,}~ → ₹{sale:,} 🔥 \\({dur}\\)"
+            text += f"\n\n🔥 *Flash Sale Active\\!*{offer_lines}\n\n*Select your billing cycle below:*"
             try:
                 await query.edit_message_text(text, parse_mode="MarkdownV2", reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception as e:
@@ -1491,7 +1491,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             )
             parse_mode_to_use = "Markdown"
 
-    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}\")] ]
+    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")]]
 
     if update.message:
         await update.message.reply_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
