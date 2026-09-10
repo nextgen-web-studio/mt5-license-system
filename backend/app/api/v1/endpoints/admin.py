@@ -42,19 +42,38 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
             
     usd_inr = _cached_usd_inr
 
+    # Fetch all offers for historical pricing
+    from app.models import Offer
+    from datetime import timezone
+    offer_result = await db.execute(select(Offer))
+    all_offers = offer_result.scalars().all()
+
     # One time revenue: sum of product prices for delivered/paid one-time orders
     one_time_revenue = 0
     res_orders = await db.execute(
-        select(Product.price, Product.type)
+        select(Order, Product)
         .join(Order, Order.product_id == Product.id)
         .filter(Order.status.in_(["delivered", "paid", "active", "completed"]))
         .filter(Order.installment_enabled == False)
     )
-    for price, p_type in res_orders:
-        if p_type == 'EA':
-            one_time_revenue += int(price * usd_inr)
+    for order, product in res_orders:
+        base_price = product.price
+        order_time = order.created_at
+        if order_time and order_time.tzinfo is None:
+            order_time = order_time.replace(tzinfo=timezone.utc)
+            
+        for o in all_offers:
+            if o.product_id == product.id and o.active:
+                starts = o.starts_at if o.starts_at.tzinfo else o.starts_at.replace(tzinfo=timezone.utc)
+                expires = o.expires_at if o.expires_at.tzinfo else o.expires_at.replace(tzinfo=timezone.utc)
+                if order_time and starts <= order_time <= expires:
+                    base_price = o.offer_price
+                    break
+
+        if product.type == 'EA':
+            one_time_revenue += int(base_price * usd_inr)
         else:
-            one_time_revenue += price
+            one_time_revenue += int(base_price)
             
     # Installment revenue
     from app.models import InstallmentPayment
@@ -169,6 +188,11 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
             
     usd_inr = _cached_usd_inr
 
+    from app.models import Offer
+    from datetime import timezone
+    offer_result = await db.execute(select(Offer))
+    all_offers = offer_result.scalars().all()
+
     result = await db.execute(
         select(Order, Product, User)
         .join(Product, Order.product_id == Product.id)
@@ -178,7 +202,20 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
     rows = result.all()
     orders = []
     for order, product, user in rows:
-        amount = int(product.price * usd_inr) if product.type == 'EA' else product.price
+        base_price = product.price
+        order_time = order.created_at
+        if order_time and order_time.tzinfo is None:
+            order_time = order_time.replace(tzinfo=timezone.utc)
+        
+        for o in all_offers:
+            if o.product_id == product.id and o.active:
+                starts = o.starts_at if o.starts_at.tzinfo else o.starts_at.replace(tzinfo=timezone.utc)
+                expires = o.expires_at if o.expires_at.tzinfo else o.expires_at.replace(tzinfo=timezone.utc)
+                if order_time and starts <= order_time <= expires:
+                    base_price = o.offer_price
+                    break
+
+        amount = int(base_price * usd_inr) if product.type == 'EA' else int(base_price)
         orders.append({
             "id": order.id,
             "product": product.name,
