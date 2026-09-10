@@ -224,6 +224,7 @@ async def get_all_orders_admin(db: AsyncSession = Depends(get_db)):
             "status": order.status,
             "date": order.created_at,
             "is_renewal": bool(order.vps_id) and product.type == "VPS",
+            "order_type": order.order_type,
             "mt5_id": getattr(order, 'mt5_id', None),
             "is_broker_change": False
         })
