@@ -52,8 +52,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         {children}
         
         {toastState.visible && (
-            <div className="fixed z-[9999] animate-in slide-in-from-top-5 fade-in duration-300 top-4 right-4 sm:top-6 sm:right-6 w-auto max-w-[90vw]">
-              <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border ${
+            <div className="fixed z-[9999] animate-in slide-in-from-top-5 fade-in duration-300 top-20 right-4 sm:top-6 sm:right-6 max-w-[calc(100vw-2rem)] flex justify-end pointer-events-none">
+              <div className={`pointer-events-auto inline-flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border ${
                 toastState.type === 'error' ? 'bg-red-950/90 border-red-900/50 text-red-200' :
                 toastState.type === 'delete' ? 'bg-red-950/90 border-red-900/50 text-red-200' :
                 toastState.type === 'success' ? 'bg-emerald-950/90 border-emerald-900/50 text-emerald-200' :
