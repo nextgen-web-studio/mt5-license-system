@@ -23,7 +23,7 @@ export default function EaApprovalsPage() {
 
   const { data: orders = [], isLoading, isFetching, error } = useQuery({
     queryKey: ['admin-ea-orders'],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
       
       placeholderData: keepPreviousData,
     queryFn: async () => {
@@ -68,6 +68,7 @@ export default function EaApprovalsPage() {
   };
 
   const createInstallmentMutation = useMutation({
+    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
     mutationFn: async () => {
       if (selectedOrder.status === 'pending_admin_approval') {
         await api.post(`/api/v1/orders/${selectedOrder.id}/approve`);
@@ -87,6 +88,7 @@ export default function EaApprovalsPage() {
       setApproveModalOpen(false);
       setInstallmentMode(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (err: any) => {
       toast("Error creating installment: " + (err.response?.data?.detail || err.message), "error");
@@ -94,6 +96,7 @@ export default function EaApprovalsPage() {
   });
 
   const approveBrokerChangeMutation = useMutation({
+    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
     mutationFn: async (order: any) => {
       const { data } = await api.post(`/api/v1/licenses/broker-change/${order.real_id}/approve`);
       return data;
@@ -102,6 +105,7 @@ export default function EaApprovalsPage() {
       toast("Broker Change Approved & Compiling!", "success");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (err: any) => {
       toast("Error approving broker change: " + (err.response?.data?.detail || err.message), "error");
@@ -109,6 +113,7 @@ export default function EaApprovalsPage() {
   });
 
   const rejectBrokerChangeMutation = useMutation({
+    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
     mutationFn: async (order: any) => {
       const { data } = await api.post(`/api/v1/licenses/broker-change/${order.real_id}/reject`);
       return data;
@@ -117,6 +122,7 @@ export default function EaApprovalsPage() {
       toast("Broker Change Rejected", "success");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (err: any) => {
       toast("Error rejecting broker change: " + (err.response?.data?.detail || err.message), "error");
@@ -124,6 +130,7 @@ export default function EaApprovalsPage() {
   });
 
   const rejectEaMutation = useMutation({
+    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
     mutationFn: async (order: any) => {
       const { data } = await api.post(`/api/v1/orders/${order.id}/reject`);
       return data;
@@ -132,6 +139,7 @@ export default function EaApprovalsPage() {
       toast("Order Rejected", "success");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (err: any) => {
       toast("Error rejecting order: " + (err.response?.data?.detail || err.message), "error");
@@ -139,6 +147,7 @@ export default function EaApprovalsPage() {
   });
 
   const generateMutation = useMutation({
+    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
     mutationFn: async (order: any) => {
       if (order.status === 'pending_admin_approval') {
         await api.post(`/api/v1/orders/${order.id}/approve`);
@@ -153,6 +162,7 @@ export default function EaApprovalsPage() {
       toast("Lifetime License Generated & Compiling!", "success");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     },
     onError: (err: any) => {
       toast("Error generating license: " + (err.response?.data?.detail || err.message), "error");
@@ -525,3 +535,5 @@ export default function EaApprovalsPage() {
     </div>
   );
 }
+
+

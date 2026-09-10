@@ -18,7 +18,7 @@ export default function OrdersPage() {
   const { data: orders = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-orders'],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {
@@ -202,6 +202,8 @@ export default function OrdersPage() {
             queryClient.setQueryData(['admin-orders'], (old: any) => old?.filter((item: any) => item.id !== targetId));
             await api.delete(`/api/v1/orders/${targetId}`);
             queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+            queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
+            queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
           } catch(e) {
             toast('Failed to delete. Make sure your API is fully deployed!', 'error');
           }
@@ -215,4 +217,6 @@ export default function OrdersPage() {
 </div>
   );
 }
+
+
 

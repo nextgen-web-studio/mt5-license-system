@@ -8,7 +8,7 @@ export default function CompilerPage() {
   const { data: compilerJobs = [], isLoading, isFetching, error, refetch } = useQuery({
     
     queryKey: ['admin-compiler-jobs'],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {
@@ -157,3 +157,4 @@ export default function CompilerPage() {
     </div>
   );
 }
+

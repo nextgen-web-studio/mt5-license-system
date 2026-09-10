@@ -99,7 +99,7 @@ export default function VpsOrdersPage() {
 
   const { data: vpsOrders = [], isLoading, isFetching, error } = useQuery({
     queryKey: ['admin-vps-orders'],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {
@@ -119,6 +119,7 @@ export default function VpsOrdersPage() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       if (data?.warning) {
         toast(`VPS provisioned in DB ✅ — but Telegram notification failed: ${data.warning}`, "error");
       } else {
@@ -157,10 +158,12 @@ export default function VpsOrdersPage() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
     }
   });
 
   const messageMutation = useMutation({
+    onMutate: () => setMsgModalOpen(false),
     mutationFn: async ({ id, message }: { id: number, message: string }) => {
       const { data } = await api.post(`/api/v1/admin/vps-orders/${id}/message`, { message });
       return data;
@@ -328,6 +331,7 @@ export default function VpsOrdersPage() {
                                   api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                                     toast("Renewal Approved!", "success");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to approve", "error"));
                                 }}
                                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
@@ -339,6 +343,7 @@ export default function VpsOrdersPage() {
                                   api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
                                     toast("Renewal Rejected", "success");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to reject", "error"));
                                 }}
                                 className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded text-xs font-medium transition-colors"
@@ -447,6 +452,7 @@ export default function VpsOrdersPage() {
                                   api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                                     toast("Renewal Approved!", "success");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to approve", "error"));
                                 }}
                                 className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-medium transition-colors"
@@ -458,6 +464,7 @@ export default function VpsOrdersPage() {
                                   api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
                                     toast("Renewal Rejected", "success");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to reject", "error"));
                                 }}
                                 className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/30 rounded text-xs font-medium transition-colors"
@@ -561,6 +568,7 @@ export default function VpsOrdersPage() {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                               toast("Renewal Approved!", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to approve", "error"));
                           }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
@@ -571,6 +579,7 @@ export default function VpsOrdersPage() {
                             api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
                               toast("Renewal Rejected", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to reject", "error"));
                           }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors">
@@ -665,6 +674,7 @@ export default function VpsOrdersPage() {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                               toast("Renewal Approved!", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to approve", "error"));
                           }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
@@ -675,6 +685,7 @@ export default function VpsOrdersPage() {
                             api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
                               toast("Renewal Rejected", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to reject", "error"));
                           }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors">
@@ -808,3 +819,6 @@ export default function VpsOrdersPage() {
     </div>
   );
 }
+
+
+

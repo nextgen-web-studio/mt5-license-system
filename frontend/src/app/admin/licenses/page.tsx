@@ -17,7 +17,7 @@ export default function LicensesPage() {
   const { data: licenses = [], isLoading, isFetching, error } = useQuery({
     
     queryKey: ['admin-licenses'],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
     
       placeholderData: keepPreviousData,
     queryFn: async () => {
@@ -425,4 +425,5 @@ export default function LicensesPage() {
 </div>
   );
 }
+
 
