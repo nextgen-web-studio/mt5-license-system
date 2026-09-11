@@ -144,20 +144,22 @@ export default function CompilerPage() {
                     <span className="text-neutral-400">{new Date(job.created_at || Date.now()).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false })}</span>
                   </div>
                 </div>
-                <div className="bg-[#0a0a0a] border border-neutral-800/60 rounded-md p-2 mt-2">
-                  <span className="text-neutral-500 block text-[9px] uppercase tracking-wider mb-1 font-semibold">Console Output</span>
-                  <div className="font-mono text-[10px] max-h-20 overflow-y-auto whitespace-pre-wrap scrollbar-thin scrollbar-thumb-neutral-800">
-                    {job.error_message ? (
-                      <span className="text-red-400">{job.error_message}</span>
-                    ) : job.logs ? (
-                      <span className="text-neutral-400">{job.logs}</span>
-                    ) : (
-                      <span className="text-neutral-500">
-                        {job.status === 'completed' ? 'Build successful. Artifacts compiled without warnings.' : 'Awaiting compilation logs...'}
-                      </span>
-                    )}
+                {(job.error_message || job.logs || job.status !== 'completed') && (
+                  <div className="bg-[#0a0a0a] border border-neutral-800/60 rounded-md p-2 mt-2">
+                    <span className="text-neutral-500 block text-[9px] uppercase tracking-wider mb-1 font-semibold">Console Output</span>
+                    <div className="font-mono text-[10px] max-h-20 overflow-y-auto whitespace-pre-wrap scrollbar-thin scrollbar-thumb-neutral-800">
+                      {job.error_message ? (
+                        <span className="text-red-400">{job.error_message}</span>
+                      ) : job.logs ? (
+                        <span className="text-neutral-400">{job.logs}</span>
+                      ) : (
+                        <span className="text-neutral-500">
+                          {job.status === 'completed' ? 'Build successful. Artifacts compiled without warnings.' : 'Awaiting compilation logs...'}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))
           )}
