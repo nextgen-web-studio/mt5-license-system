@@ -34,7 +34,7 @@ def _safe_error_message(response) -> str:
 
     if detail and response.status_code < 500:
         return str(detail)
-    return "Something went wrong on our end. Please try again shortly or contact support."
+    return f"Something went wrong on our end (Status {response.status_code}). Please try again shortly or contact support."
 
 
 def _connection_error_message(e) -> str:
