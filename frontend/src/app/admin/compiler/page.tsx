@@ -1,10 +1,11 @@
 'use client';
 
-import { useQuery, keepPreviousData} from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData} from '@tanstack/react-query';
 import { Terminal, RefreshCcw, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function CompilerPage() {
+  const queryClient = useQueryClient();
   const { data: compilerJobs = [], isLoading, isFetching, error, refetch } = useQuery({
     
     queryKey: ['admin-compiler-jobs'],

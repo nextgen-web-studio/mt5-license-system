@@ -68,7 +68,7 @@ export default function EaApprovalsPage() {
   };
 
   const createInstallmentMutation = useMutation({
-    onMutate: async (arg) => { 
+    onMutate: async (arg: any) => { 
       setApproveModalOpen(false); 
       try { setInstallmentMode(false); } catch(e){}
       
@@ -113,7 +113,7 @@ export default function EaApprovalsPage() {
   });
 
   const approveBrokerChangeMutation = useMutation({
-    onMutate: async (arg) => { 
+    onMutate: async (arg: any) => { 
       setApproveModalOpen(false); 
       try { setInstallmentMode(false); } catch(e){}
       
@@ -147,7 +147,7 @@ export default function EaApprovalsPage() {
   });
 
   const rejectBrokerChangeMutation = useMutation({
-    onMutate: async (arg) => { 
+    onMutate: async (arg: any) => { 
       setApproveModalOpen(false); 
       try { setInstallmentMode(false); } catch(e){}
       
@@ -181,7 +181,7 @@ export default function EaApprovalsPage() {
   });
 
   const rejectEaMutation = useMutation({
-    onMutate: async (arg) => { 
+    onMutate: async (arg: any) => { 
       setApproveModalOpen(false); 
       try { setInstallmentMode(false); } catch(e){}
       
@@ -215,7 +215,7 @@ export default function EaApprovalsPage() {
   });
 
   const generateMutation = useMutation({
-    onMutate: async (arg) => { 
+    onMutate: async (arg: any) => { 
       setApproveModalOpen(false); 
       try { setInstallmentMode(false); } catch(e){}
       
