@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { data: compileJobs = [] } = useQuery({
     queryKey: ['admin-compile-jobs'],
     queryFn: async () => {
-      const { data } = await api.get('/api/v1/admin/jobs');
+      const { data } = await api.get('/api/v1/admin/compiler_jobs');
       return data;
     },
     refetchInterval: 5000
