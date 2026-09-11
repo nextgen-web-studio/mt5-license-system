@@ -2178,6 +2178,42 @@ class DummyHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(b"Error")
+        elif self.path == "/internal/compile-failed":
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                order_id = data.get('order_id')
+                job_id = data.get('job_id')
+                error_msg = data.get('error_message', 'Unknown error')
+                
+                admin_id = os.getenv("ADMIN_CHAT_ID")
+                if admin_id:
+                    async def send_fail_msg():
+                        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                        from telegram import Bot
+                        bot = Bot(token=bot_token)
+                        msg = (
+                            f"⚠️ *COMPILE JOB FAILED*\n\n"
+                            f"Order ID: #{order_id}\n"
+                            f"Job ID: #{job_id}\n\n"
+                            f"The automated compiler worker failed to compile this order. "
+                            f"Please check the error logs in the Admin Panel and retry the compile process."
+                        )
+                        await bot.send_message(chat_id=admin_id, text=msg, parse_mode="Markdown")
+                    
+                    import asyncio
+                    threading.Thread(target=lambda: asyncio.run(send_fail_msg()), daemon=True).start()
+                
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+            except Exception as e:
+                logging.error(f"Internal compile-failed error: {e}")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"Error")
         else:
             self.send_response(404)
             self.end_headers()
