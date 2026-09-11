@@ -71,7 +71,7 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
             u = u_res.scalar_one_or_none()
             if u and u.telegram_id:
                 from app.core.telegram_animator import animate_compiling
-                asyncio.create_task(animate_compiling(bot_token, u.telegram_id, lic.id))
+                background_tasks.add_task(animate_compiling, bot_token, u.telegram_id, lic.id, None)
         except Exception as e:
             print(f"Failed to send compiling notification: {e}")
     
@@ -155,8 +155,8 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
                             json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                         )
                     # Then trigger the animated compiling spinner
-                    from app.core.telegram_animator import animate_compiling
-                    asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
+                from app.core.telegram_animator import animate_compiling
+                background_tasks.add_task(animate_compiling, bot_token, user.telegram_id, lic.id, None)
             except Exception as e:
                 print(f"Failed to send payment notification: {e}")
 
@@ -218,7 +218,7 @@ async def full_settle_installment(order_id: int, background_tasks: BackgroundTas
                     )
                 # Trigger animated compiling spinner
                 from app.core.telegram_animator import animate_compiling
-                asyncio.create_task(animate_compiling(bot_token, u.telegram_id, lic.id))
+                background_tasks.add_task(animate_compiling, bot_token, u.telegram_id, lic.id, None)
         except Exception as e:
             print(f"Failed to send settlement notification: {e}")
 

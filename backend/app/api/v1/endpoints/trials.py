@@ -190,7 +190,7 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token and req.telegram_user_id:
         from app.core.telegram_animator import animate_compiling
-        asyncio.create_task(animate_compiling(bot_token, req.telegram_user_id, lic.id))
+        background_tasks.add_task(animate_compiling, bot_token, req.telegram_user_id, lic.id, None)
         
     return {
         "status": "success",

@@ -160,7 +160,7 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
                 u = u_res.scalar_one_or_none()
                 if u and u.telegram_id:
                     from app.core.telegram_animator import animate_compiling
-                    asyncio.create_task(animate_compiling(bot_token, u.telegram_id, db_license.id))
+                    background_tasks.add_task(animate_compiling, bot_token, u.telegram_id, db_license.id, order.id)
         except Exception as e:
             logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
@@ -492,6 +492,15 @@ async def request_broker_change(license_id: int, payload: BrokerChangePayload, d
         logging.error(f"Internal Error in broker-change-request: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred while processing your request")
 
+async def _call_webhook(url: str, payload: dict):
+    import httpx
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            await client.post(url, json=payload)
+    except Exception as e:
+        import logging
+        logging.error(f"Webhook error to {url}: {e}")
+
 @router.post("/broker-change/{request_id}/approve")
 async def approve_broker_change(request_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     from app.models import BrokerChangeRequest, LicenseMt5History, User
@@ -545,22 +554,16 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token and user and user.telegram_id:
         from app.core.telegram_animator import animate_compiling
-        asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
+        background_tasks.add_task(animate_compiling, bot_token, user.telegram_id, lic.id)
         
     # Trigger webhook to clear admin bot buttons
-    try:
-        async def call_webhook():
-            async with httpx.AsyncClient(verify=False) as client:
-                bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
-                await client.post(f"{bot_url}/internal/bc-approved", json={"request_id": request_id, "action": "approved"})
-        asyncio.create_task(call_webhook())
-    except:
-        pass
+    bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    background_tasks.add_task(_call_webhook, f"{bot_url}/internal/bc-approved", {"request_id": request_id, "action": "approved"})
         
     return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
 
 @router.post("/broker-change/{request_id}/reject")
-async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_db)):
+async def reject_broker_change(request_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     from app.models import BrokerChangeRequest, User
     result = await db.execute(select(BrokerChangeRequest).filter(BrokerChangeRequest.id == request_id))
     req = result.scalar_one_or_none()
@@ -572,15 +575,9 @@ async def reject_broker_change(request_id: int, db: AsyncSession = Depends(get_d
     await db.commit()
     
     # Trigger webhook to clear admin bot buttons
-    try:
-        async def call_webhook_reject():
-            import os
-            async with httpx.AsyncClient(verify=False) as client:
-                bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
-                await client.post(f"{bot_url}/internal/bc-rejected", json={"request_id": request_id, "action": "rejected"})
-        asyncio.create_task(call_webhook_reject())
-    except:
-        pass
+    import os
+    bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    background_tasks.add_task(_call_webhook, f"{bot_url}/internal/bc-rejected", {"request_id": request_id, "action": "rejected"})
     
     user_result = await db.execute(select(User).filter(User.id == req.user_id))
     user = user_result.scalar_one_or_none()
