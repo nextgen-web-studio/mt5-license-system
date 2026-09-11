@@ -188,7 +188,9 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-4 text-neutral-400 capitalize">{product.type}</td>
                     <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-300 whitespace-nowrap">{product.type === 'EA' ? '$' : '\u20B9'}{(product.price || 0).toLocaleString('en-IN')}</td>
-                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">{product.duration} Months</td>
+                    <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
+                      {product.duration === 0 ? 'Lifetime' : `${product.duration} Months`}
+                    </td>
                     <td className="px-3 py-2 md:px-6 md:py-4">
                       {product.active ? (
                         <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">
@@ -254,7 +256,7 @@ export default function ProductsPage() {
                   </div>
                   <div>
                     <span className="text-neutral-500 block text-[10px] mb-0.5">Duration</span>
-                    <span className="text-neutral-300">{product.duration} Months</span>
+                    <span className="text-neutral-300">{product.duration === 0 ? 'Lifetime' : `${product.duration} Months`}</span>
                   </div>
                 </div>
 
@@ -344,14 +346,14 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-400 mb-1">Duration (Months)</label>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">Duration (Months, 0 for Lifetime)</label>
                 <input 
                   type="number" 
                   required
-                  min="1"
+                  min="0"
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  placeholder="1"
+                  placeholder="0"
                   className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
