@@ -131,12 +131,13 @@ async def get_compiler_jobs(db: AsyncSession = Depends(get_db)):
     return jobs
 
 @router.post("/jobs/{job_id}/retry")
-async def retry_job(job_id: int, db: AsyncSession = Depends(get_db)):
+async def retry_job(job_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     """
-    Reset a failed or stuck compile job back to 'pending' so the worker
-    can claim and process it again on the next poll cycle.
+    Reset a failed or stuck compile job back to 'pending' and trigger the local wine compiler.
     """
     from fastapi import HTTPException
+    from app.core.local_compiler import local_wine_compiler
+    
     result = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
     job = result.scalar_one_or_none()
 
@@ -157,10 +158,13 @@ async def retry_job(job_id: int, db: AsyncSession = Depends(get_db)):
     job.completed_at = None
 
     await db.commit()
+    
+    # Trigger the compiler immediately
+    background_tasks.add_task(local_wine_compiler, job.id)
 
     return {
         "status": "success",
-        "message": f"Job {job_id} reset from '{previous_status}' to 'pending'",
+        "message": f"Job {job_id} reset from '{previous_status}' to 'pending' and compiler started",
         "job_id": job_id
     }
 
