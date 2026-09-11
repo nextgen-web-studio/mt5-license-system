@@ -363,100 +363,105 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
 
 @router.post("/vps-orders/{vps_id}/provision")
 async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = Depends(get_db)):
-    # 1. Update VpsOrder — allow re-provisioning (resend details)
-    result = await db.execute(select(VpsOrder).filter(VpsOrder.id == vps_id))
-    vps_order = result.scalar_one_or_none()
-    if not vps_order:
-        raise HTTPException(status_code=404, detail="VPS Order not found")
-    
-    # Always update fields (even if already provisioned — admin may be correcting details)
-    vps_order.hostname = data.hostname
-    vps_order.ip = data.ip
-    vps_order.username = data.username
-    vps_order.password = data.password
-    
-    # Fetch product to calculate auto expiry
-    order_result = await db.execute(select(Order, Product).join(Product, Order.product_id == Product.id).filter(Order.id == vps_order.order_id))
-    order_data = order_result.first()
-    
-    order = None
-    product = None
-    if order_data:
-        order, product = order_data
-    
-    from datetime import datetime, timezone
-    from dateutil.relativedelta import relativedelta
-    
-    if not vps_order.purchased_date:
-        vps_order.purchased_date = datetime.now(timezone.utc)
-        
-    if not vps_order.expiry_date and product:
-        vps_order.expiry_date = vps_order.purchased_date + relativedelta(months=product.duration)
-        
-    vps_order.status = "provisioned" 
-    product_name = "VPS Package"
-    if order:
-        order.status = "delivered"
-    if product:
-        product_name = product.name
-    
-    # Commit DB first — this always succeeds regardless of Telegram outcome
-    await db.commit()
-    
-    # 3. Notify user via Telegram — wrapped in try/except so DB success is not rolled back
-    telegram_error = None
     try:
-        user_result = await db.execute(select(User).filter(User.id == vps_order.user_id))
-        user = user_result.scalar_one_or_none()
+        # 1. Update VpsOrder - allow re-provisioning (resend details)
+        result = await db.execute(select(VpsOrder).filter(VpsOrder.id == vps_id))
+        vps_order = result.scalar_one_or_none()
+        if not vps_order:
+            raise HTTPException(status_code=404, detail="VPS Order not found")
         
-        if user and user.telegram_id:
-            bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-            if bot_token:
-                
-                
-                from zoneinfo import ZoneInfo
-                def to_ist_str(dt):
-                    if not dt: return "N/A"
-                    if dt.tzinfo is None:
-                        from datetime import timezone
-                        dt = dt.replace(tzinfo=timezone.utc)
-                    return dt.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %I:%M %p IST")
-                p_date_str = to_ist_str(vps_order.purchased_date)
-                e_date_str = to_ist_str(vps_order.expiry_date)
-                
-                msg = (
-                    "🎉 *Your VPS is Ready!*\n\n"
-                    "*VPS Node Details*\n"
-                    f"Product Name: `{product_name}`\n"
-                    f"Hostname: `{data.hostname or 'N/A'}`\n"
-                    f"Main IP: `{data.ip}`\n"
-                    f"User name: `{data.username}`\n"
-                    f"Root password: `{data.password}`\n\n"
-                    f"Purchased Date: `{p_date_str}`\n"
-                    f"Expiry Date & Time: `{e_date_str}`\n\n"
-                    "Please connect using Remote Desktop Connection (RDP) on your PC or phone.\n\n"
-                    "📺 *VPS Setup Guide:* [Click here to watch the setup tutorial](https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR)"
-                )
-                async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
-                    resp = await client.post(
-                        f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                        json={
-                            "chat_id": user.telegram_id,
-                            "text": msg,
-                            "parse_mode": "Markdown",
-                            "disable_web_page_preview": True
-                        }
+        # Always update fields (even if already provisioned - admin may be correcting details)
+        vps_order.hostname = data.hostname
+        vps_order.ip = data.ip
+        vps_order.username = data.username
+        vps_order.password = data.password
+        
+        # Fetch product to calculate auto expiry
+        order_result = await db.execute(select(Order, Product).join(Product, Order.product_id == Product.id).filter(Order.id == vps_order.order_id))
+        order_data = order_result.first()
+        
+        order = None
+        product = None
+        if order_data:
+            order, product = order_data
+        
+        from datetime import datetime, timezone
+        from dateutil.relativedelta import relativedelta
+        
+        if not vps_order.purchased_date:
+            vps_order.purchased_date = datetime.now(timezone.utc)
+            
+        if not vps_order.expiry_date and product:
+            vps_order.expiry_date = vps_order.purchased_date + relativedelta(months=product.duration)
+            
+        vps_order.status = "provisioned" 
+        product_name = "VPS Package"
+        if order:
+            order.status = "delivered"
+        if product:
+            product_name = product.name
+        
+        # Commit DB first - this always succeeds regardless of Telegram outcome
+        await db.commit()
+        
+        # 3. Notify user via Telegram
+        telegram_error = None
+        try:
+            user_result = await db.execute(select(User).filter(User.id == vps_order.user_id))
+            user = user_result.scalar_one_or_none()
+            
+            if user and user.telegram_id:
+                bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+                if bot_token:
+                    from zoneinfo import ZoneInfo
+                    def to_ist_str(dt):
+                        if not dt: return "N/A"
+                        if dt.tzinfo is None:
+                            from datetime import timezone
+                            dt = dt.replace(tzinfo=timezone.utc)
+                        return dt.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %I:%M %p IST")
+                    p_date_str = to_ist_str(vps_order.purchased_date)
+                    e_date_str = to_ist_str(vps_order.expiry_date)
+                    
+                    msg = (
+                        "✅ *Your VPS is Ready!*\n\n"
+                        "*VPS Node Details*\n"
+                        f"Product Name: `{product_name}`\n"
+                        f"Hostname: `{data.hostname or 'N/A'}`\n"
+                        f"Main IP: `{data.ip}`\n"
+                        f"User name: `{data.username}`\n"
+                        f"Root password: `{data.password}`\n\n"
+                        f"Purchased Date: `{p_date_str}`\n"
+                        f"Expiry Date & Time: `{e_date_str}`\n\n"
+                        "Please connect using Remote Desktop Connection (RDP) on your PC or phone.\n\n"
+                        "📺 *VPS Setup Guide:* [Click here to watch the setup tutorial](https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR)"
                     )
-                    if resp.status_code != 200:
-                        telegram_error = f"Telegram API error: {resp.text}"
+                    import httpx
+                    async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+                        resp = await client.post(
+                            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                            json={
+                                "chat_id": user.telegram_id,
+                                "text": msg,
+                                "parse_mode": "Markdown",
+                                "disable_web_page_preview": True
+                            }
+                        )
+                        if resp.status_code != 200:
+                            telegram_error = f"Telegram API error: {resp.text}"
+        except Exception as e:
+            telegram_error = str(e)
+        
+        if telegram_error:
+            return {"status": "success", "warning": f"VPS provisioned successfully but Telegram notification failed: {telegram_error}"}
+        
+        return {"status": "success"}
+    except HTTPException:
+        raise
     except Exception as e:
-        telegram_error = str(e)
-    
-    if telegram_error:
-        # VPS IS provisioned in DB — just notify admin that Telegram failed
-        return {"status": "success", "warning": f"VPS provisioned successfully but Telegram notification failed: {telegram_error}"}
-    
-    return {"status": "success"}
+        import traceback
+        error_msg = f"{str(e)}\n{traceback.format_exc()}"
+        raise HTTPException(status_code=500, detail=error_msg)
 
 @router.get("/run-migrations")
 async def run_migrations():
