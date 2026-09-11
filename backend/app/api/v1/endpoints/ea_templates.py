@@ -48,8 +48,16 @@ async def upload_ea_template(
     activate: bool = Form(False),
     db: AsyncSession = Depends(get_db)
 ):
-    if not file.filename.endswith('.mq5'):
-        raise HTTPException(status_code=400, detail="Only .mq5 files are allowed")
+    original_name = file.filename
+    if not (original_name.endswith('.mq5') or original_name.endswith('.txt')):
+        raise HTTPException(status_code=400, detail="Only .mq5 or .txt files are allowed")
+
+    # Android often appends .txt to downloads, clean it up so we save as .mq5
+    if original_name.endswith('.txt'):
+        if '.mq5' in original_name:
+            original_name = original_name.replace('.mq5.txt', '.mq5')
+        else:
+            original_name = original_name.replace('.txt', '.mq5')
 
     content = await file.read()
     file_size = len(content)
@@ -70,8 +78,8 @@ async def upload_ea_template(
         )
 
     new_template = EaTemplate(
-        version_label=version_label or file.filename,
-        filename=file.filename,
+        version_label=version_label or original_name,
+        filename=original_name,
         file_size=file_size,
         source_code=source_code,
         is_active=activate,
@@ -100,7 +108,7 @@ async def get_ea_template_by_id(template_id: int, db: AsyncSession = Depends(get
         "source_code": template.source_code
     }
 
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import Response
 
 @router.get("/admin/{template_id}/download")
 async def download_ea_template_raw(template_id: int, db: AsyncSession = Depends(get_db)):
@@ -112,7 +120,8 @@ async def download_ea_template_raw(template_id: int, db: AsyncSession = Depends(
     headers = {
         "Content-Disposition": f'attachment; filename="{template.filename}"'
     }
-    return PlainTextResponse(content=template.source_code, headers=headers)
+    # Use application/octet-stream so Android respects the filename and doesn't append .txt
+    return Response(content=template.source_code, media_type="application/octet-stream", headers=headers)
 
 @router.post("/admin/{template_id}/activate", response_model=dict)
 async def activate_ea_template(template_id: int, db: AsyncSession = Depends(get_db)):
