@@ -94,7 +94,7 @@ async def request_free_trial(req: TrialRequest, background_tasks: BackgroundTask
         )
     )
     dup_res = await db.execute(dup_stmt)
-    if dup_res.first():
+    if dup_res.scalars().first():
         raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
 
     # 3. Check Monthly limits

@@ -32,7 +32,7 @@ def _safe_error_message(response) -> str:
 
     logging.error(f"Backend error {response.status_code}: {response.text}")
 
-    if detail and response.status_code < 500:
+    if detail:
         return str(detail)
     return f"Something went wrong on our end (Status {response.status_code}). Please try again shortly or contact support."
 

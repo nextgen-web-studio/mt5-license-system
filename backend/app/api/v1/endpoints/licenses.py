@@ -110,7 +110,7 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
             )
         )
         dup_res = await db.execute(dup_stmt)
-        if dup_res.first():
+        if dup_res.scalars().first():
             raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
 
         # 4. Create or Update License
