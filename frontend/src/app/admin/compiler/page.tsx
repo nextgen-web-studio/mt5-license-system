@@ -17,6 +17,16 @@ export default function CompilerPage() {
     }
   });
 
+  const handleRetry = async (jobId: number) => {
+    try {
+      await api.post(`/api/v1/admin/jobs/${jobId}/retry`);
+      await refetch();
+    } catch (err) {
+      console.error('Failed to retry job:', err);
+      alert('Failed to retry job. Make sure the backend is updated.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -85,9 +95,12 @@ export default function CompilerPage() {
                           <CheckCircle2 size={14} /><span>Completed</span>
                         </span>
                       ) : job.status === 'failed' ? (
-                        <span className="flex items-center space-x-1 text-red-400 text-xs font-medium">
-                          <XCircle size={14} /><span>Failed</span>
-                        </span>
+                        <div className="flex items-center space-x-3">
+                          <span className="flex items-center space-x-1 text-red-400 text-xs font-medium">
+                            <XCircle size={14} /><span>Failed</span>
+                          </span>
+                          <button onClick={() => handleRetry(job.id)} className="text-[10px] uppercase font-bold text-blue-400 hover:text-blue-300 tracking-wider">Retry</button>
+                        </div>
                       ) : (
                         <span className="flex items-center space-x-1 text-yellow-400 text-xs font-medium">
                           <Loader2 size={14} className="animate-spin" /><span className="capitalize">{job.status || 'Pending'}</span>
@@ -119,20 +132,23 @@ export default function CompilerPage() {
                     <Terminal size={12} />
                     Job #{job.id}
                   </span>
-                  {job.status === 'completed' ? (
-                    <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
-                      <CheckCircle2 size={13} /> Completed
-                    </span>
-                  ) : job.status === 'failed' ? (
-                    <span className="flex items-center gap-1 text-red-400 text-xs font-medium">
-                      <XCircle size={13} /> Failed
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-yellow-400 text-xs font-medium">
-                      <Loader2 size={13} className="animate-spin" />
-                      <span className="capitalize">{job.status || 'Pending'}</span>
-                    </span>
-                  )}
+                    {job.status === 'completed' ? (
+                      <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                        <CheckCircle2 size={13} /> Completed
+                      </span>
+                    ) : job.status === 'failed' ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-red-400 text-xs font-medium">
+                          <XCircle size={13} /> Failed
+                        </span>
+                        <button onClick={() => handleRetry(job.id)} className="px-2 py-0.5 bg-neutral-800 rounded text-[10px] text-white hover:bg-neutral-700">Retry</button>
+                      </div>
+                    ) : (
+                      <span className="flex items-center gap-1 text-yellow-400 text-xs font-medium">
+                        <Loader2 size={13} className="animate-spin" />
+                        <span className="capitalize">{job.status || 'Pending'}</span>
+                      </span>
+                    )}
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
