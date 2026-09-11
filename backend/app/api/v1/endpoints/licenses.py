@@ -467,7 +467,7 @@ async def request_broker_change(license_id: int, payload: BrokerChangePayload, d
             )
         )
         dup_res = await db.execute(dup_stmt)
-        if dup_res.first():
+        if dup_res.scalars().first():
             raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
             
         # Check for duplicate pending requests
