@@ -91,6 +91,7 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
             # Fake progress mapping
             progress_steps = [10, 20, 30, 40, 50, 60, 70, 80, 85, 90, 95]
             
+            final_status = "completed"
             for i in range(150):  # 150 * 2s = 300 seconds
                 await asyncio.sleep(2)
                 
@@ -112,6 +113,7 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
                                 queue_msg = "You are next in line!"
                             elif pos == 0:
                                 # Job done, stop animating
+                                final_status = status
                                 break
                     except Exception:
                         pass
@@ -136,13 +138,19 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
                     pass
 
             # Once the loop is finished (job completed or timed out)
-            # Edit the progress bar to 100% complete instead of deleting it
             try:
-                final_text = (
-                    f"✅ *Generation Complete!*\n\n"
-                    f"`[==========] 100%`\n\n"
-                    f"_Your EA file is ready below._"
-                )
+                if final_status == "failed":
+                    final_text = (
+                        f"❌ *Generation Failed*\n\n"
+                        f"`[==========] Error`\n\n"
+                        f"_Please see the message below._"
+                    )
+                else:
+                    final_text = (
+                        f"✅ *Generation Complete!*\n\n"
+                        f"`[==========] 100%`\n\n"
+                        f"_Your EA file is ready below._"
+                    )
                 await client.post(
                     f"https://api.telegram.org/bot{bot_token}/editMessageText",
                     json={

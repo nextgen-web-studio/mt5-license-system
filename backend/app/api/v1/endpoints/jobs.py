@@ -136,12 +136,14 @@ async def get_queue_position(license_id: int, db: AsyncSession = Depends(get_db)
     result = await db.execute(
         select(CompileJob)
         .filter(CompileJob.license_id == license_id)
-        .filter(CompileJob.status.in_(["pending", "processing"]))
         .order_by(CompileJob.id.desc())
     )
     job = result.scalars().first()
     if not job:
-        return {"position": 0, "status": "completed"}
+        return {"position": 0, "status": "unknown"}
+    
+    if job.status in ["completed", "failed"]:
+        return {"position": 0, "status": job.status}
     
     count_res = await db.execute(
         select(func.count(CompileJob.id))
