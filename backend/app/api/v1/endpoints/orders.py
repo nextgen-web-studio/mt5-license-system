@@ -32,7 +32,7 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
                 )
             )
             dup_res = await db.execute(dup_stmt)
-            if dup_res.first():
+            if dup_res.scalars().first():
                 raise HTTPException(status_code=400, detail="This MT5 ID is already registered to another active license in the system.")
                 
         db_order = Order(
@@ -63,10 +63,12 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
             await db.commit()
             
         return db_order
+    except HTTPException:
+        raise
     except Exception as e:
         import logging
         logging.error(f"DB Error: {str(e)}")
-        raise HTTPException(status_code=500, detail="An internal server error occurred.")
+        raise HTTPException(status_code=500, detail=f"DEBUG ERROR: {str(e)}")
 
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
 async def get_user_orders(user_id: int, db: AsyncSession = Depends(get_db)):
