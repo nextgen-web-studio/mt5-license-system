@@ -86,7 +86,7 @@ export default function EaApprovalsPage() {
       queryClient.setQueryData(['admin-ea-orders'], updateFn);
       queryClient.setQueryData(['admin-orders'], updateFn);
     },
-    mutationFn: async () => {
+    mutationFn: async (order: any) => {
       if (selectedOrder.status === 'pending_admin_approval') {
         await api.post(`/api/v1/orders/${selectedOrder.id}/approve`);
       }
@@ -549,7 +549,7 @@ export default function EaApprovalsPage() {
                     </button>
                     <button
                       disabled={createInstallmentMutation.isPending || !totalAmount || !installmentAmount || !installmentCount || !licenseDays}
-                      onClick={() => createInstallmentMutation.mutate()}
+                      onClick={() => createInstallmentMutation.mutate(selectedOrder)}
                       className="flex-1 flex items-center justify-center py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
                     >
                       {createInstallmentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : "Save & Create"}
