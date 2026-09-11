@@ -470,17 +470,10 @@ async def get_debug_error():
     return {"error": LAST_VPS_ERROR}
 
 @router.get("/test-provision")
-async def test_provision():
-    import httpx
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                "https://infinity-trader-docker-test.onrender.com/api/v1/admin/vps-orders/20/provision",
-                json={"hostname": "test", "ip": "1.2.3.4", "username": "admin", "password": "pass"}
-            )
-            return {"status_code": resp.status_code, "text": resp.text}
-    except Exception as e:
-        return {"error": str(e)}
+async def test_provision(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(VpsOrder))
+    rows = result.scalars().all()
+    return [{"id": r.id, "order_id": r.order_id, "status": r.status} for r in rows]
 
 @router.get("/run-migrations")
 async def run_migrations(db: AsyncSession = Depends(get_db)):
