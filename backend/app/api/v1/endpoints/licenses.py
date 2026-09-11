@@ -326,7 +326,7 @@ async def recompile_license(license_id: int, background_tasks: BackgroundTasks, 
             CompileJob.status.in_(["pending", "processing"])
         )
     )
-    if existing_job_res.first() is None:
+    if existing_job_res.scalars().first() is None:
         job = CompileJob(license_id=lic.id, status="pending")
         db.add(job)
         await db.commit()

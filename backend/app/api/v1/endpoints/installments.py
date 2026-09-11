@@ -53,7 +53,7 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
             CompileJob.status.in_(["pending", "processing"])
         )
     )
-    if existing_job_res.first() is None:
+    if existing_job_res.scalars().first() is None:
         job = CompileJob(license_id=lic.id, status="pending")
         db.add(job)
         order.status = "compiling"
@@ -127,7 +127,7 @@ async def pay_installment(payload: InstallmentPayRequest, background_tasks: Back
                 CompileJob.status.in_(["pending", "processing"])
             )
         )
-        if existing_job_res.first() is None:
+        if existing_job_res.scalars().first() is None:
             job = CompileJob(license_id=lic.id, status="pending")
             db.add(job)
         await db.commit()
@@ -194,7 +194,7 @@ async def full_settle_installment(order_id: int, background_tasks: BackgroundTas
                 CompileJob.status.in_(["pending", "processing"])
             )
         )
-        if existing_job_res.first() is None:
+        if existing_job_res.scalars().first() is None:
             job = CompileJob(license_id=lic.id, status="pending")
             db.add(job)
         await db.commit()
