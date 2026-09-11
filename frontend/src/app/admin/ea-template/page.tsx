@@ -190,8 +190,17 @@ export default function EaTemplatePage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".mq5,.mqh,.txt"
-                onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file && !file.name.endsWith('.mq5') && !file.name.endsWith('.txt')) {
+                    setErr('Please select a .mq5 file');
+                    setSelectedFile(null);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    return;
+                  }
+                  setErr('');
+                  setSelectedFile(file || null);
+                }}
                 className="w-full text-sm text-neutral-300 bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-600 file:text-white file:text-sm hover:file:bg-blue-700 file:cursor-pointer"
               />
               {selectedFile && (
