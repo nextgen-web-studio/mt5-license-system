@@ -469,8 +469,18 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
 async def get_debug_error():
     return {"error": LAST_VPS_ERROR}
 
-@router.get("/run-migrations")
-async def run_migrations():
+@router.get("/test-provision")
+async def test_provision():
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                "http://localhost:10000/api/v1/admin/vps-orders/20/provision",
+                json={"hostname": "test", "ip": "1.2.3.4", "username": "admin", "password": "pass"}
+            )
+            return {"status_code": resp.status_code, "text": resp.text}
+    except Exception as e:
+        return {"error": str(e)}
     import subprocess
     import sys
     try:
