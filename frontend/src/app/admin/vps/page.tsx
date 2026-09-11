@@ -138,7 +138,7 @@ export default function VpsOrdersPage() {
     },
     onError: (error: any) => {
       const detail = error.response?.data?.detail || error.response?.data || error.message || "Unknown error";
-      toast(typeof detail === 'string' ? detail : JSON.stringify(detail), { duration: 10000 });
+      toast(typeof detail === 'string' ? detail : JSON.stringify(detail), "error");
     }
   });
 
