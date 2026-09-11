@@ -16,21 +16,17 @@ def _admin_headers():
 
 
 def _safe_error_message(response) -> str:
-    """Log the raw backend error and return a customer-safe message.
-
-    Spec section 30: customers must never see raw backend error text
-    (status codes, stack traces, HTML error pages, etc). A 4xx response
-    with a JSON "detail" field is an intentional, customer-facing message
-    written by our own API (e.g. "This MT5 ID already has an active
-    license.") and is safe to show as-is. Anything else - 5xx responses,
-    unparseable bodies - gets logged for us and replaced with a generic
-    message for the customer.
-    """
+    """Log the raw backend error and return a customer-safe message."""
     detail = None
     try:
         body = response.json()
         if isinstance(body, dict):
             detail = body.get("detail")
+            if isinstance(detail, list) and len(detail) > 0:
+                if isinstance(detail[0], dict) and "msg" in detail[0]:
+                    detail = detail[0]["msg"]
+                else:
+                    detail = str(detail)
     except Exception:
         pass
 

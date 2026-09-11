@@ -157,6 +157,25 @@ async def retry_job(job_id: int, background_tasks: BackgroundTasks, db: AsyncSes
     job.started_at   = None
     job.completed_at = None
 
+    # If it is tied to a license, also set license status
+    if job.license_id:
+        from app.models import License, User
+        lic_res = await db.execute(select(License).filter(License.id == job.license_id))
+        lic = lic_res.scalar_one_or_none()
+        if lic:
+            lic.status = "compiling"
+            await db.commit()
+            
+            # Send animated TG notification
+            import os
+            bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+            user_res = await db.execute(select(User).filter(User.id == lic.user_id))
+            user = user_res.scalar_one_or_none()
+            if bot_token and user and user.telegram_id:
+                from app.core.telegram_animator import start_compile_and_animate
+                start_compile_and_animate(background_tasks, job.id, bot_token, user.telegram_id, lic.id, None)
+                return {"status": "success", "message": f"Job {job_id} requeued and customer notified."}
+
     await db.commit()
     
     # Trigger the compiler immediately

@@ -60,12 +60,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     refetchInterval: 2000
   });
 
+  const { data: compileJobs = [] } = useQuery({
+    queryKey: ['admin-compile-jobs'],
+    queryFn: async () => {
+      const { data } = await api.get('/api/v1/admin/jobs');
+      return data;
+    },
+    refetchInterval: 5000
+  });
+
   const pendingEaCount = allOrders.filter((o: any) => o.status === 'pending_admin_approval' && o.order_type === 'EA').length;
   const pendingVpsCount = vpsOrders.filter((v: any) => v.status === 'pending').length;
+  const failedCompileCount = compileJobs.filter((j: any) => j.status === 'failed').length;
 
   const getBadgeCount = (name: string) => {
     if (name === 'EA Approvals') return pendingEaCount;
     if (name === 'VPS') return pendingVpsCount;
+    if (name === 'Compiler') return failedCompileCount;
     return 0;
   };
 
