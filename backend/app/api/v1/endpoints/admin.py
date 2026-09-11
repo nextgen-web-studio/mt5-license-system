@@ -361,8 +361,11 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
     orders.sort(key=lambda x: x["order_id"], reverse=True)
     return orders
 
+LAST_VPS_ERROR = "No error logged yet."
+
 @router.post("/vps-orders/{vps_id}/provision")
 async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = Depends(get_db)):
+    global LAST_VPS_ERROR
     try:
         # 1. Update VpsOrder - allow re-provisioning (resend details)
         result = await db.execute(select(VpsOrder).filter(VpsOrder.id == vps_id))
@@ -456,22 +459,15 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
             return {"status": "success", "warning": f"VPS provisioned successfully but Telegram notification failed: {telegram_error}"}
         
         return {"status": "success"}
-    except HTTPException:
-        raise
     except Exception as e:
         import traceback
-        error_msg = f"{str(e)}\n{traceback.format_exc()}"
-        with open("/tmp/last_vps_error.txt", "w") as f:
-            f.write(error_msg)
+        error_msg = f"CRITICAL CRASH: {str(e)}\n{traceback.format_exc()}"
+        LAST_VPS_ERROR = error_msg
         raise HTTPException(status_code=500, detail=error_msg)
 
 @router.get("/debug-error")
 async def get_debug_error():
-    import os
-    if os.path.exists("/tmp/last_vps_error.txt"):
-        with open("/tmp/last_vps_error.txt", "r") as f:
-            return {"error": f.read()}
-    return {"error": "No error logged yet."}
+    return {"error": LAST_VPS_ERROR}
 
 @router.get("/run-migrations")
 async def run_migrations():
