@@ -257,11 +257,13 @@ async def local_wine_compiler(job_id: int):
                     await _notify_telegram_fail(db, job)
 
 async def _notify_telegram_fail(db, job):
-    from app.models import License, Order
+    from app.models import License, Order, User
     import os, httpx
+    from sqlalchemy import select
+    
     order_id = "Unknown"
+    telegram_id = None
     if job.license_id:
-        from sqlalchemy import select
         lic_res = await db.execute(select(License).filter(License.id == job.license_id))
         lic = lic_res.scalar_one_or_none()
         if lic:
@@ -269,6 +271,11 @@ async def _notify_telegram_fail(db, job):
             ord_obj = ord_res.scalar_one_or_none()
             if ord_obj:
                 order_id = ord_obj.id
+                
+            user_res = await db.execute(select(User).filter(User.id == lic.user_id))
+            user = user_res.scalar_one_or_none()
+            if user:
+                telegram_id = user.telegram_id
 
     bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
     bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
@@ -278,6 +285,7 @@ async def _notify_telegram_fail(db, job):
             await client.post(bot_webhook_url, json={
                 "job_id": job.id,
                 "order_id": order_id,
+                "telegram_id": telegram_id,
                 "error_message": job.error_message
             })
     except Exception as e:

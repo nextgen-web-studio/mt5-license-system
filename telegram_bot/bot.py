@@ -1491,10 +1491,20 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
 
     keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")]]
 
+    sent_msg = None
     if update.message:
-        await update.message.reply_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
+        sent_msg = await update.message.reply_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
     else:
-        await update.callback_query.edit_message_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
+        sent_msg = await update.callback_query.edit_message_text(summary, parse_mode=parse_mode_to_use, reply_markup=InlineKeyboardMarkup(keyboard))
+        
+    if sent_msg:
+        try:
+            # Depending on python-telegram-bot version, edit_message_text might return True or Message.
+            msg_id_to_save = sent_msg.message_id if hasattr(sent_msg, 'message_id') else update.callback_query.message.message_id
+            from utils.api_client import save_admin_message
+            await save_admin_message(f"CUST_ORD_{order['id']}", msg_id_to_save)
+        except Exception as e:
+            logging.error(f"Failed to save CUST_ORD message id: {e}")
         
     admin_chat_id = os.getenv("ADMIN_CHAT_ID")
     if admin_chat_id:
@@ -2185,26 +2195,48 @@ class DummyHandler(BaseHTTPRequestHandler):
                 data = json.loads(post_data.decode('utf-8'))
                 order_id = data.get('order_id')
                 job_id = data.get('job_id')
+                telegram_id = data.get('telegram_id')
                 error_msg = data.get('error_message', 'Unknown error')
                 
                 admin_id = os.getenv("ADMIN_CHAT_ID")
-                if admin_id:
-                    async def send_fail_msg():
-                        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-                        from telegram import Bot
-                        bot = Bot(token=bot_token)
+                async def send_fail_msg():
+                    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                    from telegram import Bot, InlineKeyboardMarkup, InlineKeyboardButton
+                    bot = Bot(token=bot_token)
+                    
+                    # Notify Admin
+                    if admin_id:
                         msg = (
-                            f"⚠️ *COMPILE JOB FAILED*\n\n"
+                            f"❌ *COMPILE JOB FAILED*\n\n"
                             f"Order ID: #{order_id}\n"
                             f"Job ID: #{job_id}\n\n"
                             f"The automated compiler worker failed to compile this order. "
                             f"Please check the error logs in the Admin Panel.\n\n"
-                            f"After resolving the error, upload the fixed file (or activate a previous version), and then click Retry."
                         )
-                        await bot.send_message(chat_id=admin_id, text=msg, parse_mode="Markdown")
-                    
-                    import asyncio
-                    threading.Thread(target=lambda: asyncio.run(send_fail_msg()), daemon=True).start()
+                        try:
+                            await bot.send_message(chat_id=admin_id, text=msg, parse_mode="Markdown")
+                        except Exception as e:
+                            logging.error(f"Failed to notify admin of compile failure: {e}")
+                            
+                    # Notify Customer
+                    if telegram_id:
+                        cust_msg = (
+                            f"⚠️ *Generation Delayed*\n\n"
+                            f"We encountered a temporary technical issue while generating your EA file. "
+                            f"Our admin has been automatically notified and is resolving it right now.\n\n"
+                            f"Please wait a few moments. If you need immediate assistance, you can contact the admin below."
+                        )
+                        admin_username = os.getenv("ADMIN_USERNAME", "infinitytrader_admin")
+                        kb = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}?text=Hi, my EA generation (Order {order_id}) failed.")]]
+                        try:
+                            await bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
+                        except Exception as e:
+                            logging.error(f"Failed to notify customer of compile failure: {e}")
+
+                import asyncio
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                loop.run_until_complete(send_fail_msg())
                 
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
