@@ -118,14 +118,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div 
-        className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-neutral-900 border-r border-neutral-800 flex flex-col transform transition-transform duration-200 ease-in-out ${
+        className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-neutral-900 border-r border-neutral-800 shadow-2xl shadow-black flex flex-col transform transition-transform duration-200 ease-in-out ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -137,7 +137,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </h1>
           </div>
           <button 
-            className="md:hidden text-neutral-400 hover:text-white"
+            className="md:hidden p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <X size={24} />
@@ -152,18 +152,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center justify-between px-3 py-2 md:py-2.5 text-sm md:text-base rounded-lg transition-colors ${
+                className={`relative flex items-center justify-between px-3 py-3 md:py-2.5 text-sm md:text-base rounded-lg transition-all duration-200 ${
                   isActive 
-                    ? 'bg-blue-600/10 text-blue-400' 
+                    ? 'bg-blue-500/10 text-blue-400 font-medium' 
                     : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
                 }`}
               >
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-3/5 bg-blue-500 rounded-r-full" />
+                )}
                 <div className="flex items-center space-x-3">
                   <item.icon size={20} />
                   <span className="font-medium">{item.name}</span>
                 </div>
                 {badgeCount > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                  <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow-lg shadow-red-500/20">
                     {badgeCount}
                   </span>
                 )}
