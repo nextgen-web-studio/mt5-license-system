@@ -101,16 +101,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          {pendingEaCount + pendingVpsCount > 0 && (
-            <div className="flex items-center justify-center bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full animate-pulse">
-              {pendingEaCount + pendingVpsCount}
-            </div>
-          )}
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="text-neutral-400 hover:text-white relative"
+            className="text-neutral-400 hover:text-white relative p-1"
           >
             <Menu size={24} />
+            {pendingEaCount + pendingVpsCount > 0 && (
+              <span className="absolute top-0 right-0 translate-x-1/4 -translate-y-1/4 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full border-2 border-neutral-900">
+                {pendingEaCount + pendingVpsCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
