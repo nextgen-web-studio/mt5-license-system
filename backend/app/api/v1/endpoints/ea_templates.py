@@ -52,8 +52,16 @@ async def upload_ea_template(
         raise HTTPException(status_code=400, detail="Only .mq5 files are allowed")
 
     content = await file.read()
-    source_code = content.decode('utf-8')
     file_size = len(content)
+    
+    # Try different encodings, MetaEditor often uses utf-16
+    try:
+        source_code = content.decode('utf-8')
+    except UnicodeDecodeError:
+        try:
+            source_code = content.decode('utf-16')
+        except UnicodeDecodeError:
+            source_code = content.decode('latin-1')
 
     if activate:
         # Deactivate all others
@@ -76,6 +84,21 @@ async def upload_ea_template(
     await db.refresh(new_template)
     
     return new_template
+
+@router.get("/admin/{template_id}", response_model=dict)
+async def get_ea_template_by_id(template_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(EaTemplate).filter(EaTemplate.id == template_id))
+    template = result.scalar_one_or_none()
+    
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+        
+    return {
+        "id": template.id,
+        "version_label": template.version_label,
+        "filename": template.filename,
+        "source_code": template.source_code
+    }
 
 @router.post("/admin/{template_id}/activate", response_model=dict)
 async def activate_ea_template(template_id: int, db: AsyncSession = Depends(get_db)):
