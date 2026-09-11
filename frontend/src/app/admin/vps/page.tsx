@@ -137,7 +137,8 @@ export default function VpsOrdersPage() {
       closeModal();
     },
     onError: (error: any) => {
-      toast(error.response?.data?.detail || "Failed to provision VPS", "error");
+      const detail = error.response?.data?.detail || error.response?.data || error.message || "Unknown error";
+      toast(typeof detail === 'string' ? detail : JSON.stringify(detail), { duration: 10000 });
     }
   });
 
