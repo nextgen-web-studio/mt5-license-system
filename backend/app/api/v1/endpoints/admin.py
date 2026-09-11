@@ -481,13 +481,12 @@ async def test_provision():
             return {"status_code": resp.status_code, "text": resp.text}
     except Exception as e:
         return {"error": str(e)}
-    import subprocess
-    import sys
-    try:
-        result = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], capture_output=True, text=True)
-        return {"stdout": result.stdout, "stderr": result.stderr}
-    except Exception as e:
-        return {"error": str(e)}
+
+@router.get("/run-migrations")
+async def run_migrations(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(VpsOrder))
+    rows = result.scalars().all()
+    return [{"id": r.id, "order_id": r.order_id, "status": r.status} for r in rows]
 
 
 @router.put("/vps-orders/{vps_id}/status")
