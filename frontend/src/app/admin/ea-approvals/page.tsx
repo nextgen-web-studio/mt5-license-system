@@ -84,7 +84,7 @@ export default function EaApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      toast("Installment arrangement created successfully!", "success");
+      toast("Installment Created", "success");
       setApproveModalOpen(false);
       setInstallmentMode(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
@@ -102,7 +102,7 @@ export default function EaApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      toast("Broker Change Approved & Compiling!", "success");
+      toast("Approved & Compiling", "success");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -119,7 +119,7 @@ export default function EaApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      toast("Broker Change Rejected", "success");
+      toast("Change Rejected", "delete");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -136,7 +136,7 @@ export default function EaApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      toast("Order Rejected", "success");
+      toast("Order Rejected", "delete");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -159,7 +159,7 @@ export default function EaApprovalsPage() {
       return data;
     },
     onSuccess: () => {
-      toast("Lifetime License Generated & Compiling!", "success");
+      toast("License Compiling", "success");
       setApproveModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-ea-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });

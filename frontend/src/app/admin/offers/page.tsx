@@ -47,7 +47,7 @@ export default function OffersPage() {
       return data;
     },
     onSuccess: () => {
-      toast('Flash Sale created successfully!', 'success');
+      toast('Flash Sale Created', 'success');
       setShowForm(false);
       setForm({ product_id: '', offer_label: '🔥 Flash Sale', offer_price: '', starts_at: new Date().toISOString().slice(0, 16), expires_at: '', active: true });
       queryClient.invalidateQueries({ queryKey: ['admin-offers'] });

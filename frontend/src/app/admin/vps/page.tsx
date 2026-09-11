@@ -121,9 +121,9 @@ export default function VpsOrdersPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       if (data?.warning) {
-        toast(`VPS provisioned in DB ✅ — but Telegram notification failed: ${data.warning}`, "error");
+        toast(`VPS Provisioned, but Telegram failed: ${data.warning}`, "error");
       } else {
-        toast("VPS provisioned and user notified via Telegram. ✅", "success");
+        toast("VPS Provisioned", "success");
       }
       closeModal();
     },
@@ -155,6 +155,13 @@ export default function VpsOrdersPage() {
       }
       toast("Failed to update status", "error");
     },
+    onSuccess: (data, variables) => {
+      if (variables.status === 'rejected') {
+        toast("VPS Rejected", "delete");
+      } else {
+        toast("Status Updated", "success");
+      }
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -172,7 +179,7 @@ export default function VpsOrdersPage() {
       setMsgModalOpen(false);
       setMsgOrder(null);
       setMessageText('');
-      toast("Message sent to customer!", 'success');
+      toast("Message Sent", "success");
     },
     onError: (err: any) => {
       toast("Failed to send message: " + (err.response?.data?.detail || err.message), 'error');
@@ -329,7 +336,7 @@ export default function VpsOrdersPage() {
                               <button 
                                 onClick={() => {
                                   api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
-                                    toast("Renewal Approved!", "success");
+                                    toast("Renewal Approved", "success");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to approve", "error"));
@@ -341,7 +348,7 @@ export default function VpsOrdersPage() {
                               <button 
                                 onClick={() => {
                                   api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
-                                    toast("Renewal Rejected", "success");
+                                    toast("Renewal Rejected", "delete");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to reject", "error"));
@@ -450,7 +457,7 @@ export default function VpsOrdersPage() {
                               <button 
                                 onClick={() => {
                                   api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
-                                    toast("Renewal Approved!", "success");
+                                    toast("Renewal Approved", "success");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to approve", "error"));
@@ -462,7 +469,7 @@ export default function VpsOrdersPage() {
                               <button 
                                 onClick={() => {
                                   api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
-                                    toast("Renewal Rejected", "success");
+                                    toast("Renewal Rejected", "delete");
                                     queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                                   }).catch(() => toast("Failed to reject", "error"));
@@ -566,7 +573,7 @@ export default function VpsOrdersPage() {
                         <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
-                              toast("Renewal Approved!", "success");
+                              toast("Renewal Approved", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to approve", "error"));
@@ -577,7 +584,7 @@ export default function VpsOrdersPage() {
                         <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
-                              toast("Renewal Rejected", "success");
+                              toast("Renewal Rejected", "delete");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to reject", "error"));
@@ -672,7 +679,7 @@ export default function VpsOrdersPage() {
                         <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
-                              toast("Renewal Approved!", "success");
+                              toast("Renewal Approved", "success");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to approve", "error"));
@@ -683,7 +690,7 @@ export default function VpsOrdersPage() {
                         <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/reject`).then(() => {
-                              toast("Renewal Rejected", "success");
+                              toast("Renewal Rejected", "delete");
                               queryClient.invalidateQueries({ queryKey: ['admin-vps-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
                             }).catch(() => toast("Failed to reject", "error"));
@@ -819,6 +826,7 @@ export default function VpsOrdersPage() {
     </div>
   );
 }
+
 
 
 
