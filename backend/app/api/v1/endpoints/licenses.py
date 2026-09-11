@@ -133,34 +133,39 @@ async def generate_license(license_in: LicenseCreate, background_tasks: Backgrou
             db.add(db_license)
             await db.flush()
         
-        # 4. Enqueue compilation job (only if not already pending/processing)
+        # 4. Enqueue compilation job
         existing_job_res = await db.execute(
             select(CompileJob).filter(
                 CompileJob.license_id == db_license.id,
                 CompileJob.status.in_(["pending", "processing"])
-            )
+            ).order_by(CompileJob.id.desc())
         )
-        if existing_job_res.first() is None:
+        existing_job = existing_job_res.scalars().first()
+        
+        if existing_job is None:
             job = CompileJob(license_id=db_license.id, status="pending")
             db.add(job)
             await db.flush()
-            background_tasks.add_task(local_wine_compiler, job.id)
+            job_id = job.id
+        else:
+            job_id = existing_job.id
         
         order.status = "compiling"
-        
         await db.commit()
         
-        # Send Compiling notification to TG
+        # Send Compiling notification to TG & launch compilation concurrently
         import os, httpx, asyncio
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         try:
-            if bot_token:
-                from app.models import User
-                u_res = await db.execute(select(User).filter(User.id == order.user_id))
-                u = u_res.scalar_one_or_none()
-                if u and u.telegram_id:
-                    from app.core.telegram_animator import animate_compiling
-                    background_tasks.add_task(animate_compiling, bot_token, u.telegram_id, db_license.id, order.id)
+            from app.models import User
+            u_res = await db.execute(select(User).filter(User.id == order.user_id))
+            u = u_res.scalar_one_or_none()
+            if bot_token and u and u.telegram_id and existing_job is None:
+                from app.core.telegram_animator import start_compile_and_animate
+                start_compile_and_animate(background_tasks, job_id, bot_token, u.telegram_id, db_license.id, order.id)
+            elif existing_job is None:
+                from app.core.local_compiler import local_wine_compiler
+                background_tasks.add_task(local_wine_compiler, job_id)
         except Exception as e:
             logging.error(f"Failed to send compiling notification: {e}")
         await db.refresh(db_license)
@@ -325,11 +330,9 @@ async def recompile_license(license_id: int, background_tasks: BackgroundTasks, 
         job = CompileJob(license_id=lic.id, status="pending")
         db.add(job)
         await db.commit()
-        from app.core.local_compiler import local_wine_compiler
-        background_tasks.add_task(local_wine_compiler, job.id)
     else:
         await db.commit()
-    
+
     # Get job_id safely
     job_result = await db.execute(
         select(CompileJob).filter(
@@ -343,9 +346,13 @@ async def recompile_license(license_id: int, background_tasks: BackgroundTasks, 
     try:
         user_res = await db.execute(select(User).filter(User.id == lic.user_id))
         user = user_res.scalar_one_or_none()
-        if user and user.telegram_id and bot_token:
-            from app.core.telegram_animator import animate_compiling
-            asyncio.create_task(animate_compiling(bot_token, user.telegram_id, lic.id))
+        if user and user.telegram_id and bot_token and latest_job:
+            from app.core.telegram_animator import start_compile_and_animate
+            # Notice we pass None for order_id because it's just a recompile, no receipt to update
+            start_compile_and_animate(background_tasks, latest_job.id, bot_token, user.telegram_id, lic.id, None)
+        elif latest_job:
+            from app.core.local_compiler import local_wine_compiler
+            background_tasks.add_task(local_wine_compiler, latest_job.id)
     except Exception as e:
         print(f"Failed to send recompile notification: {e}")
     
@@ -547,14 +554,14 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     
     await db.commit()
     
-    background_tasks.add_task(local_wine_compiler, job.id)
-    
     # Trigger compiling animation
     import os, asyncio, httpx
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token and user and user.telegram_id:
-        from app.core.telegram_animator import animate_compiling
-        background_tasks.add_task(animate_compiling, bot_token, user.telegram_id, lic.id)
+        from app.core.telegram_animator import start_compile_and_animate
+        start_compile_and_animate(background_tasks, job.id, bot_token, user.telegram_id, lic.id, None)
+    else:
+        background_tasks.add_task(local_wine_compiler, job.id)
         
     # Trigger webhook to clear admin bot buttons
     bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")

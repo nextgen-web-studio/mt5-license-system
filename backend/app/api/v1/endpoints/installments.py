@@ -58,11 +58,6 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
         db.add(job)
         order.status = "compiling"
         await db.commit()
-        background_tasks.add_task(local_wine_compiler, job.id)
-    else:
-        order.status = "compiling"
-        await db.commit()
-    
     # Notify customer with animated compiling spinner
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token:
@@ -70,10 +65,14 @@ async def create_installment_arrangement(payload: InstallmentCreate, background_
             u_res = await db.execute(select(User).filter(User.id == order.user_id))
             u = u_res.scalar_one_or_none()
             if u and u.telegram_id:
-                from app.core.telegram_animator import animate_compiling
-                background_tasks.add_task(animate_compiling, bot_token, u.telegram_id, lic.id, None)
+                from app.core.telegram_animator import start_compile_and_animate
+                start_compile_and_animate(background_tasks, job.id, bot_token, u.telegram_id, lic.id, None)
+            else:
+                background_tasks.add_task(local_wine_compiler, job.id)
         except Exception as e:
             print(f"Failed to send compiling notification: {e}")
+    else:
+        background_tasks.add_task(local_wine_compiler, job.id)
     
     return {"status": "success", "message": "Installment arrangement created and first payment recorded"}
 

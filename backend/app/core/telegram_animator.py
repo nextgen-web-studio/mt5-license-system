@@ -7,6 +7,16 @@ from app.db.database import AsyncSessionLocal
 from app.models import CompileJob, License, Order
 from datetime import datetime, timezone
 
+async def _run_concurrent(job_id: int, bot_token: str, chat_id: str, license_id: int, order_id: int = None):
+    from app.core.local_compiler import local_wine_compiler
+    await asyncio.gather(
+        local_wine_compiler(job_id),
+        animate_compiling(bot_token, chat_id, license_id, order_id)
+    )
+
+def start_compile_and_animate(background_tasks, job_id: int, bot_token: str, chat_id: str, license_id: int, order_id: int = None):
+    background_tasks.add_task(_run_concurrent, job_id, bot_token, chat_id, license_id, order_id)
+
 async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order_id: int = None):
     if not bot_token:
         return
