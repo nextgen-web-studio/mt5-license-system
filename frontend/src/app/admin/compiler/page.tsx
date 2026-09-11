@@ -19,6 +19,11 @@ export default function CompilerPage() {
 
   const handleRetry = async (jobId: number) => {
     try {
+      // Optimistic update
+      queryClient.setQueryData(['admin-compile-jobs'], (old: any) => {
+        if (!old) return old;
+        return old.map((j: any) => j.id === jobId ? { ...j, status: 'pending', error_message: null } : j);
+      });
       await api.post(`/api/v1/admin/jobs/${jobId}/retry`);
       await refetch();
     } catch (err) {

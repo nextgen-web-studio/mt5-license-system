@@ -68,7 +68,24 @@ export default function EaApprovalsPage() {
   };
 
   const createInstallmentMutation = useMutation({
-    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
+    onMutate: async (arg) => { 
+      setApproveModalOpen(false); 
+      try { setInstallmentMode(false); } catch(e){}
+      
+      const targetId = arg?.id || arg?.real_id || (typeof selectedOrder !== 'undefined' ? selectedOrder?.id : null);
+      if (!targetId) return;
+
+      await queryClient.cancelQueries({ queryKey: ['admin-ea-orders'] });
+      await queryClient.cancelQueries({ queryKey: ['admin-orders'] });
+      
+      const updateFn = (old: any) => {
+        if (!old) return old;
+        return old.map((o: any) => o.id === targetId ? { ...o, status: 'processing_optimistic' } : o);
+      };
+      
+      queryClient.setQueryData(['admin-ea-orders'], updateFn);
+      queryClient.setQueryData(['admin-orders'], updateFn);
+    },
     mutationFn: async () => {
       if (selectedOrder.status === 'pending_admin_approval') {
         await api.post(`/api/v1/orders/${selectedOrder.id}/approve`);
@@ -96,7 +113,24 @@ export default function EaApprovalsPage() {
   });
 
   const approveBrokerChangeMutation = useMutation({
-    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
+    onMutate: async (arg) => { 
+      setApproveModalOpen(false); 
+      try { setInstallmentMode(false); } catch(e){}
+      
+      const targetId = arg?.id || arg?.real_id || (typeof selectedOrder !== 'undefined' ? selectedOrder?.id : null);
+      if (!targetId) return;
+
+      await queryClient.cancelQueries({ queryKey: ['admin-ea-orders'] });
+      await queryClient.cancelQueries({ queryKey: ['admin-orders'] });
+      
+      const updateFn = (old: any) => {
+        if (!old) return old;
+        return old.map((o: any) => o.id === targetId ? { ...o, status: 'processing_optimistic' } : o);
+      };
+      
+      queryClient.setQueryData(['admin-ea-orders'], updateFn);
+      queryClient.setQueryData(['admin-orders'], updateFn);
+    },
     mutationFn: async (order: any) => {
       const { data } = await api.post(`/api/v1/licenses/broker-change/${order.real_id}/approve`);
       return data;
@@ -113,7 +147,24 @@ export default function EaApprovalsPage() {
   });
 
   const rejectBrokerChangeMutation = useMutation({
-    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
+    onMutate: async (arg) => { 
+      setApproveModalOpen(false); 
+      try { setInstallmentMode(false); } catch(e){}
+      
+      const targetId = arg?.id || arg?.real_id || (typeof selectedOrder !== 'undefined' ? selectedOrder?.id : null);
+      if (!targetId) return;
+
+      await queryClient.cancelQueries({ queryKey: ['admin-ea-orders'] });
+      await queryClient.cancelQueries({ queryKey: ['admin-orders'] });
+      
+      const updateFn = (old: any) => {
+        if (!old) return old;
+        return old.map((o: any) => o.id === targetId ? { ...o, status: 'processing_optimistic' } : o);
+      };
+      
+      queryClient.setQueryData(['admin-ea-orders'], updateFn);
+      queryClient.setQueryData(['admin-orders'], updateFn);
+    },
     mutationFn: async (order: any) => {
       const { data } = await api.post(`/api/v1/licenses/broker-change/${order.real_id}/reject`);
       return data;
@@ -130,7 +181,24 @@ export default function EaApprovalsPage() {
   });
 
   const rejectEaMutation = useMutation({
-    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
+    onMutate: async (arg) => { 
+      setApproveModalOpen(false); 
+      try { setInstallmentMode(false); } catch(e){}
+      
+      const targetId = arg?.id || arg?.real_id || (typeof selectedOrder !== 'undefined' ? selectedOrder?.id : null);
+      if (!targetId) return;
+
+      await queryClient.cancelQueries({ queryKey: ['admin-ea-orders'] });
+      await queryClient.cancelQueries({ queryKey: ['admin-orders'] });
+      
+      const updateFn = (old: any) => {
+        if (!old) return old;
+        return old.map((o: any) => o.id === targetId ? { ...o, status: 'processing_optimistic' } : o);
+      };
+      
+      queryClient.setQueryData(['admin-ea-orders'], updateFn);
+      queryClient.setQueryData(['admin-orders'], updateFn);
+    },
     mutationFn: async (order: any) => {
       const { data } = await api.post(`/api/v1/orders/${order.id}/reject`);
       return data;
@@ -147,7 +215,24 @@ export default function EaApprovalsPage() {
   });
 
   const generateMutation = useMutation({
-    onMutate: () => { setApproveModalOpen(false); try { setInstallmentMode(false); } catch(e){} },
+    onMutate: async (arg) => { 
+      setApproveModalOpen(false); 
+      try { setInstallmentMode(false); } catch(e){}
+      
+      const targetId = arg?.id || arg?.real_id || (typeof selectedOrder !== 'undefined' ? selectedOrder?.id : null);
+      if (!targetId) return;
+
+      await queryClient.cancelQueries({ queryKey: ['admin-ea-orders'] });
+      await queryClient.cancelQueries({ queryKey: ['admin-orders'] });
+      
+      const updateFn = (old: any) => {
+        if (!old) return old;
+        return old.map((o: any) => o.id === targetId ? { ...o, status: 'processing_optimistic' } : o);
+      };
+      
+      queryClient.setQueryData(['admin-ea-orders'], updateFn);
+      queryClient.setQueryData(['admin-orders'], updateFn);
+    },
     mutationFn: async (order: any) => {
       if (order.status === 'pending_admin_approval') {
         await api.post(`/api/v1/orders/${order.id}/approve`);
