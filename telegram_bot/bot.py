@@ -2198,7 +2198,8 @@ class DummyHandler(BaseHTTPRequestHandler):
                             f"Order ID: #{order_id}\n"
                             f"Job ID: #{job_id}\n\n"
                             f"The automated compiler worker failed to compile this order. "
-                            f"Please check the error logs in the Admin Panel and retry the compile process."
+                            f"Please check the error logs in the Admin Panel.\n\n"
+                            f"After resolving the error, upload the fixed file (or activate a previous version), and then click Retry."
                         )
                         await bot.send_message(chat_id=admin_id, text=msg, parse_mode="Markdown")
                     

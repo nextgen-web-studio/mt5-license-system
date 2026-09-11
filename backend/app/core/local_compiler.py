@@ -44,6 +44,7 @@ async def local_wine_compiler(job_id: int):
                         job.status = "failed"
                         job.error_message = "No active EA template found in database and no fallback template found."
                         await db.commit()
+                        await _notify_telegram_fail(db, job)
                         return
                 else:
                     original_code = active_template.source_code
@@ -94,13 +95,14 @@ async def local_wine_compiler(job_id: int):
                     metaeditor = str(candidate)
                     break
             if not metaeditor:
-                async with AsyncSessionLocal() as db2:
-                    r = await db2.execute(select(CompileJob).filter(CompileJob.id == job_id))
-                    j = r.scalar_one_or_none()
-                    if j:
-                        j.status = "failed"
-                        j.error_message = "MetaEditor64.exe not found. Check Dockerfile setup."
-                        await db2.commit()
+                async with AsyncSessionLocal() as db:
+                    r = await db.execute(select(CompileJob).filter(CompileJob.id == job_id))
+                    job = r.scalar_one_or_none()
+                    if job:
+                        job.status = "failed"
+                        job.error_message = "MetaEditor64.exe not found. Check Dockerfile setup."
+                        await db.commit()
+                        await _notify_telegram_fail(db, job)
                 return
             
             # Add these specific Wine flags to prevent headless crashing
@@ -243,6 +245,7 @@ async def local_wine_compiler(job_id: int):
                             log_content += f"\n\n--- WINE STDERR ---\n{wine_err[:500]}"
                         job.error_message = log_content[:2000]
                         await db.commit()
+                        await _notify_telegram_fail(db, job)
 
         except Exception as e:
             import traceback
@@ -251,5 +254,33 @@ async def local_wine_compiler(job_id: int):
                 job = result.scalar_one_or_none()
                 if job:
                     job.status = "failed"
-                    job.error_message = str(e) + "\\n" + traceback.format_exc()
+                    job.error_message = str(e) + "\n" + traceback.format_exc()
                     await db.commit()
+                    await _notify_telegram_fail(db, job)
+
+async def _notify_telegram_fail(db, job):
+    from app.models import License, Order
+    import os, httpx
+    order_id = "Unknown"
+    if job.license_id:
+        from sqlalchemy import select
+        lic_res = await db.execute(select(License).filter(License.id == job.license_id))
+        lic = lic_res.scalar_one_or_none()
+        if lic:
+            ord_res = await db.execute(select(Order).filter(Order.id == lic.order_id))
+            ord_obj = ord_res.scalar_one_or_none()
+            if ord_obj:
+                order_id = ord_obj.id
+
+    bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
+    bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    bot_webhook_url += "/internal/compile-failed"
+    try:
+        async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+            await client.post(bot_webhook_url, json={
+                "job_id": job.id,
+                "order_id": order_id,
+                "error_message": job.error_message
+            })
+    except Exception as e:
+        print(f"Failed to notify Telegram bot of compile failure: {e}")
