@@ -475,7 +475,7 @@ async def test_provision():
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
-                "http://localhost:10000/api/v1/admin/vps-orders/20/provision",
+                "https://infinity-trader-docker-test.onrender.com/api/v1/admin/vps-orders/20/provision",
                 json={"hostname": "test", "ip": "1.2.3.4", "username": "admin", "password": "pass"}
             )
             return {"status_code": resp.status_code, "text": resp.text}
