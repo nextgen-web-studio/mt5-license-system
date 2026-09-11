@@ -379,22 +379,26 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
     order_result = await db.execute(select(Order, Product).join(Product, Order.product_id == Product.id).filter(Order.id == vps_order.order_id))
     order_data = order_result.first()
     
+    order = None
+    product = None
+    if order_data:
+        order, product = order_data
+    
     from datetime import datetime, timezone
     from dateutil.relativedelta import relativedelta
     
     if not vps_order.purchased_date:
         vps_order.purchased_date = datetime.now(timezone.utc)
         
-    if not vps_order.expiry_date and order_data and order_data.Product:
-        vps_order.expiry_date = vps_order.purchased_date + relativedelta(months=order_data.Product.duration)
+    if not vps_order.expiry_date and product:
+        vps_order.expiry_date = vps_order.purchased_date + relativedelta(months=product.duration)
         
     vps_order.status = "provisioned" 
     product_name = "VPS Package"
-    if order_data:
-        order, product = order_data
+    if order:
         order.status = "delivered"
-        if product:
-            product_name = product.name
+    if product:
+        product_name = product.name
     
     # Commit DB first — this always succeeds regardless of Telegram outcome
     await db.commit()
