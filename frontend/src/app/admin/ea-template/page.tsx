@@ -80,7 +80,7 @@ export default function EaTemplatePage() {
       form.append('activate', String(activateOnUpload));
 
       await api.post('/api/v1/ea-templates/admin/upload', form, {
-        headers: { 'Content-Type': undefined }
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       setMsg('EA template uploaded successfully!');
@@ -88,12 +88,10 @@ export default function EaTemplatePage() {
       setVersionLabel('');
       setNotes('');
       setUploadedBy('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
       await fetchVersions();
-      setTimeout(() => setMsg(''), 3000);
     } catch (e: any) {
       console.error(e);
-      setErr(e?.response?.data?.detail || 'Failed to upload EA template');
+      setErr(e?.response?.data?.detail || e.message || 'Failed to upload version');
     } finally {
       setUploading(false);
     }
