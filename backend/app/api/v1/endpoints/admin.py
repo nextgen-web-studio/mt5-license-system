@@ -461,7 +461,17 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
     except Exception as e:
         import traceback
         error_msg = f"{str(e)}\n{traceback.format_exc()}"
+        with open("/tmp/last_vps_error.txt", "w") as f:
+            f.write(error_msg)
         raise HTTPException(status_code=500, detail=error_msg)
+
+@router.get("/debug-error")
+async def get_debug_error():
+    import os
+    if os.path.exists("/tmp/last_vps_error.txt"):
+        with open("/tmp/last_vps_error.txt", "r") as f:
+            return {"error": f.read()}
+    return {"error": "No error logged yet."}
 
 @router.get("/run-migrations")
 async def run_migrations():
