@@ -87,11 +87,11 @@ export default function EaApprovalsPage() {
       queryClient.setQueryData(['admin-orders'], updateFn);
     },
     mutationFn: async (order: any) => {
-      if (selectedOrder.status === 'pending_admin_approval') {
-        await api.post(`/api/v1/orders/${selectedOrder.id}/approve`);
+      if (order.status === 'pending_admin_approval') {
+        await api.post(`/api/v1/orders/${order.id}/approve`);
       }
       const { data } = await api.post(`/api/v1/installments/create`, {
-        order_id: selectedOrder.id,
+        order_id: order.id,
         total_amount: parseFloat(totalAmount),
         installment_amount: parseFloat(installmentAmount),
         installment_count: parseInt(installmentCount, 10),
