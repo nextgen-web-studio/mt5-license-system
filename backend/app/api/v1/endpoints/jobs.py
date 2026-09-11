@@ -320,7 +320,7 @@ class FailRequest(BaseModel):
     error_message: str
 
 @router.post("/{job_id}/fail")
-async def fail_job(job_id: int, req: FailRequest, db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
+async def fail_job(job_id: int, req: FailRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db), api_key: str = Depends(verify_worker_api_key)):
     """
     Worker reports a compilation failure.
     """
@@ -337,7 +337,39 @@ async def fail_job(job_id: int, req: FailRequest, db: AsyncSession = Depends(get
     job.error_message = req.error_message
     job.completed_at = datetime.utcnow()
     
+    # Get associated license and order to notify admin
+    order_id = "Unknown"
+    lic_res = await db.execute(select(License).filter(License.id == job.license_id))
+    lic = lic_res.scalar_one_or_none()
+    if lic:
+        ord_res = await db.execute(select(Order).filter(Order.id == lic.order_id))
+        ord_obj = ord_res.scalar_one_or_none()
+        if ord_obj:
+            order_id = ord_obj.id
+
     await db.commit()
+
+    # Trigger background push to Telegram for admin notification
+    def notify_admin_failure(j_id, o_id, err_msg):
+        bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
+        bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+        bot_webhook_url += "/internal/compile-failed"
+        try:
+            import httpx
+            import asyncio
+            async def send():
+                async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+                    await client.post(bot_webhook_url, json={
+                        "job_id": j_id,
+                        "order_id": o_id,
+                        "error_message": err_msg
+                    })
+            asyncio.run(send())
+        except Exception as e:
+            print(f"Failed to notify Telegram bot of compile failure: {e}")
+
+    background_tasks.add_task(notify_admin_failure, job.id, order_id, req.error_message)
+
     return {"status": "success"}
 
 
