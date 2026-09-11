@@ -59,7 +59,7 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
     # Start the compiling progress bar
     initial_msg = (
         f"⚙️ *Generating your EA File...*\n\n"
-        f"`[░░░░░░░░░░] 0%`\n\n"
+        f"`[----------] 0%`\n\n"
         f"Please wait while we securely compile your file..."
     )
     try:
@@ -108,7 +108,7 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
                 
                 pct = progress_steps[min(i, len(progress_steps)-1)]
                 filled = int(pct / 10)
-                bar = "█" * filled + "░" * (10 - filled)
+                bar = "=" * filled + "-" * (10 - filled)
                 
                 text = f"⚙️ *Generating your EA File...*\n\n`[{bar}] {pct}%`\n\n_{queue_msg}_"
                 
@@ -126,11 +126,21 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
                     pass
 
             # Once the loop is finished (job completed or timed out)
-            # Delete the progress bar so it disappears when the file arrives
+            # Edit the progress bar to 100% complete instead of deleting it
             try:
+                final_text = (
+                    f"✅ *Generation Complete!*\n\n"
+                    f"`[==========] 100%`\n\n"
+                    f"_Your EA file is ready below._"
+                )
                 await client.post(
-                    f"https://api.telegram.org/bot{bot_token}/deleteMessage",
-                    json={"chat_id": chat_id, "message_id": message_id}
+                    f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                    json={
+                        "chat_id": chat_id,
+                        "message_id": message_id,
+                        "text": final_text,
+                        "parse_mode": "Markdown"
+                    }
                 )
             except Exception:
                 pass
