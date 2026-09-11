@@ -8,6 +8,7 @@ from app.db.database import AsyncSessionLocal
 from app.models import CompileJob, License, EaTemplate, Order
 import re
 import httpx
+from datetime import datetime
 
 # Global lock to prevent WINE from running concurrently and crashing the server (OOM)
 compile_lock = asyncio.Lock()
@@ -183,7 +184,6 @@ async def local_wine_compiler(job_id: int):
                         j = r.scalar_one_or_none()
                         if j:
                             j.status = "completed"
-                            from datetime import datetime
                             j.completed_at = datetime.utcnow()
                         
                         lic_r = await db2.execute(select(License).filter(License.id == j.license_id if j else -1))
@@ -203,7 +203,6 @@ async def local_wine_compiler(job_id: int):
                         bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
                         bot_webhook_url += "/internal/delivery" 
                         try:
-                            import httpx
                             async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
                                 await client.post(bot_webhook_url, json={"license_id": j.license_id})
                         except Exception as e:
@@ -215,7 +214,6 @@ async def local_wine_compiler(job_id: int):
                         j = r.scalar_one_or_none()
                         if j:
                             j.status = "completed"
-                            from datetime import datetime
                             j.completed_at = datetime.utcnow()
                         await db2.commit()
                 
