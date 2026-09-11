@@ -100,6 +100,20 @@ async def get_ea_template_by_id(template_id: int, db: AsyncSession = Depends(get
         "source_code": template.source_code
     }
 
+from fastapi.responses import PlainTextResponse
+
+@router.get("/admin/{template_id}/download")
+async def download_ea_template_raw(template_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(EaTemplate).filter(EaTemplate.id == template_id))
+    template = result.scalar_one_or_none()
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    headers = {
+        "Content-Disposition": f'attachment; filename="{template.filename}"'
+    }
+    return PlainTextResponse(content=template.source_code, headers=headers)
+
 @router.post("/admin/{template_id}/activate", response_model=dict)
 async def activate_ea_template(template_id: int, db: AsyncSession = Depends(get_db)):
     # Verify template exists

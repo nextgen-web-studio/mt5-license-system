@@ -79,17 +79,15 @@ export default function EaTemplatePage() {
       if (uploadedBy) form.append('uploaded_by', uploadedBy);
       form.append('activate', String(activateOnUpload));
 
-      const token = document.cookie.split('; ').find(row => row.startsWith('admin_token='))?.split('=')[1];
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://infinity-trader-docker-test.onrender.com'}/api/v1/ea-templates/admin/upload`, {
-        method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        body: form
+      await api.post('/api/v1/ea-templates/admin/upload', form, {
+        transformRequest: [(data, headers) => {
+          // Delete Content-Type so browser automatically sets multipart/form-data with boundary
+          if (headers && headers['Content-Type']) {
+            delete headers['Content-Type'];
+          }
+          return data;
+        }]
       });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Failed to upload version');
-      }
 
       setMsg('EA template uploaded successfully!');
       setSelectedFile(null);
@@ -99,7 +97,7 @@ export default function EaTemplatePage() {
       await fetchVersions();
     } catch (e: any) {
       console.error(e);
-      setErr(e.message || 'Failed to upload version');
+      setErr(e?.response?.data?.detail || e.message || 'Failed to upload version');
     } finally {
       setUploading(false);
     }
@@ -130,23 +128,9 @@ export default function EaTemplatePage() {
 
   const handleDownload = async (id: number, filename: string | null) => {
     try {
-      const token = document.cookie.split('; ').find(row => row.startsWith('admin_token='))?.split('=')[1];
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://infinity-trader-docker-test.onrender.com'}/api/v1/ea-templates/admin/${id}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      
-      if (!res.ok) throw new Error('Download failed');
-      const data = await res.json();
-      
-      const blob = new Blob([data.source_code], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename || `ea-template-${id}.mq5`;
-      document.body.appendChild(a); // Append to body for mobile browsers
-      a.click();
-      document.body.removeChild(a); // Clean up
-      URL.revokeObjectURL(url);
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://infinity-trader-docker-test.onrender.com';
+      // Navigate directly to the raw file endpoint to trigger native browser download
+      window.location.href = `${baseUrl.replace(/\/$/, '')}/api/v1/ea-templates/admin/${id}/download`;
     } catch (e: any) {
       console.error(e);
       setErr('Failed to download version');
