@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.cron.expire_licenses import run_expiration_check
 from app.cron.vps_reminders import run_vps_reminders
+from app.cron.stuck_jobs import check_and_reset_stuck_jobs
 
 scheduler = AsyncIOScheduler()
 
@@ -62,9 +63,11 @@ async def lifespan(app: FastAPI):
     # Start APScheduler
     scheduler.add_job(run_expiration_check, 'interval', hours=12)
     scheduler.add_job(run_vps_reminders, 'cron', hour='3,11', minute='30')
+    scheduler.add_job(check_and_reset_stuck_jobs, 'interval', minutes=5)
     scheduler.start()
     scheduler.add_job(run_expiration_check)
     scheduler.add_job(run_vps_reminders)
+    scheduler.add_job(check_and_reset_stuck_jobs)
     
     yield
     
