@@ -276,6 +276,12 @@ async def _notify_telegram_fail(db, job):
             user = user_res.scalar_one_or_none()
             if user:
                 telegram_id = user.telegram_id
+            elif lic.license_type == "trial":
+                from app.models import TrialClaim
+                claim_res = await db.execute(select(TrialClaim).filter(TrialClaim.license_id == lic.id))
+                claim = claim_res.scalar_one_or_none()
+                if claim:
+                    telegram_id = claim.telegram_id
 
     bot_webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com")
     bot_webhook_url = bot_webhook_url.replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")

@@ -368,8 +368,19 @@ async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db))
         
     usr_res = await db.execute(select(User).filter(User.id == lic.user_id))
     usr = usr_res.scalar_one_or_none()
-    if not usr:
-        raise HTTPException(status_code=404, detail="User not found")
+    
+    telegram_id = None
+    if usr:
+        telegram_id = usr.telegram_id
+    elif lic.license_type == "trial":
+        from app.models import TrialClaim
+        claim_res = await db.execute(select(TrialClaim).filter(TrialClaim.license_id == lic.id))
+        claim = claim_res.scalar_one_or_none()
+        if claim:
+            telegram_id = claim.telegram_id
+            
+    if not telegram_id:
+        raise HTTPException(status_code=404, detail="User or Telegram ID not found")
         
     # Get supabase URL
     file_path = lic.generated_filename
@@ -393,7 +404,7 @@ async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db))
             print(f"Error generating signed URL: {e}")
             
     return {
-        "telegram_id": usr.telegram_id,
+        "telegram_id": telegram_id,
         "mt5_id": lic.mt5_id,
         "download_url": url
     }
