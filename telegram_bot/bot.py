@@ -2325,7 +2325,8 @@ class DummyHandler(BaseHTTPRequestHandler):
                             "chat_id": admin_chat_id,
                             "message_id": msg_id,
                             "text": f"{icon} *BROKER CHANGE #{request_id} {action_text} FROM WEB DASHBOARD*",
-                            "parse_mode": "Markdown"
+                            "parse_mode": "Markdown",
+                            "reply_markup": {"inline_keyboard": []}
                         }
                     )
             except Exception as e:
@@ -2354,7 +2355,8 @@ class DummyHandler(BaseHTTPRequestHandler):
                             "chat_id": admin_chat_id,
                             "message_id": msg_id,
                             "text": text,
-                            "parse_mode": "Markdown"
+                            "parse_mode": "Markdown",
+                            "reply_markup": {"inline_keyboard": []}
                         }
                     )
             except Exception as e:
