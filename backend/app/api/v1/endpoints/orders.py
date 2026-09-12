@@ -175,7 +175,15 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
                 v_order.expiry_date = now + relativedelta(months=p_prod.duration)
             else:
                 v_order.expiry_date = v_order.expiry_date.replace(tzinfo=timezone.utc) + relativedelta(months=p_prod.duration)
-            new_expiry_str = v_order.expiry_date.strftime('%d %B %Y, %H:%M')
+            
+            # Format to IST
+            try:
+                from zoneinfo import ZoneInfo
+                ist_time = v_order.expiry_date.replace(tzinfo=timezone.utc).astimezone(ZoneInfo('Asia/Kolkata'))
+                new_expiry_str = ist_time.strftime('%d %B %Y, %H:%M IST')
+            except Exception:
+                new_expiry_str = v_order.expiry_date.strftime('%d %B %Y, %H:%M UTC')
+                
             is_renewal = True
             # Do not change v_order.status here to preserve 'provisioned' state
             

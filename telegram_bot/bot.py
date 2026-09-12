@@ -159,19 +159,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 try:
                     telegram_id = resp.get("telegram_id")
                     if telegram_id:
-                        if is_renewal:
+                        # VPS message is now sent directly from the backend (orders.py)
+                        # We only need to notify if it's NOT a VPS order and requires compilation
+                        is_vps = order_type == "VPS"
+                        if not is_vps:
                             msg = (
-                                f"✅ *YOUR VPS HAS BEEN RENEWED!*\n\n"
-                                f"Your VPS renewal (ORD-{order_id}) has been successfully approved.\n"
-                                f"Your server expiry date has been extended to: **{new_expiry}**."
+                                f"✅ *Your Order has been approved.*\n\n"
+                                f"Your Lifetime EA for MT5 ID `{mt5_id}` is now compiling and will be sent here shortly."
                             )
-                        else:
-                            msg = (
-                                f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*\n\n"
-                                f"Your VPS order (ORD-{order_id}) has been approved.\n\n"
-                                f"The admin will contact you shortly to provide your VPS credentials."
-                            )
-                        await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                            await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
                 except Exception as e:
                     logging.error(f"Failed to notify user: {e}")
             else:
@@ -1831,32 +1827,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"You may use the trial once this calendar month."
         )
         await update.message.reply_text(success_msg, parse_mode="Markdown")
-
-        # Send a separate animated compiling message that disappears when file arrives
-        initial_compiling = (
-            f"🕛⚙️ *Compiling your Trial EA...*\n\n"
-            f"Your personalised trial EA is being built right now.\n"
-            f"The file will be sent here automatically once ready.\n\n"
-            f"_Usually takes 2-5 minutes. Please wait._"
-        )
-        try:
-            sent = type('DummyMsg', (), {'message_id': 0})()
-            # Store and start animation task
-            license_id = resp.get("license_id") or resp.get("id")
-            if license_id:
-                lid_str = str(license_id)
-                bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-                compiling_messages[lid_str] = {
-                    "chat_id": str(update.effective_user.id),
-                    "message_id": sent.message_id,
-                    "stop": False
-                }
-                import asyncio as _asyncio
-                _asyncio.create_task(
-                    animate_compiling_message(bot_token, str(update.effective_user.id), sent.message_id, lid_str)
-                )
-        except Exception as e:
-            logging.warning(f"Could not send trial compiling message: {e}")
         return
 
     await update.message.reply_text("Please use the /start menu to select an option.")
