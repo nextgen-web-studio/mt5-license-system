@@ -565,18 +565,19 @@ async def approve_broker_change(request_id: int, background_tasks: BackgroundTas
     
     await db.commit()
     
-    # Trigger compiling animation
-    import os, asyncio, httpx
+    import asyncio
+    # Trigger webhook to clear admin bot buttons IMMEDIATELY using asyncio.create_task
+    import os
+    bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
+    asyncio.create_task(_call_webhook(f"{bot_url}/internal/bc-approved", {"request_id": request_id, "action": "approved"}))
+
+    # Then queue compiler
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     if bot_token and user and user.telegram_id:
         from app.core.telegram_animator import start_compile_and_animate
         start_compile_and_animate(background_tasks, job.id, bot_token, user.telegram_id, lic.id, None)
     else:
         background_tasks.add_task(local_wine_compiler, job.id)
-        
-    # Trigger webhook to clear admin bot buttons
-    bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
-    background_tasks.add_task(_call_webhook, f"{bot_url}/internal/bc-approved", {"request_id": request_id, "action": "approved"})
         
     return {"status": "success", "telegram_id": user.telegram_id if user else None, "license_id": lic.id}
 
@@ -595,7 +596,8 @@ async def reject_broker_change(request_id: int, background_tasks: BackgroundTask
     # Trigger webhook to clear admin bot buttons
     import os
     bot_url = os.getenv("TELEGRAM_WEBHOOK_URL", "https://infinity-trader-telegram-bot-6gf3.onrender.com").replace("/internal/delivery", "").replace("/internal/compile-started", "").replace("/internal/order-approved", "").replace("/bot", "").rstrip("/")
-    background_tasks.add_task(_call_webhook, f"{bot_url}/internal/bc-rejected", {"request_id": request_id, "action": "rejected"})
+    import asyncio
+    asyncio.create_task(_call_webhook(f"{bot_url}/internal/bc-rejected", {"request_id": request_id, "action": "rejected"}))
     
     user_result = await db.execute(select(User).filter(User.id == req.user_id))
     user = user_result.scalar_one_or_none()
