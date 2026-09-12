@@ -36,7 +36,49 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 compiling_messages: dict = {}
 
 async def animate_compiling_message(token: str, chat_id: str, message_id: int, license_id_str: str):
-    pass # Delegated to backend
+    import asyncio, httpx, os
+    progress_steps = [10, 20, 30, 40, 50, 60, 70, 80, 85, 90, 95]
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
+    
+    for i in range(150):
+        await asyncio.sleep(2)
+        state = compiling_messages.get(license_id_str)
+        if not state or state.get("stop"):
+            break
+            
+        queue_msg = "Your EA file is being built right now."
+        if i % 2 == 0:
+            try:
+                async with httpx.AsyncClient(verify=False, timeout=5.0) as client:
+                    job_resp = await client.get(f"{base_url}/jobs/queue-position/{license_id_str}")
+                    if job_resp.status_code == 200:
+                        jdata = job_resp.json()
+                        pos = jdata.get("position", 0)
+                        status = jdata.get("status", "completed")
+                        if pos > 1:
+                            queue_msg = f"You are in queue position: #{pos}"
+                        elif pos == 1 and status == "processing":
+                            queue_msg = "Your EA is being compiled right now!"
+                        elif pos == 1 and status == "pending":
+                            queue_msg = "You are next in line!"
+                        elif pos == 0:
+                            break
+            except Exception:
+                pass
+                
+        pct = progress_steps[min(i, len(progress_steps)-1)]
+        filled = int(pct / 10)
+        bar = "=" * filled + "-" * (10 - filled)
+        text = f"⚙️ *Generating your EA File...*\n\n`[{bar}] {pct}%`\n\n_{queue_msg}_"
+        
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                await client.post(
+                    f"https://api.telegram.org/bot{token}/editMessageText",
+                    json={"chat_id": chat_id, "message_id": message_id, "text": text, "parse_mode": "Markdown"}
+                )
+        except Exception:
+            pass
 
 
 async def build_main_menu(telegram_id) -> InlineKeyboardMarkup:
@@ -902,6 +944,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             f"Your new Lifetime EA is now compiling and will be sent here shortly."
                         )
                         sent = await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
+                        
+                        # Start compiling animation
+                        license_id = resp.get("license_id")
+                        if license_id:
+                            lid_str = str(license_id)
+                            compiling_messages[lid_str] = {
+                                "chat_id": str(telegram_id),
+                                "message_id": sent.message_id,
+                                "stop": False
+                            }
+                            import asyncio as _asyncio
+                            _asyncio.create_task(
+                                animate_compiling_message(context.bot.token, str(telegram_id), sent.message_id, lid_str)
+                            )
                 except Exception as e:
                     logging.error(f"Failed to notify user: {e}")
             else:
@@ -1827,6 +1883,30 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"You may use the trial once this calendar month."
         )
         await update.message.reply_text(success_msg, parse_mode="Markdown")
+        
+        # Start compiling animation
+        initial_compiling = (
+            f"⚙️ *Generating your EA File...*\n\n"
+            f"`[----------] 0%`\n\n"
+            f"Please wait while we securely compile your file..."
+        )
+        try:
+            sent = await context.bot.send_message(chat_id=update.effective_user.id, text=initial_compiling, parse_mode="Markdown")
+            license_id = resp.get("license_id") or resp.get("id")
+            if license_id:
+                lid_str = str(license_id)
+                compiling_messages[lid_str] = {
+                    "chat_id": str(update.effective_user.id),
+                    "message_id": sent.message_id,
+                    "stop": False
+                }
+                import asyncio as _asyncio
+                _asyncio.create_task(
+                    animate_compiling_message(context.bot.token, str(update.effective_user.id), sent.message_id, lid_str)
+                )
+        except Exception as e:
+            logging.warning(f"Could not send trial compiling message: {e}")
+            
         return
 
     await update.message.reply_text("Please use the /start menu to select an option.")
