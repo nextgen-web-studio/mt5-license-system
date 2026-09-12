@@ -218,11 +218,47 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
                 msg = f"✅ *YOUR VPS ORDER HAS BEEN APPROVED*\n\nYour VPS order (ORD-{order_id}) has been approved.\n\nThe admin will contact you shortly to provide your VPS credentials."
             
             async def send_tg():
-                async with httpx.AsyncClient() as client:
+                import httpx
+                async with httpx.AsyncClient(verify=False) as client:
                     await client.post(
                         f"https://api.telegram.org/bot{bot_token}/sendMessage",
                         json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                     )
+                    
+                    # Edit original order summary
+                    try:
+                        from app.db.database import AsyncSessionLocal
+                        from sqlalchemy import text, select
+                        from app.models import Product
+                        async with AsyncSessionLocal() as db_session:
+                            res = await db_session.execute(text("SELECT message_id FROM bot_message_map WHERE key = :key"), {"key": f"CUST_ORD_{order_id}"})
+                            row = res.fetchone()
+                            if row and row[0]:
+                                msg_id = row[0]
+                                prod_res = await db_session.execute(select(Product).filter(Product.id == order.product_id))
+                                prod = prod_res.scalar_one_or_none()
+                                from datetime import datetime, timezone
+                                now_str = datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+                                updated_msg = (
+                                    f"📋 *ORDER SUMMARY*\n\n"
+                                    f"Order ID: #ORD-{order_id}\n"
+                                    f"👤 Name: {user.name or user.username or 'Unknown'}\n"
+                                    f"🔑 MT5 ID: `{order.mt5_id or 'VPS'}`\n"
+                                    f"📦 Plan: {prod.name if prod else 'Unknown'}\n\n"
+                                    f"Status: ✅ *Approved* ({now_str})\n\n"
+                                    f"_Your VPS order has been approved by the admin._"
+                                )
+                                await client.post(
+                                    f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                                    json={
+                                        "chat_id": user.telegram_id,
+                                        "message_id": msg_id,
+                                        "text": updated_msg,
+                                        "parse_mode": "Markdown"
+                                    }
+                                )
+                    except Exception as e:
+                        pass
             asyncio.create_task(send_tg())
             
     return {"status": "success", "message": f"Order {order_id} approved", "telegram_id": user.telegram_id, "mt5_id": order.mt5_id or "", "order_type": order.order_type, "is_renewal": is_renewal, "new_expiry": new_expiry_str}
@@ -262,11 +298,48 @@ async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
         if bot_token:
             msg = f"❌ *YOUR ORDER HAS BEEN REJECTED*\n\nUnfortunately, your recent order (ORD-{order_id}) was rejected by the admin. Please contact support for more details."
             async def send_tg():
-                async with httpx.AsyncClient() as client:
+                import httpx
+                async with httpx.AsyncClient(verify=False) as client:
                     await client.post(
                         f"https://api.telegram.org/bot{bot_token}/sendMessage",
                         json={"chat_id": user.telegram_id, "text": msg, "parse_mode": "Markdown"}
                     )
+                    
+                    # Edit original order summary
+                    try:
+                        from app.db.database import AsyncSessionLocal
+                        from sqlalchemy import text, select
+                        from app.models import Product
+                        async with AsyncSessionLocal() as db_session:
+                            res = await db_session.execute(text("SELECT message_id FROM bot_message_map WHERE key = :key"), {"key": f"CUST_ORD_{order_id}"})
+                            row = res.fetchone()
+                            if row and row[0]:
+                                msg_id = row[0]
+                                prod_res = await db_session.execute(select(Product).filter(Product.id == order.product_id))
+                                prod = prod_res.scalar_one_or_none()
+                                from datetime import datetime, timezone
+                                now_str = datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+                                updated_msg = (
+                                    f"📋 *ORDER SUMMARY*\n\n"
+                                    f"Order ID: #ORD-{order_id}\n"
+                                    f"👤 Name: {user.name or user.username or 'Unknown'}\n"
+                                    f"🔑 MT5 ID: `{order.mt5_id or 'VPS'}`\n"
+                                    f"📦 Plan: {prod.name if prod else 'Unknown'}\n\n"
+                                    f"Status: ❌ *Rejected* ({now_str})\n\n"
+                                    f"_Your order has been rejected by the admin._"
+                                )
+                                await client.post(
+                                    f"https://api.telegram.org/bot{bot_token}/editMessageText",
+                                    json={
+                                        "chat_id": user.telegram_id,
+                                        "message_id": msg_id,
+                                        "text": updated_msg,
+                                        "parse_mode": "Markdown"
+                                    }
+                                )
+                    except Exception as e:
+                        pass
+                        
             asyncio.create_task(send_tg())
             
     # Notify bot to clear admin buttons
