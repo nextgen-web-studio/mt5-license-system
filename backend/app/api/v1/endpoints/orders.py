@@ -237,8 +237,9 @@ async def approve_order(order_id: int, db: AsyncSession = Depends(get_db)):
                                 msg_id = row[0]
                                 prod_res = await db_session.execute(select(Product).filter(Product.id == order.product_id))
                                 prod = prod_res.scalar_one_or_none()
-                                from datetime import datetime, timezone
-                                now_str = datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+                                from datetime import datetime
+                                from zoneinfo import ZoneInfo
+                                now_str = datetime.now(ZoneInfo('Asia/Kolkata')).strftime("%d %b %Y, %H:%M IST")
                                 updated_msg = (
                                     f"📋 *ORDER SUMMARY*\n\n"
                                     f"Order ID: #ORD-{order_id}\n"
@@ -317,8 +318,9 @@ async def reject_order(order_id: int, db: AsyncSession = Depends(get_db)):
                                 msg_id = row[0]
                                 prod_res = await db_session.execute(select(Product).filter(Product.id == order.product_id))
                                 prod = prod_res.scalar_one_or_none()
-                                from datetime import datetime, timezone
-                                now_str = datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+                                from datetime import datetime
+                                from zoneinfo import ZoneInfo
+                                now_str = datetime.now(ZoneInfo('Asia/Kolkata')).strftime("%d %b %Y, %H:%M IST")
                                 updated_msg = (
                                     f"📋 *ORDER SUMMARY*\n\n"
                                     f"Order ID: #ORD-{order_id}\n"

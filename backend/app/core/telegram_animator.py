@@ -43,7 +43,8 @@ async def animate_compiling(bot_token: str, chat_id: str, license_id: int, order
                         user = user_res.scalar_one_or_none()
                         
                         # Simplified approved receipt update
-                        now_str = datetime.now(timezone.utc).strftime("%d %b %Y, %H:%M UTC")
+                        from zoneinfo import ZoneInfo
+                        now_str = datetime.now(ZoneInfo('Asia/Kolkata')).strftime("%d %b %Y, %H:%M IST")
                         updated_msg = (
                             f"📋 *ORDER SUMMARY*\n\n"
                             f"Order ID: #ORD-{order_id}\n"
