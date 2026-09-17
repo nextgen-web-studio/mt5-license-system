@@ -1,4 +1,4 @@
-from typing import Optional
+﻿from typing import Optional
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -436,8 +436,7 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                         f"Root password: <code>{data.password}</code>\n\n"
                         f"Purchased Date: <code>{p_date_str}</code>\n"
                         f"Expiry Date & Time: <code>{e_date_str}</code>\n\n"
-                        "Please connect using Remote Desktop Connection (RDP) on your PC or phone.\n\n"
-                        "📺 <b>VPS Setup Guide:</b> <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Click here to watch the setup tutorial</a>"
+                        "Please connect using Remote Desktop Connection (RDP) on your PC or mobile.\n\n📺 <b>VPS Setup Guides:</b>\n• <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Setup for PC/Laptop</a>\n• <a href='https://youtu.be/U1O_TAdAb2o?si=f-JNMPoTFsLPLwTE'>Setup for Mobile</a>"
                     )
                     import httpx
                     async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
