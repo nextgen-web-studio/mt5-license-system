@@ -1477,6 +1477,23 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
             s = str(s).replace(c, f'\\{c}')
         return s
 
+    tg_user = update.effective_user.username
+    tg_username = f"@{tg_user}" if tg_user else "N/A"
+    
+    plan_name = product['name'] if product else 'Unknown'
+    if p_type == "VPS":
+        vps_details_map = {
+            "Basic": "2GB RAM",
+            "Premium": "4GB RAM",
+            "Gold": "8GB RAM",
+            "Platinum": "16GB RAM",
+            "Diamond": "32GB RAM"
+        }
+        for k, v in vps_details_map.items():
+            if k.lower() in plan_name.lower():
+                plan_name = f"{plan_name} ({v})"
+                break
+
     if raw_price <= 5000:
         # EA — USD pricing
         usd_inr = await get_usd_inr_rate()
@@ -1488,9 +1505,10 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 f"Order ID: \\#ORD\\-{order['id']}\n"
                 f"👤 Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
                 f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
+                f"💬 Telegram: {_esc(tg_username)}\n"
                 f"🔑 MT5 ID: `{mt5_id}`\n"
-                f"📦 Plan: {_esc(product['name'] if product else 'Unknown')}\n\n"
-                f"{_esc(offer_label)} — *Limited Time\\!*\n"
+                f"📦 Plan: {_esc(plan_name)}\n\n"
+                f"{_esc(offer_label)} 🔥 *Limited Time\\!*\n"
                 f"💰 Price: ~\\${int(raw_price)}~ ➡️ \\${int(effective_price)}\n"
                 f"ℹ️ _Today's rate: ₹{_esc(f'{usd_inr:.2f}')} \\= ₹{price_inr:,} \\(was ₹{orig_inr:,}\\)_\n\n"
                 f"Status: 🕐 Pending Admin Approval\n\n"
@@ -1504,8 +1522,9 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 f"Order ID: #ORD-{order['id']}\n"
                 f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
                 f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+                f"💬 Telegram: {tg_username}\n"
                 f"🔑 MT5 ID: `{mt5_id}`\n"
-                f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
+                f"📦 Plan: {plan_name}\n\n"
                 f"💰 Price: ${int(raw_price)}\n"
                 f"ℹ️ _Note: The final INR amount will be calculated based on the live USD/INR exchange rate on the actual day you make your payment (Today's rate: ₹{usd_inr:.2f} = ₹{price_inr:,})._\n\n"
                 f"Status: 🕐 Pending Admin Approval\n\n"
@@ -1521,8 +1540,9 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 f"Order ID: \\#ORD\\-{order['id']}\n"
                 f"👤 Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
                 f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
-                f"📦 Plan: {_esc(product['name'] if product else 'Unknown')}\n\n"
-                f"{_esc(offer_label)} — *Limited Time\\!*\n"
+                f"💬 Telegram: {_esc(tg_username)}\n"
+                f"📦 Plan: {_esc(plan_name)}\n\n"
+                f"{_esc(offer_label)} 🔥 *Limited Time\\!*\n"
                 f"💰 Price: ~₹{int(raw_price):,}~ ➡️ ₹{int(effective_price):,}\n\n"
                 f"Status: 🕐 Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order\\."
@@ -1534,7 +1554,8 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 f"Order ID: #ORD-{order['id']}\n"
                 f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
                 f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-                f"📦 Plan: {product['name'] if product else 'Unknown'}\n\n"
+                f"💬 Telegram: {tg_username}\n"
+                f"📦 Plan: {plan_name}\n\n"
                 f"💰 Price: ₹{int(raw_price):,}\n\n"
                 f"Status: 🕐 Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order."
