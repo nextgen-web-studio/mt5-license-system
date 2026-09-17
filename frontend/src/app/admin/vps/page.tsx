@@ -341,8 +341,10 @@ export default function VpsOrdersPage() {
                         >
                           <MessageSquare size={16} />
                         </button>
-                        {order.is_renewal ? (order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (<>
-                            <button 
+                        {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                          order.is_renewal ? (
+                            <>
+                              <button 
                                 onClick={() => {
                                   api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                                     toast("Renewal Approved", "success");
@@ -366,14 +368,16 @@ export default function VpsOrdersPage() {
                               >
                                 Reject
                               </button>
-                          </>)) : (order.status !== 'rejected' && (
-                          <button 
+                            </>
+                          ) : (
+                            <button 
                               onClick={() => openModal(order)}
                               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
                             >
                               Provision
                             </button>
-                        ))}
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -458,8 +462,10 @@ export default function VpsOrdersPage() {
                         >
                           <MessageSquare size={16} />
                         </button>
-                        {order.is_renewal ? (order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (<>
-                            <button 
+                        {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                          order.is_renewal ? (
+                            <>
+                              <button 
                                 onClick={() => {
                                   api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                                     toast("Renewal Approved", "success");
@@ -483,14 +489,16 @@ export default function VpsOrdersPage() {
                               >
                                 Reject
                               </button>
-                          </>)) : (order.status !== 'rejected' && (
-                          <button 
+                            </>
+                          ) : (
+                            <button 
                               onClick={() => openModal(order)}
                               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-medium transition-colors"
                             >
                               Provision
                             </button>
-                        ))}
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -570,8 +578,10 @@ export default function VpsOrdersPage() {
                     className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors">
                     <MessageSquare size={13} /> Message
                   </button>
-                  {order.is_renewal ? (order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (<>
-                            <button 
+                  {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                    order.is_renewal ? (
+                      <>
+                        <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                               toast("Renewal Approved", "success");
@@ -593,13 +603,15 @@ export default function VpsOrdersPage() {
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors">
                           <XCircle size={13} /> Reject
                         </button>
-                          </>)) : (order.status !== 'rejected' && (
-                          <button 
+                      </>
+                    ) : (
+                      <button 
                         onClick={() => openModal(order)}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
                         <Check size={13} /> Provision
                       </button>
-                        ))}
+                    )
+                  )}
                 </div>
               </div>
             ))
@@ -672,8 +684,10 @@ export default function VpsOrdersPage() {
                     className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors">
                     <MessageSquare size={13} /> Message
                   </button>
-                  {order.is_renewal ? (order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (<>
-                            <button 
+                  {order.status !== 'provisioned' && order.status !== 'delivered' && order.status !== 'rejected' && (
+                    order.is_renewal ? (
+                      <>
+                        <button 
                           onClick={() => {
                             api.post(`/api/v1/orders/${order.order_id}/approve`).then(() => {
                               toast("Renewal Approved", "success");
@@ -695,13 +709,15 @@ export default function VpsOrdersPage() {
                           className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors">
                           <XCircle size={13} /> Reject
                         </button>
-                          </>)) : (order.status !== 'rejected' && (
-                          <button 
+                      </>
+                    ) : (
+                      <button 
                         onClick={() => openModal(order)}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-colors">
                         <Check size={13} /> Provision
                       </button>
-                        ))}
+                    )
+                  )}
                 </div>
               </div>
             ))
