@@ -427,17 +427,17 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                     e_date_str = to_ist_str(vps_order.expiry_date)
                     
                     msg = (
-                        "✅ *Your VPS is Ready!*\n\n"
-                        "*VPS Node Details*\n"
-                        f"Product Name: `{product_name}`\n"
-                        f"Hostname: `{data.hostname or 'N/A'}`\n"
-                        f"Main IP: `{data.ip}`\n"
-                        f"User name: `{data.username}`\n"
-                        f"Root password: `{data.password}`\n\n"
-                        f"Purchased Date: `{p_date_str}`\n"
-                        f"Expiry Date & Time: `{e_date_str}`\n\n"
+                        "✅ <b>Your VPS is Ready!</b>\n\n"
+                        "<b>VPS Node Details</b>\n"
+                        f"Product Name: <code>{product_name}</code>\n"
+                        f"Hostname: <code>{data.hostname or 'N/A'}</code>\n"
+                        f"Main IP: <code>{data.ip}</code>\n"
+                        f"User name: <code>{data.username}</code>\n"
+                        f"Root password: <code>{data.password}</code>\n\n"
+                        f"Purchased Date: <code>{p_date_str}</code>\n"
+                        f"Expiry Date & Time: <code>{e_date_str}</code>\n\n"
                         "Please connect using Remote Desktop Connection (RDP) on your PC or phone.\n\n"
-                        "📺 *VPS Setup Guide:* [Click here to watch the setup tutorial](https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR)"
+                        "📺 <b>VPS Setup Guide:</b> <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Click here to watch the setup tutorial</a>"
                     )
                     import httpx
                     async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
@@ -446,7 +446,7 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                             json={
                                 "chat_id": user.telegram_id,
                                 "text": msg,
-                                "parse_mode": "Markdown",
+                                "parse_mode": "HTML",
                                 "disable_web_page_preview": True
                             }
                         )
