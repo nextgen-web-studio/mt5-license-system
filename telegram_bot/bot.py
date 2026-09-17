@@ -1321,9 +1321,37 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     if not admin_username.startswith("@"):
         admin_username = f"@{admin_username}"
     
+    plan_name_raw = product['name'] if product else 'Unknown'
+    plan_name = plan_name_raw
+    if product:
+        ram = ""
+        vps_details_map = {
+            "Basic": "2GB",
+            "Premium": "4GB",
+            "Gold": "8GB",
+            "Platinum": "16GB",
+            "Diamond": "32GB"
+        }
+        for k, v in vps_details_map.items():
+            if k.lower() in plan_name_raw.lower():
+                ram = v
+                break
+        
+        base_name = plan_name_raw.split("1")[0].split("3")[0].split("6")[0].split("12")[0].strip()
+        if not base_name.lower().endswith("plan"):
+            base_name += " Plan"
+            
+        dur = product.get("duration", 1)
+        dur_str = f"{dur} month" if dur == 1 else f"{dur} months"
+        
+        if ram:
+            plan_name = f"{base_name} {ram} ({dur_str})"
+        else:
+            plan_name = f"{base_name} ({dur_str})"
+
     user_msg = (
         f"💳 *VPS Order Created*\n\n"
-        f"**Plan:** {product['name'] if product else 'Unknown'}\n"
+        f"**Plan:** {plan_name}\n"
         f"**Order ID:** #ORD-{order['id']}\n"
         f"**Amount:** ₹{product['price'] if product else 0:,.0f}\n\n"
         f"Please make the payment via UPI to:\n"
@@ -1332,7 +1360,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     )
     
     context.user_data['awaiting_vps_payment_screenshot'] = order['id']
-    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
+    keyboard = [[InlineKeyboardButton("💬 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
     
     if update.message:
         await update.message.reply_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -1348,7 +1376,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
         tg_username = f"@{tg_user}" if tg_user else "N/A"
         
         is_renewal = context.user_data.pop('is_vps_renewal', False)
-        title = "🔄 *VPS RENEWAL INITIATED*" if is_renewal else "🔔 *NEW VPS INQUIRY*"
+        title = "🔄 *VPS RENEWAL INITIATED*" if is_renewal else "💬 *NEW VPS INQUIRY*"
         admin_msg = (
             f"{title}\n\n"
             f"Order ID: `#ORD-{order['id']}`\n"
@@ -1360,7 +1388,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
             f"Occupation: `{db_user.get('occupation', 'N/A')}`\n"
             f"Telegram Username: `{tg_username}`\n"
             f"Telegram ID: `{update.effective_user.id}`\n"
-            f"Plan Selected: `{product['name'] if product else 'Unknown'}`"
+            f"Plan Selected: `{plan_name}`"
         )
         try:
             await context.bot.send_message(chat_id=vps_admin_id, text=admin_msg, parse_mode="Markdown")
