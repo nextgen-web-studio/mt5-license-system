@@ -304,10 +304,10 @@ class VpsProvisionData(BaseModel):
 async def get_vps_orders(db: AsyncSession = Depends(get_db)):
     try:
         from sqlalchemy import text
-        vps_res = await db.execute(text("SELECT id FROM vps_orders WHERE order_id = 10"))
+        vps_res = await db.execute(text("SELECT vps_id FROM orders WHERE id = 10 AND vps_id IS NOT NULL"))
         vps = vps_res.fetchone()
         if not vps:
-            vps_res = await db.execute(text("SELECT id FROM vps_orders WHERE id = 10"))
+            vps_res = await db.execute(text("SELECT id FROM vps_orders WHERE order_id = 10"))
             vps = vps_res.fetchone()
         if vps:
             await db.execute(text(f"UPDATE vps_orders SET expiry_date = '2026-10-18 00:00:00' WHERE id = {vps[0]}"))
