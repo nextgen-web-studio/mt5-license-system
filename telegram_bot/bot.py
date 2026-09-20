@@ -882,7 +882,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         admin_chat_id = os.getenv("ADMIN_CHAT_ID")
         if admin_chat_id:
             tg_user = update.effective_user.username
-            tg_username = f"@{tg_user}" if tg_user else "N/A"
+    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
             
             admin_msg = (
                 f"🔄 *BROKER CHANGE REQUEST*\n\n"
@@ -1373,7 +1373,7 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID", os.getenv("ADMIN_CHAT_ID"))
     if vps_admin_id:
         tg_user = update.effective_user.username
-        tg_username = f"@{tg_user}" if tg_user else "N/A"
+    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
         
         is_renewal = context.user_data.pop('is_vps_renewal', False)
         title = "🔄 *VPS RENEWAL INITIATED*" if is_renewal else "💬 *NEW VPS INQUIRY*"
@@ -1506,7 +1506,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         return s
 
     tg_user = update.effective_user.username
-    tg_username = f"@{tg_user}" if tg_user else "N/A"
+    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
     
     plan_name = product['name'] if product else 'Unknown'
     if p_type == "VPS":
@@ -1610,7 +1610,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     admin_chat_id = os.getenv("ADMIN_CHAT_ID")
     if admin_chat_id:
         tg_user = update.effective_user.username
-        tg_username = f"@{tg_user}" if tg_user else "N/A"
+    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
         
         admin_msg = (
             f"🆕 *NEW EA ORDER*\n\n"
