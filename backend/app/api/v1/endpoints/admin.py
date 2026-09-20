@@ -1,4 +1,4 @@
-﻿from typing import Optional
+from typing import Optional
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -147,7 +147,7 @@ async def retry_job(job_id: int, background_tasks: BackgroundTasks, db: AsyncSes
     if job.status not in ("failed", "processing"):
         raise HTTPException(
             status_code=400,
-            detail=f"Job {job_id} is '{job.status}' — can only retry 'failed' or stuck 'processing' jobs"
+            detail=f"Job {job_id} is '{job.status}' � can only retry 'failed' or stuck 'processing' jobs"
         )
 
     previous_status = job.status
@@ -310,7 +310,7 @@ async def get_vps_orders(db: AsyncSession = Depends(get_db)):
             vps_res = await db.execute(text("SELECT id FROM vps_orders WHERE id = 10"))
             vps = vps_res.fetchone()
         if vps:
-            await db.execute(text(f"UPDATE vps_orders SET expiry_date = '2026-10-18 23:59:59' WHERE id = {vps[0]}"))
+            await db.execute(text(f"UPDATE vps_orders SET expiry_date = '2026-10-18 00:00:00' WHERE id = {vps[0]}"))
             
         products_res = await db.execute(text("SELECT id, name, description FROM products"))
         for p in products_res.all():
@@ -446,7 +446,7 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                     e_date_str = to_ist_str(vps_order.expiry_date)
                     
                     msg = (
-                        "✅ <b>Your VPS is Ready!</b>\n\n"
+                        "? <b>Your VPS is Ready!</b>\n\n"
                         "<b>VPS Node Details</b>\n"
                         f"Product Name: <code>{product_name}</code>\n"
                         f"Hostname: <code>{data.hostname or 'N/A'}</code>\n"
@@ -455,7 +455,7 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                         f"Root password: <code>{data.password}</code>\n\n"
                         f"Purchased Date: <code>{p_date_str}</code>\n"
                         f"Expiry Date & Time: <code>{e_date_str}</code>\n\n"
-                        "Please connect using Remote Desktop Connection (RDP) on your PC or mobile.\n\n📺 <b>VPS Setup Guides:</b>\n• <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Setup for PC/Laptop</a>\n• <a href='https://youtu.be/U1O_TAdAb2o?si=f-JNMPoTFsLPLwTE'>Setup for Mobile</a>"
+                        "Please connect using Remote Desktop Connection (RDP) on your PC or mobile.\n\n?? <b>VPS Setup Guides:</b>\n� <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Setup for PC/Laptop</a>\n� <a href='https://youtu.be/U1O_TAdAb2o?si=f-JNMPoTFsLPLwTE'>Setup for Mobile</a>"
                     )
                     import httpx
                     async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
@@ -551,7 +551,7 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
                                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
                                 json={
                                     "chat_id": user.telegram_id,
-                                    "text": f"❌ <b>VPS ORDER REJECTED</b>\n\nUnfortunately, your VPS order (ORD-{vps_order.order_id}) has been rejected by the admin. Please contact support for more details.",
+                                    "text": f"? <b>VPS ORDER REJECTED</b>\n\nUnfortunately, your VPS order (ORD-{vps_order.order_id}) has been rejected by the admin. Please contact support for more details.",
                                     "parse_mode": "HTML"
                                 }
                             )
@@ -580,7 +580,7 @@ async def update_vps_status(vps_id: int, data: VpsStatusUpdate, db: AsyncSession
                 raise HTTPException(status_code=500, detail="Backend missing TELEGRAM_BOT_TOKEN environment variable!")
                 
             msg = (
-                f"✅ *PAYMENT SUCCESSFUL*\n\n"
+                f"? *PAYMENT SUCCESSFUL*\n\n"
                 f"Your payment for VPS Order #ORD-{vps_order.order_id} has been verified by the Admin.\n\n"
                 f"Your VPS node is currently being prepared and provisioned. "
                 f"You will receive your login details (IP and Password) here shortly!"
@@ -616,7 +616,7 @@ async def send_vps_message(vps_id: int, data: VpsMessageData, db: AsyncSession =
     import httpx
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
     
-    msg_text = f"📩 **Message from Admin regarding your VPS Order:**\n\n{data.message}"
+    msg_text = f"?? **Message from Admin regarding your VPS Order:**\n\n{data.message}"
     
     try:
         async with httpx.AsyncClient(verify=False) as client:
@@ -662,7 +662,7 @@ async def mark_vps_paid_by_order(order_id: int, db: AsyncSession = Depends(get_d
             if not bot_token:
                 raise HTTPException(status_code=500, detail="Backend missing TELEGRAM_BOT_TOKEN environment variable!")
             msg = (
-                f"✅ *PAYMENT SUCCESSFUL*\n\n"
+                f"? *PAYMENT SUCCESSFUL*\n\n"
                 f"Your payment for VPS Order #ORD-{order_id} has been received and verified.\n\n"
                 f"Your VPS node is currently being prepared and provisioned. "
                 f"You will receive your login details (IP and Password) here shortly!"
