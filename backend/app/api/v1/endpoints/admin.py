@@ -1,4 +1,4 @@
-from typing import Optional
+ï»¿from typing import Optional
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -147,7 +147,7 @@ async def retry_job(job_id: int, background_tasks: BackgroundTasks, db: AsyncSes
     if job.status not in ("failed", "processing"):
         raise HTTPException(
             status_code=400,
-            detail=f"Job {job_id} is '{job.status}' — can only retry 'failed' or stuck 'processing' jobs"
+            detail=f"Job {job_id} is '{job.status}' ï¿½ can only retry 'failed' or stuck 'processing' jobs"
         )
 
     previous_status = job.status
@@ -455,7 +455,7 @@ async def provision_vps(vps_id: int, data: VpsProvisionData, db: AsyncSession = 
                         f"Root password: <code>{data.password}</code>\n\n"
                         f"Purchased Date: <code>{p_date_str}</code>\n"
                         f"Expiry Date & Time: <code>{e_date_str}</code>\n\n"
-                        "Please connect using Remote Desktop Connection (RDP) on your PC or mobile.\n\n?? <b>VPS Setup Guides:</b>\n• <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Setup for PC/Laptop</a>\n• <a href='https://youtu.be/U1O_TAdAb2o?si=f-JNMPoTFsLPLwTE'>Setup for Mobile</a>"
+                        "Please connect using Remote Desktop Connection (RDP) on your PC or mobile.\n\n?? <b>VPS Setup Guides:</b>\nï¿½ <a href='https://youtube.com/shorts/eSWipdqtUso?si=qTOVSUf1fTezGqZR'>Setup for PC/Laptop</a>\nï¿½ <a href='https://youtu.be/U1O_TAdAb2o?si=f-JNMPoTFsLPLwTE'>Setup for Mobile</a>"
                     )
                     import httpx
                     async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
@@ -683,42 +683,11 @@ async def mark_vps_paid_by_order(order_id: int, db: AsyncSession = Depends(get_d
 @router.get("/force-migration")
 async def force_migration(db: AsyncSession = Depends(get_db)):
     import sqlalchemy as sa
-    from datetime import datetime, timezone
-    
-    # 1. Update Expiry Date for Order 10
-    # First find the VPS order for order_id = 10
-    vps_res = await db.execute(sa.text("SELECT id, order_id, expiry_date FROM vps_orders WHERE order_id = 10"))
-    vps = vps_res.fetchone()
-    if not vps:
-        # maybe vps_id = 10?
-        vps_res = await db.execute(sa.text("SELECT id, order_id, expiry_date FROM vps_orders WHERE id = 10"))
-        vps = vps_res.fetchone()
-    
-    update_res = "Not found"
-    if vps:
-        # Update expiry to Oct 18, 2026
-        # Assuming we keep the same time or just set it to end of day
-        new_date = "2026-10-18 23:59:59"
-        await db.execute(sa.text(f"UPDATE vps_orders SET expiry_date = '{new_date}' WHERE id = {vps[0]}"))
-        await db.commit()
-        update_res = f"Updated VPS {vps[0]} expiry from {vps[2]} to {new_date}"
-        
-    # 2. Fetch all products to see 'Terminals'
-    products_res = await db.execute(sa.text("SELECT id, name, description, duration FROM products"))
-    products = [dict(r._mapping) for r in products_res.all()]
-    
-    # Let's see if we can just update the product name or description
-    # "Premium plan should be 4 terminals"
-    for p in products:
-        if "Premium" in p["name"]:
-            new_desc = p["description"].replace("2 Terminals", "4 Terminals").replace("2 terminals", "4 terminals")
-            if "Terminals" not in p["description"] and "terminals" not in p["description"]:
-                new_desc += " (4 Terminals)"
-            await db.execute(sa.text(f"UPDATE products SET description = :desc WHERE id = :pid"), {"desc": new_desc, "pid": p["id"]})
-            await db.commit()
-            p["new_description"] = new_desc
-
-    return {"vps_update": update_res, "products": products}
+    jobs_res = await db.execute(sa.text("SELECT id, error_message FROM compile_jobs WHERE status = 'failed' ORDER BY id DESC LIMIT 1"))
+    job = jobs_res.fetchone()
+    template_res = await db.execute(sa.text("SELECT source_code FROM ea_templates WHERE is_active = true"))
+    template = template_res.fetchone()
+    return {"job_error": job[1] if job else None, "template": template[0] if template else None}
 
 @router.get("/vps-orders/force-screenshot-migration")
 async def force_screenshot_migration(db: AsyncSession = Depends(get_db)):
