@@ -1,4 +1,4 @@
-﻿import os
+import os
 import logging
 import threading
 from datetime import datetime, timezone
@@ -69,7 +69,7 @@ async def animate_compiling_message(token: str, chat_id: str, message_id: int, l
         pct = progress_steps[min(i, len(progress_steps)-1)]
         filled = int(pct / 10)
         bar = "=" * filled + "-" * (10 - filled)
-        text = f"⚙️ *Generating your EA File...*\n\n`[{bar}] {pct}%`\n\n_{queue_msg}_"
+        text = f"?? *Generating your EA File...*\n\n`[{bar}] {pct}%`\n\n_{queue_msg}_"
         
         try:
             async with httpx.AsyncClient(verify=False) as client:
@@ -117,7 +117,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['db_user_phone'] = db_user.get('phone')
         context.user_data['db_user_name'] = db_user.get('name')
         await update.message.reply_text(
-            f"Welcome back, {db_user['name']}! 🤖\n\nPlease select an option below:\n\n_Developed by_ [NextGen Web Studio](https://t.me/shridharsan1)",
+            f"Welcome back, {db_user['name']}! ??\n\nPlease select an option below:\n\n_Developed by_ [NextGen Web Studio](https://t.me/shridharsan1)",
             reply_markup=await build_main_menu(user.id),
             parse_mode="Markdown",
             disable_web_page_preview=True
@@ -126,7 +126,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     # Ask for full name explicitly
     await update.message.reply_text(
-        f"Welcome to Infinity Trader! 🤖\n\nPlease enter your *Full Name* to register and continue:\n\n_Developed by_ [NextGen Web Studio](https://t.me/shridharsan1)",
+        f"Welcome to Infinity Trader! ??\n\nPlease enter your *Full Name* to register and continue:\n\n_Developed by_ [NextGen Web Studio](https://t.me/shridharsan1)",
         parse_mode="Markdown",
         disable_web_page_preview=True
     )
@@ -190,12 +190,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 if is_renewal:
                     await query.edit_message_text(
-                        f"✅ VPS Renewal #{order_id} has been APPROVED.\n\nExpiry extended to: {new_expiry}",
+                        f"? VPS Renewal #{order_id} has been APPROVED.\n\nExpiry extended to: {new_expiry}",
                         parse_mode="Markdown"
                     )
                 else:
                     await query.edit_message_text(
-                        f"✅ VPS Order #{order_id} has been APPROVED.\n\nPlease contact the customer directly to provide their VPS details.",
+                        f"? VPS Order #{order_id} has been APPROVED.\n\nPlease contact the customer directly to provide their VPS details.",
                         parse_mode="Markdown"
                     )
                 try:
@@ -206,7 +206,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         is_vps = order_type == "VPS"
                         if not is_vps:
                             msg = (
-                                f"✅ *Your Order has been approved.*\n\n"
+                                f"? *Your Order has been approved.*\n\n"
                                 f"Your Lifetime EA for MT5 ID `{mt5_id}` is now compiling and will be sent here shortly."
                             )
                             await context.bot.send_message(chat_id=telegram_id, text=msg, parse_mode="Markdown")
@@ -214,11 +214,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logging.error(f"Failed to notify user: {e}")
             else:
                 kb = [
-                    [InlineKeyboardButton("🚀 Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
-                    [InlineKeyboardButton("💳 Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
+                    [InlineKeyboardButton("?? Generate Full Lifetime License", callback_data=f"generate_lifetime_{order_id}_{mt5_id}")],
+                    [InlineKeyboardButton("?? Create Installment Arrangement", callback_data=f"create_installment_{order_id}")]
                 ]
                 await query.edit_message_text(
-                    f"✅ Order #{order_id} has been APPROVED.\n\nMT5 ID: `{mt5_id}`\n\nWhat would you like to do?",
+                    f"? Order #{order_id} has been APPROVED.\n\nMT5 ID: `{mt5_id}`\n\nWhat would you like to do?",
                     parse_mode="Markdown",
                     reply_markup=InlineKeyboardMarkup(kb)
                 )
@@ -228,7 +228,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     telegram_id = resp.get("telegram_id")
                     if telegram_id:
                         msg = (
-                            f"✅ *YOUR ORDER HAS BEEN APPROVED*\n\n"
+                            f"? *YOUR ORDER HAS BEEN APPROVED*\n\n"
                             f"Your EA order (ORD-{order_id}) has been approved.\n\n"
                             f"Your EA is being prepared and will be delivered to you shortly."
                         )
@@ -237,7 +237,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logging.error(f"Failed to notify user: {e}")
         else:
             if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
-                await query.edit_message_text(f"⚠️ Order #{order_id} was already processed.")
+                await query.edit_message_text(f"?? Order #{order_id} was already processed.")
             else:
                 await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
@@ -253,12 +253,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         resp = await reject_order(order_id)
         if "error" not in resp:
-            await query.edit_message_text(f"❌ Order #{order_id} has been REJECTED.")
+            await query.edit_message_text(f"? Order #{order_id} has been REJECTED.")
             try:
                 telegram_id = resp.get("telegram_id")
                 if telegram_id:
                     msg = (
-                        f"❌ *ORDER NOT APPROVED*\n\n"
+                        f"? *ORDER NOT APPROVED*\n\n"
                         f"Your EA order (ORD-{order_id}) has not been approved by the administrator.\n\n"
                         f"Please contact support for more information."
                     )
@@ -267,7 +267,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
         else:
             if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
-                await query.edit_message_text(f"⚠️ Order #{order_id} was already processed.")
+                await query.edit_message_text(f"?? Order #{order_id} was already processed.")
             else:
                 await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
@@ -283,24 +283,24 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         _, _, order_id_str, mt5_id = data.split("_", 3)
         order_id = int(order_id_str)
         
-        await query.edit_message_text(f"🚀 Generating Lifetime License for Order #{order_id} (MT5: {mt5_id})...")
+        await query.edit_message_text(f"?? Generating Lifetime License for Order #{order_id} (MT5: {mt5_id})...")
         
         from utils.api_client import generate_license
         resp = await generate_license(order_id, mt5_id)
         
         if "error" in resp:
-            await query.edit_message_text(f"❌ *Error generating license:*\n\n{resp['error']}", parse_mode="Markdown")
+            await query.edit_message_text(f"? *Error generating license:*\n\n{resp['error']}", parse_mode="Markdown")
             return
             
         await query.edit_message_text(
-            f"✅ *Lifetime License Generated!*\n\n"
+            f"? *Lifetime License Generated!*\n\n"
             f"Order: ORD-{order_id}\n"
             f"MT5 ID: `{mt5_id}`\n\n"
-            f"⏳ EA is now compiling. File will be auto-delivered to the customer when ready.\n\n"
+            f"? EA is now compiling. File will be auto-delivered to the customer when ready.\n\n"
             f"If the customer doesn't receive it within 10 minutes, use the button below:",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("📤 Resend EA to Customer", callback_data=f"resend_ea_{order_id}")
+                InlineKeyboardButton("?? Resend EA to Customer", callback_data=f"resend_ea_{order_id}")
             ]])
         )
         
@@ -311,12 +311,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if telegram_id and license_id:
             initial_msg = (
-                f"✅ *Your Order is Approved!*\n\n"
+                f"? *Your Order is Approved!*\n\n"
                 f"MT5 ID: `{mt5_id}`\n\n"
-                f"🔄 *Compiling your EA...*\n\n"
+                f"?? *Compiling your EA...*\n\n"
                 f"Your EA file is being built right now.\n"
                 f"The file will be sent here automatically once ready.\n\n"
-                f"_Usually takes 2–5 minutes. Please wait._"
+                f"_Usually takes 2�5 minutes. Please wait._"
             )
             try:
                 sent = type('DummyMsg', (), {'message_id': 0})()
@@ -370,19 +370,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if lic_status == "active":
                 # File is already active
                 await query.answer(
-                    f"✅ The file is already compiled and sent to the customer.",
+                    f"? The file is already compiled and sent to the customer.",
                     show_alert=True
                 )
             elif lic_status in ["failed", "pending", "generating"]:
                 # Retry compilation
                 recompile_resp = await client.post(f"{base_url}/licenses/{lic_id}/recompile")
                 if recompile_resp.status_code == 200:
-                    await query.answer(f"🔄 Recompiling EA... The customer will receive it shortly.", show_alert=True)
+                    await query.answer(f"?? Recompiling EA... The customer will receive it shortly.", show_alert=True)
                 else:
-                    await query.answer(f"❌ Failed to trigger recompile: {recompile_resp.text}", show_alert=True)
+                    await query.answer(f"? Failed to trigger recompile: {recompile_resp.text}", show_alert=True)
                 return
             
-            # File is compiled — trigger delivery manually
+            # File is compiled � trigger delivery manually
             delivery_resp = await client.get(f"{base_url}/licenses/{lic_id}/delivery-info")
             if delivery_resp.status_code != 200:
                 await query.answer("Failed to get delivery info.", show_alert=True)
@@ -394,7 +394,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             download_url = info.get("download_url")
             
             if not download_url:
-                await query.answer("❌ File not in storage yet. Worker may still be running.", show_alert=True)
+                await query.answer("? File not in storage yet. Worker may still be running.", show_alert=True)
                 return
             
             # Download and resend the file directly from here
@@ -408,14 +408,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.send_document(
                         chat_id=int(telegram_id),
                         document=doc,
-                        caption=f"📦 *InfinityTrader {"FREE TRIAL" if license_type == "trial" else "EA"}*\nMT5 ID: `{mt5_id}`\n\n✅ Your EA file — install in MetaTrader 5 Expert Advisors folder.",
+                        caption=f"?? *InfinityTrader {"FREE TRIAL" if license_type == "trial" else "EA"}*\nMT5 ID: `{mt5_id}`\n\n? Your EA file � install in MetaTrader 5 Expert Advisors folder.",
                         parse_mode="Markdown"
                     )
-                    await query.answer("✅ EA file resent to customer!", show_alert=True)
+                    await query.answer("? EA file resent to customer!", show_alert=True)
                 except Exception as e:
                     await query.answer(f"Failed to send: {e}", show_alert=True)
             else:
-                await query.answer(f"❌ Could not download file from storage (HTTP {file_resp.status_code}).", show_alert=True)
+                await query.answer(f"? Could not download file from storage (HTTP {file_resp.status_code}).", show_alert=True)
         return
 
 
@@ -443,7 +443,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['install_order_id'] = order_id
         context.user_data['install_step'] = 'total_amount'
         
-        await query.edit_message_text(f"💳 *Create Installment Arrangement for Order #{order_id}*\n\nPlease enter the **Total agreed amount** (e.g. 20000):", parse_mode="Markdown")
+        await query.edit_message_text(f"?? *Create Installment Arrangement for Order #{order_id}*\n\nPlease enter the **Total agreed amount** (e.g. 20000):", parse_mode="Markdown")
         return
 
     if data.startswith("manage_installment_"):
@@ -463,23 +463,23 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 data_json = resp.json()
                 is_final = data_json['installments_paid'] >= data_json['installment_count']
                 expiry_val = data_json['license_expiry']
-                expiry_display = expiry_val.split('T')[0] if expiry_val else 'Lifetime ♾️'
+                expiry_display = expiry_val.split('T')[0] if expiry_val else 'Lifetime ??'
                 msg = (
-                    f"💳 *INSTALLMENT MANAGEMENT*\n\n"
+                    f"?? *INSTALLMENT MANAGEMENT*\n\n"
                     f"Order: ORD-{order_id}\n"
                     f"MT5 ID: `{data_json['mt5_id']}`\n\n"
-                    f"Total: ₹{data_json['total_amount']:,.0f}\n"
-                    f"Per Installment: ₹{data_json['installment_amount']:,.0f}\n\n"
-                    f"Paid: ₹{data_json['amount_paid']:,.0f}\n"
-                    f"Remaining: ₹{data_json['amount_remaining']:,.0f}\n\n"
+                    f"Total: ?{data_json['total_amount']:,.0f}\n"
+                    f"Per Installment: ?{data_json['installment_amount']:,.0f}\n\n"
+                    f"Paid: ?{data_json['amount_paid']:,.0f}\n"
+                    f"Remaining: ?{data_json['amount_remaining']:,.0f}\n\n"
                     f"Progress: {data_json['installments_paid']}/{data_json['installment_count']} payments\n\n"
                     f"License: {data_json['license_status'].title()}\n"
                     f"Expires: {expiry_display}"
                 )
                 kb = [
                     [InlineKeyboardButton("Mark Payment Received", callback_data=f"mark_install_paid_{order_id}")],
-                    [InlineKeyboardButton("✅ Full Settle", callback_data=f"full_settle_{order_id}")],
-                    [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
+                    [InlineKeyboardButton("? Full Settle", callback_data=f"full_settle_{order_id}")],
+                    [InlineKeyboardButton("?? Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
                     [InlineKeyboardButton("Payment History", callback_data=f"install_history_{order_id}")],
                     [InlineKeyboardButton("Disable Arrangement", callback_data=f"disable_install_{order_id}")]
                 ]
@@ -500,10 +500,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             resp = await client.post(f"{base_url}/installments/admin/settle/{order_id}")
             if resp.status_code == 200:
                 await query.edit_message_text(
-                    f"✅ Full settlement recorded for Order #{order_id}!\n\nLifetime EA is now being compiled and will be delivered immediately.",
+                    f"? Full settlement recorded for Order #{order_id}!\n\nLifetime EA is now being compiled and will be delivered immediately.",
                     reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
-                        [InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]
+                        [InlineKeyboardButton("?? Check Compile Status", callback_data=f"check_compile_status_{order_id}")],
+                        [InlineKeyboardButton("?? Manage Installment", callback_data=f"manage_installment_{order_id}")]
                     ])
                 )
                 
@@ -512,15 +512,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 telegram_id = settle_data.get("telegram_id")
                 if telegram_id:
                     confirm_msg = (
-                        f"🎉 *FINAL PAYMENT CONFIRMED!*\n\n"
+                        f"?? *FINAL PAYMENT CONFIRMED!*\n\n"
                         f"Your account has been fully settled! Your lifetime EA is being compiled right now.\n\n"
-                        f"Remaining balance: ₹0"
+                        f"Remaining balance: ?0"
                     )
                     try:
                         await context.bot.send_message(chat_id=telegram_id, text=confirm_msg, parse_mode="Markdown")
                         
                         spinner_msg = (
-                            f"🕛⚙️ *Compiling your Lifetime EA...*\n\n"
+                            f"???? *Compiling your Lifetime EA...*\n\n"
                             f"Your EA file is being built right now.\n"
                             f"The file will be sent here automatically once ready.\n\n"
                             f"_Usually takes 2-5 minutes. Please wait._"
@@ -566,10 +566,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pay_resp = await client.post(f"{base_url}/installments/pay", json={"order_id": order_id, "amount": amount})
                 if pay_resp.status_code == 200:
                     await query.edit_message_text(
-                        f"✅ Payment of ₹{amount:,.0f} recorded for Order #{order_id}.\n\nLicense extended and compilation queued.",
+                        f"? Payment of ?{amount:,.0f} recorded for Order #{order_id}.\n\nLicense extended and compilation queued.",
                         reply_markup=InlineKeyboardMarkup([
-                            [InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")],
-                            [InlineKeyboardButton("🔍 Check Compile Status", callback_data=f"check_compile_status_{order_id}")]
+                            [InlineKeyboardButton("?? Manage Installment", callback_data=f"manage_installment_{order_id}")],
+                            [InlineKeyboardButton("?? Check Compile Status", callback_data=f"check_compile_status_{order_id}")]
                         ])
                     )
                     # Notify customer with animated compiling spinner
@@ -594,16 +594,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                                     # Send payment confirmation first (permanent)
                                     confirm_msg = (
-                                        f"✅ *INSTALLMENT PAYMENT CONFIRMED*\n\n"
-                                        f"Payment of ₹{amount:,.0f} has been received\\.\n\n"
-                                        f"Remaining balance: ₹{remaining:,.0f}\n"
+                                        f"? *INSTALLMENT PAYMENT CONFIRMED*\n\n"
+                                        f"Payment of ?{amount:,.0f} has been received\\.\n\n"
+                                        f"Remaining balance: ?{remaining:,.0f}\n"
                                         f"Next payment due: {next_due_str}"
                                     )
                                     if is_final:
                                         confirm_msg = (
-                                            f"🎉 *FINAL PAYMENT CONFIRMED\\!*\n\n"
+                                            f"?? *FINAL PAYMENT CONFIRMED\\!*\n\n"
                                             f"All payments complete! Your lifetime EA is being compiled.\n\n"
-                                            f"Remaining balance: ₹0"
+                                            f"Remaining balance: ?0"
                                         )
                                     await context.bot.send_message(
                                         chat_id=telegram_id,
@@ -613,7 +613,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                                     # Send animated compiling spinner
                                     spinner_msg = (
-                                        f"🕛⚙️ *Compiling your EA...*\n\n"
+                                        f"???? *Compiling your EA...*\n\n"
                                         f"Your updated EA file is being built right now.\n"
                                         f"The file will be sent here automatically once ready.\n\n"
                                         f"_Usually takes 2-5 minutes. Please wait._"
@@ -668,11 +668,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if lic:
                     status = lic.get("status")
                     if status == "active":
-                        await query.answer("✅ File compiled and sent to customer.", show_alert=True)
+                        await query.answer("? File compiled and sent to customer.", show_alert=True)
                     elif status in ("generating", "pending"):
-                        await query.answer("⏳ Still compiling. Will be delivered automatically when done.", show_alert=True)
+                        await query.answer("? Still compiling. Will be delivered automatically when done.", show_alert=True)
                     elif status == "failed":
-                        await query.answer("❌ Compilation failed. Please contact admin.", show_alert=True)
+                        await query.answer("? Compilation failed. Please contact admin.", show_alert=True)
                     else:
                         await query.answer(f"Status: {status}", show_alert=True)
                 else:
@@ -701,13 +701,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     licenses = resp.json()
                     lic = next((l for l in licenses if l['id'] == lic_id), None)
                     if lic:
-                        status_icon = "🟢" if lic['status'] == 'active' else "🔴" if lic['status'] == 'expired' else "⚫"
+                        status_icon = "??" if lic['status'] == 'active' else "??" if lic['status'] == 'expired' else "?"
                         expiry = lic['expiry_date'].split('T')[0] if lic.get('expiry_date') else "Never"
                         activated = lic.get('purchase_date', 'T').split('T')[0] if lic.get('purchase_date') else "Unknown"
                         ltype = "Trial" if lic.get('license_type') == 'trial' else "Lifetime"
                         
                         text = (
-                            f"📋 *LICENSE DETAILS*\n\n"
+                            f"?? *LICENSE DETAILS*\n\n"
                             f"MT5 ID: {lic.get('mt5_id', 'Unknown')}\n\n"
                             f"Type:\n{ltype}\n\n"
                             f"Status:\n{status_icon} {lic.get('status', 'unknown').title()}\n\n"
@@ -716,8 +716,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         
                         kb = []
                         if ltype == "Lifetime":
-                            kb.append([InlineKeyboardButton("🔄 Broker Change", callback_data=f"broker_change_{lic['id']}")])
-                        kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
+                            kb.append([InlineKeyboardButton("?? Broker Change", callback_data=f"broker_change_{lic['id']}")])
+                        kb.append([InlineKeyboardButton("?? Home", callback_data="home")])
                         
                         await query.edit_message_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
                     else:
@@ -728,7 +728,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer(f"Error: {e}", show_alert=True)
             logging.error(f"Error in view_license_: {e}")
         return
-        await query.edit_message_text("❌ License not found.")
+        await query.edit_message_text("? License not found.")
         return
 
     if data == "my_orders":
@@ -749,7 +749,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         mt5_id = parts[3]
         base_url = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
         
-        await query.edit_message_text(f"⏳ Retrieving your EA file for MT5 ID {mt5_id}...")
+        await query.edit_message_text(f"? Retrieving your EA file for MT5 ID {mt5_id}...")
         
         async with httpx.AsyncClient(verify=HTTPX_VERIFY, follow_redirects=True) as client:
             # We add a security check: ensure the license actually belongs to the user by querying their licenses first
@@ -758,10 +758,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if resp.status_code == 200:
                 licenses = resp.json()
                 if not any(l['id'] == lic_id for l in licenses):
-                    await query.edit_message_text("❌ Access denied. This file does not belong to you.")
+                    await query.edit_message_text("? Access denied. This file does not belong to you.")
                     return
             else:
-                await query.edit_message_text("❌ Authorization failed.")
+                await query.edit_message_text("? Authorization failed.")
                 return
                 
             download_url = f"{base_url}/licenses/{lic_id}/download"
@@ -770,10 +770,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 import io
                 doc = io.BytesIO(file_resp.content)
                 doc.name = f"InfinityTrader_{mt5_id}.ex5"
-                await query.message.reply_document(document=doc, caption=f"📦 Here is your EA for MT5 ID: {mt5_id}")
-                await query.edit_message_text("✅ File sent below!")
+                await query.message.reply_document(document=doc, caption=f"?? Here is your EA for MT5 ID: {mt5_id}")
+                await query.edit_message_text("? File sent below!")
             else:
-                await query.edit_message_text(f"❌ Could not retrieve file for MT5 ID {mt5_id}.\nIt might still be compiling or there is an issue with the storage.")
+                await query.edit_message_text(f"? Could not retrieve file for MT5 ID {mt5_id}.\nIt might still be compiling or there is an issue with the storage.")
         return
     if data == "broker_change":
         user_id = context.user_data.get('db_user_id')
@@ -806,13 +806,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             context.user_data['awaiting_broker_change_mt5_id'] = True
             await query.edit_message_text(
-                f"🔄 *Broker Change*\n\nSelected License:\nMT5 ID: `{lic['mt5_id']}`\nBroker: `{lic.get('broker', 'Unknown')}`\n\nPlease enter your **NEW MT5 ID**:",
+                f"?? *Broker Change*\n\nSelected License:\nMT5 ID: `{lic['mt5_id']}`\nBroker: `{lic.get('broker', 'Unknown')}`\n\nPlease enter your **NEW MT5 ID**:",
                 parse_mode="Markdown"
             )
             return
             
         msg = (
-            "🔄 *BROKER CHANGE*\n\n"
+            "?? *BROKER CHANGE*\n\n"
             "You have multiple active EA licenses.\n"
             "Please select the license for which you want to change the broker."
         )
@@ -824,8 +824,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         kb = []
         for lic in active_licenses:
             broker_name = lic.get('broker', 'Unknown')
-            kb.append([InlineKeyboardButton(f"🔄 MT5 {lic['mt5_id']} - {broker_name}", callback_data=f"bc_select_{lic['id']}")])
-        kb.append([InlineKeyboardButton("⬅️ Back", callback_data="main_menu")])
+            kb.append([InlineKeyboardButton(f"?? MT5 {lic['mt5_id']} - {broker_name}", callback_data=f"bc_select_{lic['id']}")])
+        kb.append([InlineKeyboardButton("?? Back", callback_data="main_menu")])
         
         await query.edit_message_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         return
@@ -846,7 +846,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         context.user_data['awaiting_broker_change_mt5_id'] = True
         await query.edit_message_text(
-            f"🔄 *Broker Change*\n\nSelected License:\nMT5 ID: `{old_mt5}`\nBroker: `{old_broker}`\n\nPlease enter your **NEW MT5 ID**:",
+            f"?? *Broker Change*\n\nSelected License:\nMT5 ID: `{old_mt5}`\nBroker: `{old_broker}`\n\nPlease enter your **NEW MT5 ID**:",
             parse_mode="Markdown"
         )
         return
@@ -855,7 +855,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['bc_license_id'] = None
         context.user_data['bc_new_mt5_id'] = None
         context.user_data['bc_new_broker'] = None
-        await query.edit_message_text("❌ Broker change request cancelled.")
+        await query.edit_message_text("? Broker change request cancelled.")
         return
         
     if data == "submit_broker_change":
@@ -873,7 +873,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await request_broker_change(lic_id, new_mt5, new_broker, tid)
         
         if "error" in resp:
-            await query.edit_message_text(f"❌ Failed: {resp['error']}")
+            await query.edit_message_text(f"? Failed: {resp['error']}")
             return
             
         request_id = resp['request_id']
@@ -882,10 +882,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         admin_chat_id = os.getenv("ADMIN_CHAT_ID")
         if admin_chat_id:
             tg_user = update.effective_user.username
-    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
+              tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
             
-            admin_msg = (
-                f"🔄 *BROKER CHANGE REQUEST*\n\n"
+                    admin_msg = (
+                f"?? *BROKER CHANGE REQUEST*\n\n"
                 f"Request ID: `#BCR-{request_id}`\n"
                 f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
                 f"Telegram Username: `{tg_username}`\n"
@@ -899,8 +899,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"Status: `Pending Admin Approval`"
             )
             kb = [
-                [InlineKeyboardButton("✅ APPROVE", callback_data=f"approve_change_{request_id}"),
-                 InlineKeyboardButton("❌ REJECT", callback_data=f"reject_change_{request_id}")]
+                [InlineKeyboardButton("? APPROVE", callback_data=f"approve_change_{request_id}"),
+                 InlineKeyboardButton("? REJECT", callback_data=f"reject_change_{request_id}")]
             ]
             try:
                 sent = await context.bot.send_message(chat_id=admin_chat_id, text=admin_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
@@ -908,7 +908,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 logging.error(f"Failed to notify admin: {e}")
                 
-        await query.edit_message_text("✅ Your broker change request has been submitted and is pending admin approval.")
+        await query.edit_message_text("? Your broker change request has been submitted and is pending admin approval.")
         
         # Clear state
         context.user_data['bc_license_id'] = None
@@ -933,13 +933,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if action == "approve":
             resp = await approve_broker_change(request_id)
             if "error" not in resp:
-                await query.edit_message_text(f"✅ Broker Change Request #{request_id} has been APPROVED. New EA is compiling.")
+                await query.edit_message_text(f"? Broker Change Request #{request_id} has been APPROVED. New EA is compiling.")
                 # Notify User
                 try:
                     telegram_id = resp.get("telegram_id")
                     if telegram_id:
                         msg = (
-                            f"✅ *Your Broker Change has been approved.*\n\n"
+                            f"? *Your Broker Change has been approved.*\n\n"
                             f"Your old MT5 ID association has been deactivated.\n"
                             f"Your new Lifetime EA is now compiling and will be sent here shortly."
                         )
@@ -962,19 +962,19 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logging.error(f"Failed to notify user: {e}")
             else:
                 if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
-                    await query.edit_message_text(f"⚠️ Broker Change Request #{request_id} was already processed.")
+                    await query.edit_message_text(f"?? Broker Change Request #{request_id} was already processed.")
                 else:
                     await query.answer(f"Failed: {resp['error']}", show_alert=True)
                 
         elif action == "reject":
             resp = await reject_broker_change(request_id)
             if "error" not in resp:
-                await query.edit_message_text(f"❌ Broker Change Request #{request_id} has been REJECTED.")
+                await query.edit_message_text(f"? Broker Change Request #{request_id} has been REJECTED.")
                 try:
                     telegram_id = resp.get("telegram_id")
                     if telegram_id:
                         msg = (
-                            f"❌ *Broker Change Request Rejected.*\n\n"
+                            f"? *Broker Change Request Rejected.*\n\n"
                             f"Your existing Lifetime EA remains associated with your current MT5 ID.\n"
                             f"Please contact the admin for assistance."
                         )
@@ -983,7 +983,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     pass
             else:
                 if "already" in resp['error'].lower() or "not pending" in resp['error'].lower():
-                    await query.edit_message_text(f"⚠️ Broker Change Request #{request_id} was already processed.")
+                    await query.edit_message_text(f"?? Broker Change Request #{request_id} was already processed.")
                 else:
                     await query.answer(f"Failed: {resp['error']}", show_alert=True)
         return
@@ -1020,7 +1020,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             lifetime_plans = products  # fallback: show all if none are lifetime
 
         if len(lifetime_plans) == 1:
-            # Only one plan — skip selection, go straight to MT5 ID
+            # Only one plan � skip selection, go straight to MT5 ID
             plan = lifetime_plans[0]
             context.user_data['pending_product_id'] = plan['id']
             context.user_data['pending_p_type'] = p_type
@@ -1037,9 +1037,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 label = plan['offer_label'].replace('!', '\\!').replace('.', '\\.').replace('-', '\\-')
                 plan_name = plan['name'].replace('-', '\\-').replace('(', '\\(').replace(')', '\\)')
                 plan_heading = (
-                    f"📦 *{plan_name}*\n\n"
-                    f"{label} — *Limited Time\\!*\n"
-                    f"💰 Price: ~\\${orig}~ ➡️ \\${sale}"
+                    f"?? *{plan_name}*\n\n"
+                    f"{label} � *Limited Time\\!*\n"
+                    f"?? Price: ~\\${orig}~ ?? \\${sale}"
                 )
                 await query.edit_message_text(
                     f"{plan_heading}\n\nPlease enter your *MT5 ID* to continue:",
@@ -1047,22 +1047,22 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
             else:
                 await query.edit_message_text(
-                    f"📦 *{plan['name']}*\n\nPlease enter your **MT5 ID** to continue:",
+                    f"?? *{plan['name']}*\n\nPlease enter your **MT5 ID** to continue:",
                     parse_mode="Markdown"
                 )
             context.user_data['awaiting_mt5_id'] = True
         else:
-            # Multiple lifetime plans — show selection without price
+            # Multiple lifetime plans � show selection without price
             keyboard = []
             for p in lifetime_plans:
                 keyboard.append([InlineKeyboardButton(
-                    f"📦 {p['name']}",
+                    f"?? {p['name']}",
                     callback_data=f"buy_product_{p['id']}_{p_type}"
                 )])
-            keyboard.append([InlineKeyboardButton("« Back", callback_data="main_menu")])
+            keyboard.append([InlineKeyboardButton("� Back", callback_data="main_menu")])
 
             await query.edit_message_text(
-                "🛒 *Select Your EA Plan*\n\nChoose a plan to continue:",
+                "?? *Select Your EA Plan*\n\nChoose a plan to continue:",
                 parse_mode="Markdown",
                 reply_markup=InlineKeyboardMarkup(keyboard)
             )
@@ -1079,13 +1079,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             vps_admin = f"@{vps_admin}"
             
         support_msg = (
-            "📞 *Contact Support*\n\n"
+            "?? *Contact Support*\n\n"
             "Please choose the department you need assistance with:"
         )
         support_kb = [
-            [InlineKeyboardButton("💻 EA Support", url=f"https://t.me/{ea_admin.lstrip('@')}")],
-            [InlineKeyboardButton("🖥️ VPS Support", url=f"https://t.me/{vps_admin.lstrip('@')}")],
-            [InlineKeyboardButton("🏠 Back to Home", callback_data="home")]
+            [InlineKeyboardButton("?? EA Support", url=f"https://t.me/{ea_admin.lstrip('@')}")],
+            [InlineKeyboardButton("??? VPS Support", url=f"https://t.me/{vps_admin.lstrip('@')}")],
+            [InlineKeyboardButton("?? Back to Home", callback_data="home")]
         ]
         
         await query.edit_message_text(support_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(support_kb))
@@ -1098,18 +1098,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         vps_info = await get_vps_info(vps_id)
         
         if not vps_info:
-            await query.edit_message_text("❌ Could not find VPS details.", reply_markup=await build_main_menu(update.effective_user.id))
+            await query.edit_message_text("? Could not find VPS details.", reply_markup=await build_main_menu(update.effective_user.id))
             return
             
         keyboard = [
-            [InlineKeyboardButton(f"✅ Proceed to Renew (₹{vps_info['product_price']})", callback_data=f"buy_product_{vps_info['product_id']}_VPS")],
-            [InlineKeyboardButton("🔙 Cancel", callback_data="main_menu")]
+            [InlineKeyboardButton(f"? Proceed to Renew (?{vps_info['product_price']})", callback_data=f"buy_product_{vps_info['product_id']}_VPS")],
+            [InlineKeyboardButton("?? Cancel", callback_data="main_menu")]
         ]
         
-        text = f'''🔄 *Renew Your VPS*
+        text = f'''?? *Renew Your VPS*
 
 You are renewing your **{vps_info['product_name']}**.
-**Price:** ₹{vps_info['product_price']}
+**Price:** ?{vps_info['product_price']}
 
 Press Proceed below to continue to payment.'''
         
@@ -1130,15 +1130,15 @@ Press Proceed below to continue to payment.'''
             return
 
         keyboard = [
-            [InlineKeyboardButton("🟢 Basic (Up to 2 Terminals)", callback_data="vps_tier_Basic")],
-            [InlineKeyboardButton("🔵 Premium (Up to 6 Terminals)", callback_data="vps_tier_Premium")],
-            [InlineKeyboardButton("🟡 Gold (Up to 12 Terminals)", callback_data="vps_tier_Gold")],
-            [InlineKeyboardButton("⚪ Platinum (Up to 18 Terminals)", callback_data="vps_tier_Platinum")],
-            [InlineKeyboardButton("💎 Diamond (Up to 38 Terminals)", callback_data="vps_tier_Diamond")],
-            [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+            [InlineKeyboardButton("?? Basic (Up to 2 Terminals)", callback_data="vps_tier_Basic")],
+            [InlineKeyboardButton("?? Premium (Up to 6 Terminals)", callback_data="vps_tier_Premium")],
+            [InlineKeyboardButton("?? Gold (Up to 12 Terminals)", callback_data="vps_tier_Gold")],
+            [InlineKeyboardButton("? Platinum (Up to 18 Terminals)", callback_data="vps_tier_Platinum")],
+            [InlineKeyboardButton("?? Diamond (Up to 38 Terminals)", callback_data="vps_tier_Diamond")],
+            [InlineKeyboardButton("?? Back to Main Menu", callback_data="main_menu")]
         ]
 
-        vps_text = "🖥️ *Premium VPS Hosting*\nPlease select a VPS tier below to view its specifications and pricing:"
+        vps_text = "??? *Premium VPS Hosting*\nPlease select a VPS tier below to view its specifications and pricing:"
 
         try:
             await query.edit_message_text(vps_text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -1156,18 +1156,18 @@ Press Proceed below to continue to payment.'''
         any_offer = any(p.get('offer_price') for p in tier_products)
         for p in tier_products:
             if p.get('offer_price') and p.get('offer_label'):
-                btn_label = f"{p['name']} 🔥 ₹{int(p['offer_price']):,}"
+                btn_label = f"{p['name']} ?? ?{int(p['offer_price']):,}"
             else:
-                btn_label = f"{p['name']} - ₹{int(p['price']):,}"
+                btn_label = f"{p['name']} - ?{int(p['price']):,}"
             keyboard.append([InlineKeyboardButton(btn_label, callback_data=f"buy_product_{p['id']}_{p_type}")])
-        keyboard.append([InlineKeyboardButton("🔙 Back to Tiers", callback_data="buy_vps")])
+        keyboard.append([InlineKeyboardButton("?? Back to Tiers", callback_data="buy_vps")])
 
         details_mdv2 = {
-            "Basic": "🟢 *Basic Plan Details*\nUp to 2 MT4 or MT5 terminals \\(2 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 2 GB\n• *vCPU:* 1\n• *Storage SSD:* 30 GB\n• *Bandwidth:* 300 GB\n• *OS:* Windows",
-            "Premium": "🔵 *Premium Plan Details*\nUp to 6 MT4 or MT5 terminals \\(6 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 4 GB\n• *vCPU:* 2\n• *Storage SSD:* 60 GB\n• *Bandwidth:* 500 GB\n• *OS:* Windows",
-            "Gold": "🟡 *Gold Plan Details*\nUp to 12 MT4 or MT5 terminals \\(12 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 8 GB\n• *vCPU:* 4\n• *Storage SSD:* 100 GB\n• *Bandwidth:* 700 GB\n• *OS:* Windows",
-            "Platinum": "⚪ *Platinum Plan Details*\nUp to 18 MT4 or MT5 terminals \\(18 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 16 GB\n• *vCPU:* 4\n• *Storage SSD:* 200 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows",
-            "Diamond": "💎 *Diamond Plan Details*\nUp to 38 MT4 or MT5 terminals \\(38 Accounts\\)\\.\n\n*Hardware Specs:*\n• *RAM:* 32 GB\n• *vCPU:* 8\n• *Storage SSD:* 500 GB\n• *Bandwidth:* 1000 GB\n• *OS:* Windows"
+            "Basic": "?? *Basic Plan Details*\nUp to 2 MT4 or MT5 terminals \\(2 Accounts\\)\\.\n\n*Hardware Specs:*\n� *RAM:* 2 GB\n� *vCPU:* 1\n� *Storage SSD:* 30 GB\n� *Bandwidth:* 300 GB\n� *OS:* Windows",
+            "Premium": "?? *Premium Plan Details*\nUp to 6 MT4 or MT5 terminals \\(6 Accounts\\)\\.\n\n*Hardware Specs:*\n� *RAM:* 4 GB\n� *vCPU:* 2\n� *Storage SSD:* 60 GB\n� *Bandwidth:* 500 GB\n� *OS:* Windows",
+            "Gold": "?? *Gold Plan Details*\nUp to 12 MT4 or MT5 terminals \\(12 Accounts\\)\\.\n\n*Hardware Specs:*\n� *RAM:* 8 GB\n� *vCPU:* 4\n� *Storage SSD:* 100 GB\n� *Bandwidth:* 700 GB\n� *OS:* Windows",
+            "Platinum": "? *Platinum Plan Details*\nUp to 18 MT4 or MT5 terminals \\(18 Accounts\\)\\.\n\n*Hardware Specs:*\n� *RAM:* 16 GB\n� *vCPU:* 4\n� *Storage SSD:* 200 GB\n� *Bandwidth:* 1000 GB\n� *OS:* Windows",
+            "Diamond": "?? *Diamond Plan Details*\nUp to 38 MT4 or MT5 terminals \\(38 Accounts\\)\\.\n\n*Hardware Specs:*\n� *RAM:* 32 GB\n� *vCPU:* 8\n� *Storage SSD:* 500 GB\n� *Bandwidth:* 1000 GB\n� *OS:* Windows"
         }
 
         text = details_mdv2.get(tier, f"{tier} Plan Details")
@@ -1179,8 +1179,8 @@ Press Proceed below to continue to payment.'''
                     orig = int(p['price'])
                     sale = int(p['offer_price'])
                     dur = "1 Month" if p.get('duration') == 1 else "1 Year"
-                    offer_lines += f"\n~₹{orig:,}~ ➡️ ₹{sale:,} 🔥 \\({dur}\\)"
-            text += f"\n\n🔥 *Flash Sale Active\\!*{offer_lines}\n\n*Select your billing cycle below:*"
+                    offer_lines += f"\n~?{orig:,}~ ?? ?{sale:,} ?? \\({dur}\\)"
+            text += f"\n\n?? *Flash Sale Active\\!*{offer_lines}\n\n*Select your billing cycle below:*"
             try:
                 await query.edit_message_text(text, parse_mode="MarkdownV2", reply_markup=InlineKeyboardMarkup(keyboard))
             except Exception as e:
@@ -1227,7 +1227,7 @@ Press Proceed below to continue to payment.'''
         context.user_data['awaiting_trial_mt5_id'] = True
         
         trial_msg = (
-            "🆓 *FREE TRIAL*\n\n"
+            "?? *FREE TRIAL*\n\n"
             "Try the EA before purchasing.\n\n"
             "Please enter your **MT5 ID**:"
         )
@@ -1350,17 +1350,17 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
             plan_name = f"{base_name} ({dur_str})"
 
     user_msg = (
-        f"💳 *VPS Order Created*\n\n"
+        f"?? *VPS Order Created*\n\n"
         f"**Plan:** {plan_name}\n"
         f"**Order ID:** #ORD-{order['id']}\n"
-        f"**Amount:** ₹{product['price'] if product else 0:,.0f}\n\n"
+        f"**Amount:** ?{product['price'] if product else 0:,.0f}\n\n"
         f"Please make the payment via UPI to:\n"
         f"`{vps_upi_id}`\n\n"
-        f"📸 *After payment, please send the screenshot of your payment here in this chat.*"
+        f"?? *After payment, please send the screenshot of your payment here in this chat.*"
     )
     
     context.user_data['awaiting_vps_payment_screenshot'] = order['id']
-    keyboard = [[InlineKeyboardButton("💬 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
+    keyboard = [[InlineKeyboardButton("?? Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")] ]
     
     if update.message:
         await update.message.reply_text(user_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -1373,11 +1373,11 @@ async def proceed_to_vps_summary(update: Update, context: ContextTypes.DEFAULT_T
     vps_admin_id = os.getenv("VPS_ADMIN_CHAT_ID", os.getenv("ADMIN_CHAT_ID"))
     if vps_admin_id:
         tg_user = update.effective_user.username
-    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
+              tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
         
         is_renewal = context.user_data.pop('is_vps_renewal', False)
-        title = "🔄 *VPS RENEWAL INITIATED*" if is_renewal else "💬 *NEW VPS INQUIRY*"
-        admin_msg = (
+        title = "?? *VPS RENEWAL INITIATED*" if is_renewal else "?? *NEW VPS INQUIRY*"
+              admin_msg = (
             f"{title}\n\n"
             f"Order ID: `#ORD-{order['id']}`\n"
             f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
@@ -1411,7 +1411,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if vps_admin_id:
             user = update.effective_user
             is_renewal = context.user_data.pop('is_vps_renewal', False)
-            title = "🔄 *NEW VPS RENEWAL PAYMENT*" if is_renewal else "🔔 *NEW VPS PAYMENT SCREENSHOT*"
+            title = "?? *NEW VPS RENEWAL PAYMENT*" if is_renewal else "?? *NEW VPS PAYMENT SCREENSHOT*"
             action_text = "Please verify this payment and click APPROVE to automatically extend the VPS expiry." if is_renewal else "Please verify this payment and go to the Admin Dashboard to Provision the VPS."
             
             caption = (
@@ -1424,7 +1424,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             kb = []
             if is_renewal:
-                kb = [[InlineKeyboardButton("✅ APPROVE RENEWAL", callback_data=f"approve_{vps_order_id}")]]
+                kb = [[InlineKeyboardButton("? APPROVE RENEWAL", callback_data=f"approve_{vps_order_id}")]]
                 
             reply_markup = InlineKeyboardMarkup(kb) if kb else None
             
@@ -1445,13 +1445,13 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             # Always show a friendly message regardless of backend success
             await update.message.reply_text(
-                "✅ Your payment screenshot has been received!\n\n"
+                "? Your payment screenshot has been received!\n\n"
                 "Our team will review it shortly and update your order status. "
-                "You will receive a confirmation message here once it is verified. 🙏"
+                "You will receive a confirmation message here once it is verified. ??"
             )
             context.user_data['awaiting_vps_payment_screenshot'] = None
         else:
-            await update.message.reply_text("⚠️ Admin Chat ID not configured properly.")
+            await update.message.reply_text("?? Admin Chat ID not configured properly.")
         return
         
     await update.message.reply_text("Please use the menus to navigate.")
@@ -1476,7 +1476,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     context.user_data.pop('renew_vps_id', None)
     if not order or "error" in order:
         err = order.get("error", "Unknown") if order else "Failed to create order"
-        msg = f"❌ *Error:*\n\n{err}"
+        msg = f"? *Error:*\n\n{err}"
         if update.message:
             await update.message.reply_text(msg, parse_mode="Markdown")
         else:
@@ -1492,7 +1492,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     if not admin_username.startswith("@"):
         admin_username = f"@{admin_username}"
 
-    # Resolve price — EA is USD (≤ 5000), VPS is INR. Detect active offer for strikethrough.
+    # Resolve price � EA is USD (= 5000), VPS is INR. Detect active offer for strikethrough.
     raw_price = product['price'] if product else 0
     offer_price = product.get('offer_price') if product else None
     offer_label = product.get('offer_label') if product else None
@@ -1506,7 +1506,7 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         return s
 
     tg_user = update.effective_user.username
-    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
+              tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
     
     plan_name = product['name'] if product else 'Unknown'
     if p_type == "VPS":
@@ -1523,74 +1523,74 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
                 break
 
     if raw_price <= 5000:
-        # EA — USD pricing
+        # EA � USD pricing
         usd_inr = await get_usd_inr_rate()
         price_inr = round(effective_price * usd_inr)
         if use_offer:
             orig_inr = round(raw_price * usd_inr)
             summary = (
-                f"📋 *ORDER SUMMARY*\n\n"
+                f"?? *ORDER SUMMARY*\n\n"
                 f"Order ID: \\#ORD\\-{order['id']}\n"
-                f"👤 Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
-                f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
-                f"💬 Telegram: {_esc(tg_username)}\n"
-                f"🔑 MT5 ID: `{mt5_id}`\n"
-                f"📦 Plan: {_esc(plan_name)}\n\n"
-                f"{_esc(offer_label)} 🔥 *Limited Time\\!*\n"
-                f"💰 Price: ~\\${int(raw_price)}~ ➡️ \\${int(effective_price)}\n"
-                f"ℹ️ _Today's rate: ₹{_esc(f'{usd_inr:.2f}')} \\= ₹{price_inr:,} \\(was ₹{orig_inr:,}\\)_\n\n"
-                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"?? Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
+                f"?? Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
+                f"?? Telegram: {_esc(tg_username)}\n"
+                f"?? MT5 ID: `{mt5_id}`\n"
+                f"?? Plan: {_esc(plan_name)}\n\n"
+                f"{_esc(offer_label)} ?? *Limited Time\\!*\n"
+                f"?? Price: ~\\${int(raw_price)}~ ?? \\${int(effective_price)}\n"
+                f"?? _Today's rate: ?{_esc(f'{usd_inr:.2f}')} \\= ?{price_inr:,} \\(was ?{orig_inr:,}\\)_\n\n"
+                f"Status: ?? Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order\\.\n"
                 f"Your EA will only be generated after admin approval\\."
             )
             parse_mode_to_use = "MarkdownV2"
         else:
             summary = (
-                f"📋 *ORDER SUMMARY*\n\n"
+                f"?? *ORDER SUMMARY*\n\n"
                 f"Order ID: #ORD-{order['id']}\n"
-                f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
-                f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-                f"💬 Telegram: {tg_username}\n"
-                f"🔑 MT5 ID: `{mt5_id}`\n"
-                f"📦 Plan: {plan_name}\n\n"
-                f"💰 Price: ${int(raw_price)}\n"
-                f"ℹ️ _Note: The final INR amount will be calculated based on the live USD/INR exchange rate on the actual day you make your payment (Today's rate: ₹{usd_inr:.2f} = ₹{price_inr:,})._\n\n"
-                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"?? Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+                f"?? Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+                f"?? Telegram: {tg_username}\n"
+                f"?? MT5 ID: `{mt5_id}`\n"
+                f"?? Plan: {plan_name}\n\n"
+                f"?? Price: ${int(raw_price)}\n"
+                f"?? _Note: The final INR amount will be calculated based on the live USD/INR exchange rate on the actual day you make your payment (Today's rate: ?{usd_inr:.2f} = ?{price_inr:,})._\n\n"
+                f"Status: ?? Pending Admin Approval\n\n"
                 f"Please contact the admin to discuss and confirm your order.\n"
                 f"Your EA will only be generated after admin approval."
             )
             parse_mode_to_use = "Markdown"
     else:
-        # VPS — INR pricing
+        # VPS � INR pricing
         if use_offer:
             summary = (
-                f"📋 *ORDER SUMMARY*\n\n"
+                f"?? *ORDER SUMMARY*\n\n"
                 f"Order ID: \\#ORD\\-{order['id']}\n"
-                f"👤 Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
-                f"📱 Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
-                f"💬 Telegram: {_esc(tg_username)}\n"
-                f"📦 Plan: {_esc(plan_name)}\n\n"
-                f"{_esc(offer_label)} 🔥 *Limited Time\\!*\n"
-                f"💰 Price: ~₹{int(raw_price):,}~ ➡️ ₹{int(effective_price):,}\n\n"
-                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"?? Name: {_esc(context.user_data.get('db_user_name', 'Unknown'))}\n"
+                f"?? Phone: {_esc(context.user_data.get('db_user_phone', 'Unknown'))}\n"
+                f"?? Telegram: {_esc(tg_username)}\n"
+                f"?? Plan: {_esc(plan_name)}\n\n"
+                f"{_esc(offer_label)} ?? *Limited Time\\!*\n"
+                f"?? Price: ~?{int(raw_price):,}~ ?? ?{int(effective_price):,}\n\n"
+                f"Status: ?? Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order\\."
             )
             parse_mode_to_use = "MarkdownV2"
         else:
             summary = (
-                f"📋 *ORDER SUMMARY*\n\n"
+                f"?? *ORDER SUMMARY*\n\n"
                 f"Order ID: #ORD-{order['id']}\n"
-                f"👤 Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
-                f"📱 Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
-                f"💬 Telegram: {tg_username}\n"
-                f"📦 Plan: {plan_name}\n\n"
-                f"💰 Price: ₹{int(raw_price):,}\n\n"
-                f"Status: 🕐 Pending Admin Approval\n\n"
+                f"?? Name: {context.user_data.get('db_user_name', 'Unknown')}\n"
+                f"?? Phone: {context.user_data.get('db_user_phone', 'Unknown')}\n"
+                f"?? Telegram: {tg_username}\n"
+                f"?? Plan: {plan_name}\n\n"
+                f"?? Price: ?{int(raw_price):,}\n\n"
+                f"Status: ?? Pending Admin Approval\n\n"
                 f"Please contact the admin to confirm your order."
             )
             parse_mode_to_use = "Markdown"
 
-    keyboard = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")]]
+    keyboard = [[InlineKeyboardButton("?? Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")]]
 
     sent_msg = None
     if update.message:
@@ -1610,10 +1610,10 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
     admin_chat_id = os.getenv("ADMIN_CHAT_ID")
     if admin_chat_id:
         tg_user = update.effective_user.username
-    tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
+              tg_username = f"@{tg_user}" if tg_user else (update.effective_user.first_name or "N/A")
         
-        admin_msg = (
-            f"🆕 *NEW EA ORDER*\n\n"
+              admin_msg = (
+            f"?? *NEW EA ORDER*\n\n"
             f"Order ID: `#ORD-{order['id']}`\n"
             f"Customer Name: `{context.user_data.get('db_user_name', 'Unknown')}`\n"
             f"Phone: `{context.user_data.get('db_user_phone', 'Unknown')}`\n"
@@ -1625,8 +1625,8 @@ async def proceed_to_order_summary(update: Update, context: ContextTypes.DEFAULT
         )
         admin_kb = [
             [
-                InlineKeyboardButton("✅ APPROVE", callback_data=f"approve_{order['id']}"),
-                InlineKeyboardButton("❌ REJECT", callback_data=f"reject_{order['id']}")
+                InlineKeyboardButton("? APPROVE", callback_data=f"approve_{order['id']}"),
+                InlineKeyboardButton("? REJECT", callback_data=f"reject_{order['id']}")
             ]
         ]
         try:
@@ -1686,13 +1686,13 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                 resp = await client.post(f"{base_url}/installments/create", json=payload)
                 if resp.status_code == 200:
-                    kb = InlineKeyboardMarkup([[InlineKeyboardButton("📋 Manage Installment", callback_data=f"manage_installment_{order_id}")]])
+                    kb = InlineKeyboardMarkup([[InlineKeyboardButton("?? Manage Installment", callback_data=f"manage_installment_{order_id}")]])
                     await update.message.reply_text(
-                        f"✅ *Installment Arrangement Created*\n\n"
+                        f"? *Installment Arrangement Created*\n\n"
                         f"Order #{order_id}\n"
-                        f"Total: ₹{payload['total_amount']:,.0f}\n"
-                        f"Installment: ₹{payload['installment_amount']:,.0f} × {payload['installment_count']}\n"
-                        f"First payment: ₹{payload['first_payment_amount']:,.0f} ✅ Confirmed\n"
+                        f"Total: ?{payload['total_amount']:,.0f}\n"
+                        f"Installment: ?{payload['installment_amount']:,.0f} � {payload['installment_count']}\n"
+                        f"First payment: ?{payload['first_payment_amount']:,.0f} ? Confirmed\n"
                         f"License period: {duration} days\n\n"
                         f"EA is now compiling and will be delivered to the customer.",
                         parse_mode="Markdown",
@@ -1710,16 +1710,16 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     remaining = payload['total_amount'] - payload['first_payment_amount']
                                     # Permanent confirmation message
                                     cust_msg = (
-                                        f"✅ *INSTALLMENT ARRANGEMENT SET UP*\n\n"
-                                        f"First payment of ₹{payload['first_payment_amount']:,.0f} confirmed.\n\n"
+                                        f"? *INSTALLMENT ARRANGEMENT SET UP*\n\n"
+                                        f"First payment of ?{payload['first_payment_amount']:,.0f} confirmed.\n\n"
                                         f"License active for {duration} days.\n"
-                                        f"Remaining balance: ₹{remaining:,.0f}"
+                                        f"Remaining balance: ?{remaining:,.0f}"
                                     )
                                     await context.bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown")
 
                                     # Animated compiling spinner
                                     spinner_msg = (
-                                        f"🕛⚙️ *Compiling your EA...*\n\n"
+                                        f"???? *Compiling your EA...*\n\n"
                                         f"Your EA file is being built right now.\n"
                                         f"The file will be sent here automatically once ready.\n\n"
                                         f"_Usually takes 2-5 minutes. Please wait._"
@@ -1748,7 +1748,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     except Exception as e:
                         logging.error(f"Failed to notify customer on arrangement: {e}")
                 else:
-                    await update.message.reply_text(f"❌ Error creating arrangement: {resp.text}")
+                    await update.message.reply_text(f"? Error creating arrangement: {resp.text}")
             return
 
 
@@ -1806,7 +1806,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update_user_phone(user_id, phone)
             context.user_data['db_user_phone'] = phone
             
-        # Check if they were in the middle of a purchase — now ask MT5 ID next
+        # Check if they were in the middle of a purchase � now ask MT5 ID next
         if context.user_data.get('pending_product_id'):
             p_type = context.user_data.get('pending_p_type')
             if p_type == "VPS":
@@ -1844,9 +1844,9 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from utils.api_client import update_setting
         success = await update_setting(setting_key, new_val)
         if success:
-            await update.message.reply_text(f"✅ Setting `{setting_key}` updated to `{new_val}`.", parse_mode="Markdown")
+            await update.message.reply_text(f"? Setting `{setting_key}` updated to `{new_val}`.", parse_mode="Markdown")
         else:
-            await update.message.reply_text(f"❌ Failed to update `{setting_key}`.")
+            await update.message.reply_text(f"? Failed to update `{setting_key}`.")
         return
 
     if context.user_data.get('awaiting_broker_change_mt5_id'):
@@ -1871,7 +1871,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_mt5_id = context.user_data.get('bc_new_mt5_id')
         
         msg = (
-            "📋 *BROKER CHANGE REQUEST*\n\n"
+            "?? *BROKER CHANGE REQUEST*\n\n"
             f"Current MT5 ID: `{old_mt5}`\n"
             f"Current Broker: `{old_broker}`\n\n"
             f"New MT5 ID: `{new_mt5_id}`\n"
@@ -1883,8 +1883,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['bc_new_broker'] = new_broker
         
         kb = [
-            [InlineKeyboardButton("📨 Submit Request", callback_data="submit_broker_change")],
-            [InlineKeyboardButton("❌ Cancel", callback_data="cancel_broker_change")]
+            [InlineKeyboardButton("?? Submit Request", callback_data="submit_broker_change")],
+            [InlineKeyboardButton("? Cancel", callback_data="cancel_broker_change")]
         ]
         
         await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
@@ -1920,21 +1920,21 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 month_name = datetime.datetime.now().strftime("%B %Y")
                 err_msg = (
-                    f"⚠️ *FREE TRIAL ALREADY USED*\n\n"
+                    f"?? *FREE TRIAL ALREADY USED*\n\n"
                     f"You have already used your free trial for this month.\n\n"
                     f"Free Trial:\n{duration_days} Days\n\n"
                     f"Trial Used:\n{month_name}\n\n"
                     f"You can request another free trial next month."
                 )
-                kb = [[InlineKeyboardButton("🏠 Home", callback_data="home")]]
+                kb = [[InlineKeyboardButton("?? Home", callback_data="home")]]
                 await update.message.reply_text(err_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
             else:
                 err_text = str(resp['error'])[:2000]
-                await update.message.reply_text(f"❌ *Trial Request Failed:*\n\n{err_text}", parse_mode="Markdown")
+                await update.message.reply_text(f"? *Trial Request Failed:*\n\n{err_text}", parse_mode="Markdown")
             return
             
         success_msg = (
-            f"✅ *FREE TRIAL ACTIVATED*\n\n"
+            f"? *FREE TRIAL ACTIVATED*\n\n"
             f"MT5 ID: `{mt5_id}`\n\n"
             f"Trial Duration: {resp.get('duration_days', 2)} Days\n\n"
             f"Expires:\n{resp.get('expiry_date', 'Unknown')}\n\n"
@@ -1944,7 +1944,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Start compiling animation
         initial_compiling = (
-            f"⚙️ *Generating your EA File...*\n\n"
+            f"?? *Generating your EA File...*\n\n"
             f"`[----------] 0%`\n\n"
             f"Please wait while we securely compile your file..."
         )
@@ -1981,18 +1981,18 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if resp.status_code == 200:
             licenses = resp.json()
             if not licenses:
-                await msg_target.reply_text("❌ *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown")
+                await msg_target.reply_text("? *No licenses found.*\n\nYou don't currently have any EA licenses.", parse_mode="Markdown")
                 return
                 
             if len(licenses) == 1:
                 l = licenses[0]
-                status_icon = "🟢" if l['status'] == 'active' else "🔴" if l['status'] == 'expired' else "⚫"
+                status_icon = "??" if l['status'] == 'active' else "??" if l['status'] == 'expired' else "?"
                 expiry = l['expiry_date'].split('T')[0] if l['expiry_date'] else "Never"
                 activated = l['purchase_date'].split('T')[0] if l['purchase_date'] else "Unknown"
                 ltype = "Trial" if l.get('license_type') == 'trial' else "Lifetime"
                 
                 text = (
-                    f"🔐 *LICENSE DETAILS*\n\n"
+                    f"?? *LICENSE DETAILS*\n\n"
                     f"MT5 ID: `{l['mt5_id']}`\n"
                     f"License Type: {ltype}\n"
                     f"Status: {status_icon} {l['status'].title()}\n"
@@ -2003,18 +2003,18 @@ async def render_licenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
                 
             # Multiple licenses
-            text = "📋 *Your Licenses:*\n\nPlease select a license below to view details or manage it."
+            text = "?? *Your Licenses:*\n\nPlease select a license below to view details or manage it."
             kb = []
             for idx, l in enumerate(licenses, 1):
-                status_icon = "🟢" if l['status'] == 'active' else "🔴" if l['status'] == 'expired' else "⚫"
+                status_icon = "??" if l['status'] == 'active' else "??" if l['status'] == 'expired' else "?"
                 ltype = "Trial" if l.get('license_type') == 'trial' else "Lifetime"
-                button_text = f"MT5 {l['mt5_id']} — {ltype} — {status_icon} {l['status'].title()}"
+                button_text = f"MT5 {l['mt5_id']} � {ltype} � {status_icon} {l['status'].title()}"
                 
                 kb.append([InlineKeyboardButton(button_text, callback_data=f"view_license_{l['id']}")])
                 
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
-            await msg_target.reply_text("❌ Unable to load your licenses right now.\nPlease try again or contact support.")
+            await msg_target.reply_text("? Unable to load your licenses right now.\nPlease try again or contact support.")
 
 async def render_installment_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Renders the customer's installment status. Shared by the /installment
@@ -2026,11 +2026,11 @@ async def render_installment_status(update: Update, context: ContextTypes.DEFAUL
     msg_target = update.effective_message
     data = await get_installment_status(tid)
 
-    home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
+    home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("?? Home", callback_data="home")]])
 
     if data is None:
         await msg_target.reply_text(
-            "ℹ️ *No active installment arrangement found.*\n\nIf you have an installment plan, please contact the admin.",
+            "?? *No active installment arrangement found.*\n\nIf you have an installment plan, please contact the admin.",
             parse_mode="Markdown",
             reply_markup=home_kb
         )
@@ -2040,29 +2040,29 @@ async def render_installment_status(update: Update, context: ContextTypes.DEFAUL
     expiry_str = license_expiry.split("T")[0] if license_expiry else "Never"
     next_due = data.get("next_due_date", "")
     next_due_str = next_due.split("T")[0] if next_due else "Completed"
-    status_icon = "🟢" if data.get("license_status") == "active" else "🔴" if data.get("license_status") == "expired" else "⚫"
+    status_icon = "??" if data.get("license_status") == "active" else "??" if data.get("license_status") == "expired" else "?"
 
     payment_warning = ""
     if data.get("installment_status") != "completed" and next_due:
         try:
             next_due_dt = datetime.strptime(next_due.split("T")[0], "%Y-%m-%d").replace(tzinfo=timezone.utc)
             days_left = (next_due_dt - datetime.now(timezone.utc)).days
-            payment_warning = "\n⚠️ Payment Due Soon" if days_left <= 5 else "\n✅ Active"
+            payment_warning = "\n?? Payment Due Soon" if days_left <= 5 else "\n? Active"
         except Exception:
             pass
 
     msg = (
-        "💳 *YOUR INSTALLMENT PLAN*\n\n"
+        "?? *YOUR INSTALLMENT PLAN*\n\n"
         f"Plan: {data.get('product_name', 'EA')}\n"
         f"MT5 ID: `{data.get('mt5_id', 'N/A')}`\n\n"
-        f"Total Amount: ₹{data.get('total_amount', 0):,.0f}\n"
-        f"Installment: ₹{data.get('installment_amount', 0):,.0f}\n\n"
-        f"Paid: ₹{data.get('amount_paid', 0):,.0f}\n"
-        f"Remaining: ₹{data.get('amount_remaining', 0):,.0f}\n\n"
+        f"Total Amount: ?{data.get('total_amount', 0):,.0f}\n"
+        f"Installment: ?{data.get('installment_amount', 0):,.0f}\n\n"
+        f"Paid: ?{data.get('amount_paid', 0):,.0f}\n"
+        f"Remaining: ?{data.get('amount_remaining', 0):,.0f}\n\n"
         f"Progress: {data.get('installments_paid', 0)}/{data.get('installment_count', 0)} payments\n\n"
         f"License: {status_icon} {str(data.get('license_status', 'N/A')).title()}\n"
         f"Expires: {expiry_str}\n"
-        f"Next Payment: ₹{data.get('installment_amount', 0):,.0f} (Due: {next_due_str}){payment_warning}\n\n"
+        f"Next Payment: ?{data.get('installment_amount', 0):,.0f} (Due: {next_due_str}){payment_warning}\n\n"
         f"To make your next payment, contact the admin."
     )
 
@@ -2072,8 +2072,8 @@ async def render_installment_status(update: Update, context: ContextTypes.DEFAUL
         admin_username = f"@{admin_username}"
 
     kb = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")],
-        [InlineKeyboardButton("🏠 Home", callback_data="home")]
+        [InlineKeyboardButton("?? Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}")],
+        [InlineKeyboardButton("?? Home", callback_data="home")]
     ])
     await msg_target.reply_text(msg, parse_mode="Markdown", reply_markup=kb)
 
@@ -2089,25 +2089,25 @@ async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resp = await client.get(f"{base_url}/orders/telegram/{tid}")
         if resp.status_code == 200:
             orders = resp.json()
-            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
+            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("?? Home", callback_data="home")]])
             if not orders:
-                await msg_target.reply_text("📭 *You don't have any orders yet.*", parse_mode="Markdown", reply_markup=home_kb)
+                await msg_target.reply_text("?? *You don't have any orders yet.*", parse_mode="Markdown", reply_markup=home_kb)
                 return
                 
-            text = "🧾 *MY ORDERS*\n\n"
+            text = "?? *MY ORDERS*\n\n"
             for order in orders:
                 status = order['status']
                 if status == "approved" or "approved" in status:
-                    status_display = "✅ Approved"
+                    status_display = "? Approved"
                 elif status == "pending_admin_approval":
-                    status_display = "⏳ Pending Admin Approval"
+                    status_display = "? Pending Admin Approval"
                 elif status == "rejected":
-                    status_display = "❌ Rejected"
+                    status_display = "? Rejected"
                 else:
-                    status_display = f"ℹ️ {status.replace('_', ' ').title()}"
+                    status_display = f"?? {status.replace('_', ' ').title()}"
                     
                 created = order['created_at'].split('T')[0] if order.get('created_at') else "Unknown"
-                price_str = f"₹{order.get('price', 0):,.0f}" if order.get('price') else "Free"
+                price_str = f"?{order.get('price', 0):,.0f}" if order.get('price') else "Free"
                 
                 text += (
                     f"Order #ORD-{order['id']}\n"
@@ -2119,7 +2119,7 @@ async def render_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=home_kb)
         else:
-            await msg_target.reply_text("❌ Unable to load your orders right now.\nPlease try again or contact support.")
+            await msg_target.reply_text("? Unable to load your orders right now.\nPlease try again or contact support.")
 
 async def orders_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await render_orders(update, context)
@@ -2138,11 +2138,11 @@ async def render_vps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     vps_list = await get_user_vps(str(telegram_id))
     
     if not vps_list:
-        text = "🖥️ <b>MY VPS</b>\n\nYou do not have any VPS orders."
+        text = "??? <b>MY VPS</b>\n\nYou do not have any VPS orders."
     else:
-        text = "🖥️ <b>MY VPS</b>\n\nHere are your VPS nodes:\n\n"
+        text = "??? <b>MY VPS</b>\n\nHere are your VPS nodes:\n\n"
         for v in vps_list:
-            status_icon = "✅" if v['status'] in ['delivered', 'provisioned'] else "⌛" if v['status'] in ['pending', 'paid', 'contacted', 'pending_admin_approval'] else "❌"
+            status_icon = "?" if v['status'] in ['delivered', 'provisioned'] else "?" if v['status'] in ['pending', 'paid', 'contacted', 'pending_admin_approval'] else "?"
             text += f"<b>{v.get('product_name', 'VPS Node')}</b> {status_icon}\n"
             text += f"Status: {str(v['status']).replace('_', ' ').title()}\n"
             if v['status'] in ['delivered', 'provisioned']:
@@ -2154,7 +2154,7 @@ async def render_vps(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text += "\n"
             
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-    kb = InlineKeyboardMarkup([[InlineKeyboardButton("◀️ Back to Menu", callback_data="main_menu")]])
+    kb = InlineKeyboardMarkup([[InlineKeyboardButton("?? Back to Menu", callback_data="main_menu")]])
     
     if query:
         await query.edit_message_text(text, parse_mode="HTML", reply_markup=kb)
@@ -2175,12 +2175,12 @@ async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if resp.status_code == 200:
             licenses = resp.json()
             active_licenses = [l for l in licenses if l['status'] == 'active']
-            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Home", callback_data="home")]])
+            home_kb = InlineKeyboardMarkup([[InlineKeyboardButton("?? Home", callback_data="home")]])
             if not active_licenses:
-                await msg_target.reply_text("❌ *No files available.*\n\nYou don't have any active EA licenses to download.", parse_mode="Markdown", reply_markup=home_kb)
+                await msg_target.reply_text("? *No files available.*\n\nYou don't have any active EA licenses to download.", parse_mode="Markdown", reply_markup=home_kb)
                 return
                 
-            text = "📥 *YOUR DOWNLOADS*\n\n"
+            text = "?? *YOUR DOWNLOADS*\n\n"
             kb = []
             
             for idx, l in enumerate(active_licenses, 1):
@@ -2188,18 +2188,18 @@ async def render_downloads(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 gen = l['purchase_date'].split('T')[0] if l['purchase_date'] else "Unknown"
                 
                 text += (
-                    f"{idx}️⃣ InfinityTrader_{l['mt5_id']}.ex5\n"
+                    f"{idx}?? InfinityTrader_{l['mt5_id']}.ex5\n"
                     f"   MT5 ID: {l['mt5_id']}\n"
                     f"   License: {ltype}\n"
                     f"   Generated: {gen}\n\n"
                 )
                 
-                kb.append([InlineKeyboardButton(f"⬇️ Download EA (MT5 {l['mt5_id']})", callback_data=f"download_ea_{l['id']}_{l['mt5_id']}")])
+                kb.append([InlineKeyboardButton(f"?? Download EA (MT5 {l['mt5_id']})", callback_data=f"download_ea_{l['id']}_{l['mt5_id']}")])
                 
-            kb.append([InlineKeyboardButton("🏠 Home", callback_data="home")])
+            kb.append([InlineKeyboardButton("?? Home", callback_data="home")])
             await msg_target.reply_text(text, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
         else:
-            await msg_target.reply_text("❌ Unable to load your downloads right now.\nPlease try again or contact support.")
+            await msg_target.reply_text("? Unable to load your downloads right now.\nPlease try again or contact support.")
 
 async def downloads_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await render_downloads(update, context)
@@ -2315,7 +2315,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                     # Notify Admin
                     if admin_id:
                         msg = (
-                            f"❌ *COMPILE JOB FAILED*\n\n"
+                            f"? *COMPILE JOB FAILED*\n\n"
                             f"Order ID: #{order_id}\n"
                             f"Job ID: #{job_id}\n\n"
                             f"The automated compiler worker failed to compile this order. "
@@ -2329,13 +2329,13 @@ class DummyHandler(BaseHTTPRequestHandler):
                     # Notify Customer
                     if telegram_id:
                         cust_msg = (
-                            f"⚠️ *Generation Delayed*\n\n"
+                            f"?? *Generation Delayed*\n\n"
                             f"We encountered a temporary technical issue while generating your EA file. "
                             f"Our admin has been automatically notified and is resolving it right now.\n\n"
                             f"Please wait a few moments. If you need immediate assistance, you can contact the admin below."
                         )
                         admin_username = os.getenv("ADMIN_USERNAME", "infinitytrader_admin")
-                        kb = [[InlineKeyboardButton("📞 Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}?text=Hi, my EA generation (Order {order_id}) failed.")]]
+                        kb = [[InlineKeyboardButton("?? Contact Admin", url=f"https://t.me/{admin_username.lstrip('@')}?text=Hi, my EA generation (Order {order_id}) failed.")]]
                         try:
                             await bot.send_message(chat_id=telegram_id, text=cust_msg, parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(kb))
                         except Exception as e:
@@ -2375,7 +2375,7 @@ class DummyHandler(BaseHTTPRequestHandler):
             try:
                 HTTPX_VERIFY = False
                 action_text = "APPROVED" if action == "approved" else "REJECTED"
-                icon = "✅" if action == "approved" else "❌"
+                icon = "?" if action == "approved" else "?"
                 async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                     await client.post(
                         f"https://api.telegram.org/bot{bot_token}/editMessageText",
@@ -2404,7 +2404,7 @@ class DummyHandler(BaseHTTPRequestHandler):
             admin_chat_id = os.getenv("ADMIN_CHAT_ID")
             try:
                 HTTPX_VERIFY = False
-                icon = "✅" if action == "approved" else "❌"
+                icon = "?" if action == "approved" else "?"
                 text = f"{icon} *ORDER #{order_id} {action.upper()} FROM WEB DASHBOARD*"
                 async with httpx.AsyncClient(verify=HTTPX_VERIFY) as client:
                     await client.post(
@@ -2432,7 +2432,7 @@ class DummyHandler(BaseHTTPRequestHandler):
             return
             
         initial_msg = (
-            f"🔄 *Compiling your EA...*\n\n"
+            f"?? *Compiling your EA...*\n\n"
             f"Your EA file is being built right now.\n"
             f"The file will be sent here automatically once ready.\n\n"
             f"_Usually takes 2-5 minutes. Please wait._"
@@ -2494,7 +2494,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                             }
                             send_data = {
                                 "chat_id": chat_id,
-                                "caption": f"📦 *InfinityTrader {"FREE TRIAL" if license_type == "trial" else "EA"}*\nMT5 ID: `{mt5_id}`\n\n✅ Your {"Free Trial " if license_type == "trial" else ""}EA file is ready. Install it in MetaTrader 5 Expert Advisors folder.",
+                                "caption": f"?? *InfinityTrader {"FREE TRIAL" if license_type == "trial" else "EA"}*\nMT5 ID: `{mt5_id}`\n\n? Your {"Free Trial " if license_type == "trial" else ""}EA file is ready. Install it in MetaTrader 5 Expert Advisors folder.",
                                 "parse_mode": "Markdown"
                             }
                             doc_resp = await client.post(
@@ -2509,14 +2509,14 @@ class DummyHandler(BaseHTTPRequestHandler):
                                         f"https://api.telegram.org/bot{token}/sendMessage",
                                         json={
                                             "chat_id": admin_chat_id,
-                                            "text": f"✅ *{"FREE TRIAL" if license_type == "trial" else "EA"} Delivered Successfully*\n\nMT5 ID: `{mt5_id}`\nCustomer Telegram: `{chat_id}`\n\nFile sent to customer.",
+                                            "text": f"? *{"FREE TRIAL" if license_type == "trial" else "EA"} Delivered Successfully*\n\nMT5 ID: `{mt5_id}`\nCustomer Telegram: `{chat_id}`\n\nFile sent to customer.",
                                             "parse_mode": "Markdown"
                                         }
                                     )
                             else:
                                 admin_chat_id = os.getenv('ADMIN_CHAT_ID')
                                 if admin_chat_id:
-                                    admin_note = f'✅ EA file delivered to customer.\nMT5 ID: `{mt5_id}`\nTelegram ID: `{chat_id}`'
+                                    admin_note = f'? EA file delivered to customer.\nMT5 ID: `{mt5_id}`\nTelegram ID: `{chat_id}`'
                                     await client.post(
                                         f'https://api.telegram.org/bot{token}/sendMessage',
                                         json={'chat_id': admin_chat_id, 'text': admin_note, 'parse_mode': 'Markdown'}
@@ -2527,7 +2527,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                             if admin_chat_id:
                                 await client.post(
                                     f'https://api.telegram.org/bot{token}/sendMessage',
-                                    json={'chat_id': admin_chat_id, 'text': f'❌ Failed to deliver EA to customer {chat_id} (MT5: {mt5_id}). File not found in storage.'}
+                                    json={'chat_id': admin_chat_id, 'text': f'? Failed to deliver EA to customer {chat_id} (MT5: {mt5_id}). File not found in storage.'}
                                 )
         except Exception as e:
             logging.error(f"Delivery failed: {e}")
@@ -2556,19 +2556,19 @@ async def admintest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_id = os.getenv("ADMIN_CHAT_ID")
     if str(update.effective_user.id) != str(admin_id):
         return
-    await update.message.reply_text("✅ Admin notification test successful")
+    await update.message.reply_text("? Admin notification test successful")
 
 async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     admin_id = os.getenv("ADMIN_CHAT_ID")
     if str(update.effective_user.id) != str(admin_id):
-        await update.message.reply_text("❌ You are not authorized to access the admin panel.")
+        await update.message.reply_text("? You are not authorized to access the admin panel.")
         return
         
     from utils.api_client import get_settings
     settings = await get_settings()
     
     msg = (
-        "⚙️ *Admin Configuration Panel*\n\n"
+        "?? *Admin Configuration Panel*\n\n"
         f"Free Trial Enabled: `{settings.get('free_trial_enabled', 'Not Set')}`\n"
         f"Trial Duration (Days): `{settings.get('trial_duration', 'Not Set')}`\n"
         f"Max Trials / Month: `{settings.get('max_trials', 'Not Set')}`\n"
