@@ -392,6 +392,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             telegram_id = info.get("telegram_id")
             mt5_id = info.get("mt5_id")
             download_url = info.get("download_url")
+                    license_type = info.get("license_type", "lifetime")
             
             if not download_url:
                 await query.answer("❌ File not in storage yet. Worker may still be running.", show_alert=True)
@@ -2472,6 +2473,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                     chat_id = info.get("telegram_id")
                     mt5_id = info.get("mt5_id")
                     download_url = info.get("download_url")
+                    license_type = info.get("license_type", "lifetime")
                     
                     if chat_id and download_url:
                         # Stop animation and delete the "compiling..." loading message
