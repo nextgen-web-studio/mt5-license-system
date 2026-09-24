@@ -406,7 +406,8 @@ async def get_delivery_info(license_id: int, db: AsyncSession = Depends(get_db))
     return {
         "telegram_id": telegram_id,
         "mt5_id": lic.mt5_id,
-        "download_url": url
+        "download_url": url,
+        "license_type": lic.license_type
     }
 
 from datetime import timedelta

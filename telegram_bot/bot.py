@@ -1,4 +1,4 @@
-import os
+﻿import os
 import logging
 import threading
 from datetime import datetime, timezone
@@ -408,7 +408,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.send_document(
                         chat_id=int(telegram_id),
                         document=doc,
-                        caption=f"📦 *InfinityTrader EA*\nMT5 ID: `{mt5_id}`\n\n✅ Your EA file — install in MetaTrader 5 Expert Advisors folder.",
+                        caption=f"📦 *InfinityTrader {"FREE TRIAL" if license_type == "trial" else "EA"}*\nMT5 ID: `{mt5_id}`\n\n✅ Your EA file — install in MetaTrader 5 Expert Advisors folder.",
                         parse_mode="Markdown"
                     )
                     await query.answer("✅ EA file resent to customer!", show_alert=True)
@@ -1850,8 +1850,11 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if context.user_data.get('awaiting_broker_change_mt5_id'):
-        context.user_data['awaiting_broker_change_mt5_id'] = False
         new_mt5_id = text.strip()
+        if not new_mt5_id.isdigit():
+            await update.message.reply_text("?O Invalid MT5 ID. It must contain only numbers. Please try again:")
+            return
+        context.user_data['awaiting_broker_change_mt5_id'] = False
         context.user_data['bc_new_mt5_id'] = new_mt5_id
         
         context.user_data['awaiting_broker_change_broker_name'] = True
@@ -1888,8 +1891,11 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if context.user_data.get('awaiting_trial_mt5_id'):
-        context.user_data['awaiting_trial_mt5_id'] = False
         mt5_id = text.strip()
+        if not mt5_id.isdigit():
+            await update.message.reply_text("?O Invalid MT5 ID. It must contain only numbers. Please try again:")
+            return
+        context.user_data['awaiting_trial_mt5_id'] = False
         user_id = context.user_data.get('db_user_id')
         tid = str(update.effective_user.id)
         
@@ -2488,7 +2494,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                             }
                             send_data = {
                                 "chat_id": chat_id,
-                                "caption": f"📦 *InfinityTrader EA*\nMT5 ID: `{mt5_id}`\n\n✅ Your EA file is ready. Install it in MetaTrader 5 Expert Advisors folder.",
+                                "caption": f"📦 *InfinityTrader {"FREE TRIAL" if license_type == "trial" else "EA"}*\nMT5 ID: `{mt5_id}`\n\n✅ Your {"Free Trial " if license_type == "trial" else ""}EA file is ready. Install it in MetaTrader 5 Expert Advisors folder.",
                                 "parse_mode": "Markdown"
                             }
                             doc_resp = await client.post(
@@ -2503,7 +2509,7 @@ class DummyHandler(BaseHTTPRequestHandler):
                                         f"https://api.telegram.org/bot{token}/sendMessage",
                                         json={
                                             "chat_id": admin_chat_id,
-                                            "text": f"✅ *EA Delivered Successfully*\n\nMT5 ID: `{mt5_id}`\nCustomer Telegram: `{chat_id}`\n\nFile sent to customer.",
+                                            "text": f"✅ *{"FREE TRIAL" if license_type == "trial" else "EA"} Delivered Successfully*\n\nMT5 ID: `{mt5_id}`\nCustomer Telegram: `{chat_id}`\n\nFile sent to customer.",
                                             "parse_mode": "Markdown"
                                         }
                                     )
