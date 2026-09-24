@@ -308,7 +308,7 @@ export default function VpsOrdersPage() {
                         )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
+                      <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">{order.terminals_allowed || 2}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {order.is_renewal ? (
@@ -429,7 +429,7 @@ export default function VpsOrdersPage() {
                         )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-400">{order.terminals_allowed || 2}</td>
+                      <td className="px-6 py-4 text-neutral-300 whitespace-nowrap">{order.terminals_allowed || 2}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {order.is_renewal ? (
