@@ -316,7 +316,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"?? *Compiling your EA...*\n\n"
                 f"Your EA file is being built right now.\n"
                 f"The file will be sent here automatically once ready.\n\n"
-                f"_Usually takes 2–5 minutes. Please wait._"
+                f"_Usually takes 2-5 minutes. Please wait._"
             )
             try:
                 sent = type('DummyMsg', (), {'message_id': 0})()
