@@ -8,6 +8,8 @@ import { useToast } from '@/app/providers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function LicensesPage() {
+  const formatUTC = (d: Date) => { const pad = (n: number) => n.toString().padStart(2, '0'); const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ', ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); };
+
   const { toast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -91,8 +93,7 @@ export default function LicensesPage() {
       </div>
 
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
-        <div className="hidden md:block overflow-x-auto min-h-[300px]">
-<div className="overflow-x-auto min-h-[300px]">
+        <div className="hidden lg:block overflow-x-auto min-h-[300px]">
           <table className="min-w-full text-sm text-left">
             <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
               <tr>
@@ -116,8 +117,8 @@ export default function LicensesPage() {
                 licenses.map((license: any) => {
                   const expiryDate = license.expiry_date ? new Date(license.expiry_date) : null;
                   const now = new Date();
-                  const daysExpired = expiryDate ? (now.getTime() - expiryDate.getTime()) / (1000 * 3600 * 24) : 0;
-                  const canDelete = true;
+                  const isActuallyExpired = (expiryDate ? expiryDate.getTime() < now.getTime() : false);
+                  const displayStatus = isActuallyExpired ? "expired" : license.status;
 
                   return (
                     <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
@@ -135,7 +136,7 @@ export default function LicensesPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {license.status === 'active' || license.status === 'valid' ? (
+                        {displayStatus === "active" || displayStatus === "valid" ? (
                           <span className="flex items-center space-x-1 text-emerald-400 text-xs font-medium">
                             <Shield size={14} />
                             <span>Active</span>
@@ -143,12 +144,12 @@ export default function LicensesPage() {
                         ) : (
                           <span className="flex items-center space-x-1 text-red-400 text-xs font-medium">
                             <ShieldAlert size={14} />
-                            <span>{license.status || 'Expired'}</span>
+                            <span>{displayStatus || "Expired"}</span>
                           </span>
                         )}
                       </td>
                       <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">
-                        {expiryDate ? expiryDate.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A'}
+                        {expiryDate ? formatUTC(expiryDate) : 'N/A'}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
                         <button 
@@ -194,15 +195,18 @@ export default function LicensesPage() {
             </tbody>
           </table>
         </div>
-        </div>
 
         {/* Mobile Card Layout */}
-        <div className="md:hidden flex flex-col divide-y divide-neutral-800">
+        <div className="lg:hidden flex flex-col divide-y divide-neutral-800">
           {licenses.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No licenses found.</div>
           ) : (
             licenses.map((license: any) => {
-              const isActive = license.status === 'active';
+                const expiryDate = license.expiry_date ? new Date(license.expiry_date) : null;
+                const now = new Date();
+                const isActuallyExpired = (expiryDate ? expiryDate.getTime() < now.getTime() : false);
+                const displayStatus = isActuallyExpired ? "expired" : license.status;
+                const isActive = displayStatus === "active" || displayStatus === "valid";
               return (
                 <div key={license.id} className="p-3 space-y-2">
                   <div className="flex justify-between items-start">
@@ -213,7 +217,7 @@ export default function LicensesPage() {
                     {isActive ? (
                       <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Active</span>
                     ) : (
-                      <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">{license.status}</span>
+                      <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">{displayStatus}</span>
                     )}
                   </div>
                   
@@ -222,7 +226,7 @@ export default function LicensesPage() {
                       <span className="text-neutral-500 block text-[10px] mb-0.5">License Key</span>
                       <div className="flex items-center text-neutral-300 font-mono text-xs">
                         <Key size={12} className="mr-2 shrink-0 text-blue-400" />
-                        {license.generated_filename || 'N/A'}
+                        {license.license_uuid || license.id}
                       </div>
                     </div>
                     <div>
@@ -236,11 +240,7 @@ export default function LicensesPage() {
                     <div className="col-span-2">
                       <span className="text-neutral-500 block text-[10px] mb-0.5">Expiry Date</span>
                       <span className="text-neutral-300">
-                        {license.license_type === 'lifetime' 
-                          ? 'Never' 
-                          : license.expires_at 
-                            ? new Date(license.expires_at).toLocaleDateString() 
-                            : 'Unknown'}
+                        {expiryDate ? formatUTC(expiryDate) : (license.license_type === 'lifetime' ? 'Never' : 'Unknown')}
                       </span>
                     </div>
                   </div>
@@ -427,3 +427,5 @@ export default function LicensesPage() {
 }
 
 
+
+// Forced Vercel webhook trigger
