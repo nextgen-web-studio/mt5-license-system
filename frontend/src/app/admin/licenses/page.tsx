@@ -225,7 +225,7 @@ export default function LicensesPage() {
                   <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                     <div className="col-span-2 break-all">
                       <span className="text-neutral-500 block text-[10px] mb-0.5">License Key</span>
-                      <div className="flex items-center text-neutral-300 font-mono text-[11px] cursor-help" title={license.license_uuid || String(license.id)}>`n                        <Key size={12} className="mr-2 shrink-0 text-blue-400" />`n                        {formatKey(license.license_uuid || license.id)}`n                      </div>
+                      <div className="flex items-center text-neutral-300 font-mono text-[11px] cursor-help" title={license.license_uuid || String(license.id)}><Key size={12} className="mr-2 shrink-0 text-blue-400" />{formatKey(license.license_uuid || license.id)}</div>
                     </div>
                     <div>
                       <span className="text-neutral-500 block text-[10px] mb-0.5">Telegram ID</span>
