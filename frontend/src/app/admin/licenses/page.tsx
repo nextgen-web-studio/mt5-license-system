@@ -9,6 +9,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function LicensesPage() {
   const formatUTC = (d: Date) => { const pad = (n: number) => n.toString().padStart(2, '0'); const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ', ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); };
+  const formatKey = (key: any) => { if(!key) return 'N/A'; const s = String(key); return s.length > 16 ? s.substring(0,8) + '...' + s.slice(-4) : s; };
 
   const { toast } = useToast();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -124,7 +125,7 @@ export default function LicensesPage() {
                     <tr key={license.id} className="hover:bg-neutral-800/30 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-neutral-300 items-center space-x-2 whitespace-nowrap">
                         <Key size={14} className="text-indigo-400 inline mr-1" />
-                        <span className="truncate max-w-[120px] inline-block">{license.license_uuid || license.id}</span>
+                        <span className="truncate max-w-[120px] inline-block cursor-help" title={license.license_uuid || String(license.id)}>{formatKey(license.license_uuid || license.id)}</span>
                       </td>
                       <td className="px-3 py-2 md:px-6 md:py-4 text-neutral-400 whitespace-nowrap">{license.telegram_id || 'Guest'}</td>
                       <td className="px-6 py-4 font-mono text-xs text-white whitespace-nowrap">{license.mt5_id || 'N/A'}</td>
@@ -217,17 +218,14 @@ export default function LicensesPage() {
                     {isActive ? (
                       <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs font-medium border border-emerald-500/20">Active</span>
                     ) : (
-                      <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20">{displayStatus}</span>
+                      <span className="px-2 py-1 bg-neutral-500/10 text-neutral-400 rounded text-xs font-medium border border-neutral-500/20 capitalize">{displayStatus}</span>
                     )}
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                     <div className="col-span-2 break-all">
                       <span className="text-neutral-500 block text-[10px] mb-0.5">License Key</span>
-                      <div className="flex items-center text-neutral-300 font-mono text-xs">
-                        <Key size={12} className="mr-2 shrink-0 text-blue-400" />
-                        {license.license_uuid || license.id}
-                      </div>
+                      <div className="flex items-center text-neutral-300 font-mono text-[11px] cursor-help" title={license.license_uuid || String(license.id)}>`n                        <Key size={12} className="mr-2 shrink-0 text-blue-400" />`n                        {formatKey(license.license_uuid || license.id)}`n                      </div>
                     </div>
                     <div>
                       <span className="text-neutral-500 block text-[10px] mb-0.5">Telegram ID</span>
