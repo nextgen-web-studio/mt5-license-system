@@ -175,7 +175,7 @@ export default function LicensesPage() {
                           <RefreshCcw size={16} />
                         </button>
                         <button 
-                          onClick={() => setEditingLicense(license)}
+                          onClick={() => setEditingLicense({...license, status: displayStatus})}
                           className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
                           title="Edit License"
                         >
@@ -260,7 +260,7 @@ export default function LicensesPage() {
                       <RefreshCcw size={16} />
                     </button>
                     <button 
-                      onClick={() => setEditingLicense(license)}
+                      onClick={() => setEditingLicense({...license, status: displayStatus})}
                       className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded transition-colors"><Edit2 size={13} /> Edit</button>
                     <button 
                       onClick={() => { setDeletingId(license.id); setDeleteModalOpen(true); }}
