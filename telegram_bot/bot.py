@@ -1830,7 +1830,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.user_data.get('awaiting_mt5_id'):
         mt5_id = text.strip()
         if not mt5_id.isdigit():
-            await update.message.reply_text("?O Invalid MT5 ID. It must contain only numbers. Please try again:")
+            await update.message.reply_text("⛔ Invalid MT5 ID. It must contain only numbers. Please try again:")
             return
         context.user_data['awaiting_mt5_id'] = False
         context.user_data['pending_mt5_id'] = mt5_id
